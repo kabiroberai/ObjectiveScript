@@ -15,7 +15,6 @@
 		56A149B61FE50849008B6BED /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56A149B51FE50849008B6BED /* libffi.a */; };
 		56A149C01FE53CA0008B6BED /* ObjectiveScriptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */; };
 		56A149C21FE53CA0008B6BED /* libObjectiveScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */; };
-		56A149C91FE552D1008B6BED /* app.objs in Resources */ = {isa = PBXBuildFile; fileRef = 56A149C81FE552D1008B6BED /* app.objs */; };
 		56D558E11FE4252A00CF5720 /* ObjectiveScript.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56D558E01FE4234A00CF5720 /* ObjectiveScript.h */; };
 		56D558E31FE4345800CF5720 /* JXFFITypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 56D558E21FE4345800CF5720 /* JXFFITypes.m */; };
 /* End PBXBuildFile section */
@@ -70,20 +69,12 @@
 		565B36171FE4210E00A9EEA8 /* ffitarget_i386.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_i386.h; sourceTree = "<group>"; };
 		565B36181FE4210E00A9EEA8 /* ffitarget_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
 		56A149B51FE50849008B6BED /* libffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libffi.a; sourceTree = "<group>"; };
-		56A149B81FE51F35008B6BED /* test.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = test.js; sourceTree = "<group>"; };
 		56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ObjectiveScriptTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveScriptTests.m; sourceTree = "<group>"; };
 		56A149C11FE53CA0008B6BED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		56A149C81FE552D1008B6BED /* app.objs */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = app.objs; sourceTree = "<group>"; };
 		56D558E01FE4234A00CF5720 /* ObjectiveScript.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjectiveScript.h; sourceTree = "<group>"; };
 		56D558E21FE4345800CF5720 /* JXFFITypes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXFFITypes.m; sourceTree = "<group>"; };
 		56D558E41FE4345E00CF5720 /* JXFFITypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXFFITypes.h; sourceTree = "<group>"; };
-		56D5882D1FE43A3800CF5720 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
-		56D5882E1FE43A3800CF5720 /* helpers.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = helpers.js; sourceTree = "<group>"; };
-		56D5882F1FE43A3800CF5720 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
-		56D588301FE43A3800CF5720 /* webpack.config.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = webpack.config.js; sourceTree = "<group>"; };
-		56D588311FE43A3800CF5720 /* syntax.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = syntax.js; sourceTree = "<group>"; };
-		56D5883C1FE4441300CF5720 /* ob.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ob.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,7 +100,6 @@
 		565B35CF1FE41EF500A9EEA8 = {
 			isa = PBXGroup;
 			children = (
-				56D5882C1FE43A1500CF5720 /* objs-transpiler */,
 				565B35DA1FE41EF500A9EEA8 /* ObjectiveScript */,
 				56A149BE1FE53CA0008B6BED /* ObjectiveScriptTests */,
 				565B35D91FE41EF500A9EEA8 /* Products */,
@@ -184,15 +174,6 @@
 			path = darwin_ios;
 			sourceTree = "<group>";
 		};
-		56A149B71FE51F1B008B6BED /* test */ = {
-			isa = PBXGroup;
-			children = (
-				56A149B81FE51F35008B6BED /* test.js */,
-				56A149C81FE552D1008B6BED /* app.objs */,
-			);
-			path = test;
-			sourceTree = "<group>";
-		};
 		56A149BE1FE53CA0008B6BED /* ObjectiveScriptTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -202,38 +183,7 @@
 			path = ObjectiveScriptTests;
 			sourceTree = "<group>";
 		};
-		56D5882C1FE43A1500CF5720 /* objs-transpiler */ = {
-			isa = PBXGroup;
-			children = (
-				56D5882F1FE43A3800CF5720 /* index.js */,
-				56D588311FE43A3800CF5720 /* syntax.js */,
-				56D5882E1FE43A3800CF5720 /* helpers.js */,
-				56D588301FE43A3800CF5720 /* webpack.config.js */,
-				56D5882D1FE43A3800CF5720 /* package.json */,
-				56A149B71FE51F1B008B6BED /* test */,
-				56D5883C1FE4441300CF5720 /* ob.js */,
-			);
-			path = "objs-transpiler";
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
-
-/* Begin PBXLegacyTarget section */
-		56D588321FE43A8300CF5720 /* objs-transpiler */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "run \"build:$(ACTION)\"";
-			buildConfigurationList = 56D588331FE43A8300CF5720 /* Build configuration list for PBXLegacyTarget "objs-transpiler" */;
-			buildPhases = (
-			);
-			buildToolPath = npm;
-			buildWorkingDirectory = "${TARGET_NAME}";
-			dependencies = (
-			);
-			name = "objs-transpiler";
-			passBuildSettingsInEnvironment = 0;
-			productName = "objs-transpiler";
-		};
-/* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
 		565B35D71FE41EF500A9EEA8 /* ObjectiveScript */ = {
@@ -288,10 +238,6 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
-					56D588321FE43A8300CF5720 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-					};
 				};
 			};
 			buildConfigurationList = 565B35D31FE41EF500A9EEA8 /* Build configuration list for PBXProject "ObjectiveScript" */;
@@ -307,7 +253,6 @@
 			projectRoot = "";
 			targets = (
 				565B35D71FE41EF500A9EEA8 /* ObjectiveScript */,
-				56D588321FE43A8300CF5720 /* objs-transpiler */,
 				56A149BC1FE53CA0008B6BED /* ObjectiveScriptTests */,
 			);
 		};
@@ -318,7 +263,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				56A149C91FE552D1008B6BED /* app.objs in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -523,33 +467,6 @@
 			};
 			name = Release;
 		};
-		56D588341FE43A8300CF5720 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEBUGGING_SYMBOLS = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 4AXYTEF44D;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		56D588351FE43A8300CF5720 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 4AXYTEF44D;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -576,15 +493,6 @@
 			buildConfigurations = (
 				56A149C61FE53CA0008B6BED /* Debug */,
 				56A149C71FE53CA0008B6BED /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		56D588331FE43A8300CF5720 /* Build configuration list for PBXLegacyTarget "objs-transpiler" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				56D588341FE43A8300CF5720 /* Debug */,
-				56D588351FE43A8300CF5720 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

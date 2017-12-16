@@ -1,0 +1,76 @@
+const UIBarButtonSystemItem = Object.freeze({
+	add: 4
+});
+
+const UITableViewRowAnimation = Object.freeze({
+	automatic: 100
+});
+
+const UITableViewCellStyle = Object.freeze({
+	default: 0
+});
+
+
+$class MyViewController: UITableViewController {
+	id _objects;
+}
+
+- (void)viewDidLoad {
+	$[super viewDidLoad];
+
+	$[self setTitle:"Root View Controller"];
+	$[$[self navigationItem] setLeftBarButtonItem:$[self editButtonItem]];
+	const item = $[$[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItem.add target:self action:"addButtonTapped:"];
+	$[$[self navigationItem] setRightBarButtonItem:item];
+
+	$(_objects) = $[NSMutableArray array];
+}
+
+- (void)addButtonTapped:(id)sender {
+	$[$(_objects) insertObject:$[NSDate date] atIndex:0];
+	const path = $[NSIndexPath indexPathForRow:0 inSection:0];
+	$[$[self tableView] insertRowsAtIndexPaths:[path] withRowAnimation:UITableViewRowAnimation.automatic];
+}
+
+// MARK:- Table View Data Source
+
+- (long)tableView:(id)tableView numberOfRowsInSection:(long)section {
+	return $[$(_objects) count];
+}
+
+- (id)tableView:(id)tableView cellForRowAtIndexPath:(id)indexPath {
+	let cell = $[tableView dequeueReusableCellWithIdentifier:"cell"];
+	if (cell == null) {
+		cell = $[$[UITableViewCell alloc] initWithStyle:UITableViewCellStyle.default reuseIdentifier:"cell"];
+	}
+	const date = $[$(_objects) objectAtIndex:$[indexPath row]];
+	$[$[cell textLabel] setText:$[date description]];
+	return cell;
+}
+
+- (void)tableView:(id)tableView commitEditingStyle:(long)editingStyle forRowAtIndexPath:(id)indexPath {
+	$[$(_objects) removeObjectAtIndex:$[indexPath row]];
+	$[tableView deleteRowsAtIndexPaths:[indexPath] withRowAnimation:UITableViewRowAnimation.automatic];
+}
+
+// MARK:- Table View Delegate
+
+- (void)tableView:(id)tableView didSelectRowAtIndexPath:(id)indexPath {
+	$[tableView deselectRowAtIndexPath:indexPath animated:true];
+}
+
+$end
+
+$hook SuperchargerTests.AppDelegate
+
+- application:application didFinishLaunchingWithOptions:launchOptions {
+	const window = $[$[UIWindow alloc] initWithFrame:$[$[UIScreen mainScreen] bounds]];
+	$[self setWindow:window];
+	const vc = $[MyViewController new];
+	const nav = $[$[UINavigationController alloc] initWithRootViewController:vc];
+	$[window setRootViewController:nav];
+	$[window makeKeyAndVisible];
+	return $orig(_);
+}
+
+$end

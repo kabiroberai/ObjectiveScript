@@ -1,0 +1,595 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		565B35ED1FE4203800A9EEA8 /* JXHookInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E41FE4203700A9EEA8 /* JXHookInfo.m */; };
+		565B35EE1FE4203800A9EEA8 /* JXFFIInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E61FE4203700A9EEA8 /* JXFFIInterface.m */; };
+		565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E71FE4203700A9EEA8 /* ObjectiveScript.m */; };
+		565B35F01FE4203800A9EEA8 /* JXJSInterop.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E91FE4203800A9EEA8 /* JXJSInterop.m */; };
+		565B35F11FE4203800A9EEA8 /* JXBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35EB1FE4203800A9EEA8 /* JXBox.m */; };
+		56A149B61FE50849008B6BED /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56A149B51FE50849008B6BED /* libffi.a */; };
+		56A149C01FE53CA0008B6BED /* ObjectiveScriptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */; };
+		56A149C21FE53CA0008B6BED /* libObjectiveScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */; };
+		56A149C91FE552D1008B6BED /* app.objs in Resources */ = {isa = PBXBuildFile; fileRef = 56A149C81FE552D1008B6BED /* app.objs */; };
+		56D558E11FE4252A00CF5720 /* ObjectiveScript.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56D558E01FE4234A00CF5720 /* ObjectiveScript.h */; };
+		56D558E31FE4345800CF5720 /* JXFFITypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 56D558E21FE4345800CF5720 /* JXFFITypes.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		56A149C31FE53CA0008B6BED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 565B35D01FE41EF500A9EEA8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 565B35D71FE41EF500A9EEA8;
+			remoteInfo = ObjectiveScript;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		565B35D61FE41EF500A9EEA8 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				56D558E11FE4252A00CF5720 /* ObjectiveScript.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libObjectiveScript.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		565B35E41FE4203700A9EEA8 /* JXHookInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXHookInfo.m; sourceTree = "<group>"; };
+		565B35E51FE4203700A9EEA8 /* JXBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXBox.h; sourceTree = "<group>"; };
+		565B35E61FE4203700A9EEA8 /* JXFFIInterface.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXFFIInterface.m; sourceTree = "<group>"; };
+		565B35E71FE4203700A9EEA8 /* ObjectiveScript.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveScript.m; sourceTree = "<group>"; };
+		565B35E81FE4203700A9EEA8 /* JXFFIInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXFFIInterface.h; sourceTree = "<group>"; };
+		565B35E91FE4203800A9EEA8 /* JXJSInterop.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXJSInterop.m; sourceTree = "<group>"; };
+		565B35EA1FE4203800A9EEA8 /* JXHookInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXHookInfo.h; sourceTree = "<group>"; };
+		565B35EB1FE4203800A9EEA8 /* JXBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXBox.m; sourceTree = "<group>"; };
+		565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXJSInterop.h; sourceTree = "<group>"; };
+		565B36091FE4210E00A9EEA8 /* ffi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
+		565B360A1FE4210E00A9EEA8 /* fficonfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fficonfig.h; sourceTree = "<group>"; };
+		565B360B1FE4210E00A9EEA8 /* ffitarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
+		565B360D1FE4210E00A9EEA8 /* ffi_arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_arm64.h; sourceTree = "<group>"; };
+		565B360E1FE4210E00A9EEA8 /* ffi_armv7.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_armv7.h; sourceTree = "<group>"; };
+		565B360F1FE4210E00A9EEA8 /* ffi_i386.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_i386.h; sourceTree = "<group>"; };
+		565B36101FE4210E00A9EEA8 /* ffi_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_x86_64.h; sourceTree = "<group>"; };
+		565B36111FE4210E00A9EEA8 /* fficonfig_arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fficonfig_arm64.h; sourceTree = "<group>"; };
+		565B36121FE4210E00A9EEA8 /* fficonfig_armv7.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fficonfig_armv7.h; sourceTree = "<group>"; };
+		565B36131FE4210E00A9EEA8 /* fficonfig_i386.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fficonfig_i386.h; sourceTree = "<group>"; };
+		565B36141FE4210E00A9EEA8 /* fficonfig_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fficonfig_x86_64.h; sourceTree = "<group>"; };
+		565B36151FE4210E00A9EEA8 /* ffitarget_arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_arm64.h; sourceTree = "<group>"; };
+		565B36161FE4210E00A9EEA8 /* ffitarget_armv7.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_armv7.h; sourceTree = "<group>"; };
+		565B36171FE4210E00A9EEA8 /* ffitarget_i386.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_i386.h; sourceTree = "<group>"; };
+		565B36181FE4210E00A9EEA8 /* ffitarget_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
+		56A149B51FE50849008B6BED /* libffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libffi.a; sourceTree = "<group>"; };
+		56A149B81FE51F35008B6BED /* test.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = test.js; sourceTree = "<group>"; };
+		56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ObjectiveScriptTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveScriptTests.m; sourceTree = "<group>"; };
+		56A149C11FE53CA0008B6BED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		56A149C81FE552D1008B6BED /* app.objs */ = {isa = PBXFileReference; explicitFileType = sourcecode.javascript; fileEncoding = 4; path = app.objs; sourceTree = "<group>"; };
+		56D558E01FE4234A00CF5720 /* ObjectiveScript.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjectiveScript.h; sourceTree = "<group>"; };
+		56D558E21FE4345800CF5720 /* JXFFITypes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXFFITypes.m; sourceTree = "<group>"; };
+		56D558E41FE4345E00CF5720 /* JXFFITypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXFFITypes.h; sourceTree = "<group>"; };
+		56D5882D1FE43A3800CF5720 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
+		56D5882E1FE43A3800CF5720 /* helpers.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = helpers.js; sourceTree = "<group>"; };
+		56D5882F1FE43A3800CF5720 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+		56D588301FE43A3800CF5720 /* webpack.config.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = webpack.config.js; sourceTree = "<group>"; };
+		56D588311FE43A3800CF5720 /* syntax.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = syntax.js; sourceTree = "<group>"; };
+		56D5883C1FE4441300CF5720 /* ob.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ob.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		565B35D51FE41EF500A9EEA8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				56A149B61FE50849008B6BED /* libffi.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		56A149BA1FE53CA0008B6BED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				56A149C21FE53CA0008B6BED /* libObjectiveScript.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		565B35CF1FE41EF500A9EEA8 = {
+			isa = PBXGroup;
+			children = (
+				56D5882C1FE43A1500CF5720 /* objs-transpiler */,
+				565B35DA1FE41EF500A9EEA8 /* ObjectiveScript */,
+				56A149BE1FE53CA0008B6BED /* ObjectiveScriptTests */,
+				565B35D91FE41EF500A9EEA8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		565B35D91FE41EF500A9EEA8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */,
+				56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		565B35DA1FE41EF500A9EEA8 /* ObjectiveScript */ = {
+			isa = PBXGroup;
+			children = (
+				56A149B51FE50849008B6BED /* libffi.a */,
+				565B36071FE4210E00A9EEA8 /* include */,
+				565B35EA1FE4203800A9EEA8 /* JXHookInfo.h */,
+				565B35E41FE4203700A9EEA8 /* JXHookInfo.m */,
+				565B35E51FE4203700A9EEA8 /* JXBox.h */,
+				565B35EB1FE4203800A9EEA8 /* JXBox.m */,
+				565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */,
+				565B35E91FE4203800A9EEA8 /* JXJSInterop.m */,
+				56D558E41FE4345E00CF5720 /* JXFFITypes.h */,
+				56D558E21FE4345800CF5720 /* JXFFITypes.m */,
+				565B35E81FE4203700A9EEA8 /* JXFFIInterface.h */,
+				565B35E61FE4203700A9EEA8 /* JXFFIInterface.m */,
+				56D558E01FE4234A00CF5720 /* ObjectiveScript.h */,
+				565B35E71FE4203700A9EEA8 /* ObjectiveScript.m */,
+			);
+			path = ObjectiveScript;
+			sourceTree = "<group>";
+		};
+		565B36071FE4210E00A9EEA8 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				565B36081FE4210E00A9EEA8 /* darwin_common */,
+				565B360C1FE4210E00A9EEA8 /* darwin_ios */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		565B36081FE4210E00A9EEA8 /* darwin_common */ = {
+			isa = PBXGroup;
+			children = (
+				565B36091FE4210E00A9EEA8 /* ffi.h */,
+				565B360A1FE4210E00A9EEA8 /* fficonfig.h */,
+				565B360B1FE4210E00A9EEA8 /* ffitarget.h */,
+			);
+			path = darwin_common;
+			sourceTree = "<group>";
+		};
+		565B360C1FE4210E00A9EEA8 /* darwin_ios */ = {
+			isa = PBXGroup;
+			children = (
+				565B360D1FE4210E00A9EEA8 /* ffi_arm64.h */,
+				565B360E1FE4210E00A9EEA8 /* ffi_armv7.h */,
+				565B360F1FE4210E00A9EEA8 /* ffi_i386.h */,
+				565B36101FE4210E00A9EEA8 /* ffi_x86_64.h */,
+				565B36111FE4210E00A9EEA8 /* fficonfig_arm64.h */,
+				565B36121FE4210E00A9EEA8 /* fficonfig_armv7.h */,
+				565B36131FE4210E00A9EEA8 /* fficonfig_i386.h */,
+				565B36141FE4210E00A9EEA8 /* fficonfig_x86_64.h */,
+				565B36151FE4210E00A9EEA8 /* ffitarget_arm64.h */,
+				565B36161FE4210E00A9EEA8 /* ffitarget_armv7.h */,
+				565B36171FE4210E00A9EEA8 /* ffitarget_i386.h */,
+				565B36181FE4210E00A9EEA8 /* ffitarget_x86_64.h */,
+			);
+			path = darwin_ios;
+			sourceTree = "<group>";
+		};
+		56A149B71FE51F1B008B6BED /* test */ = {
+			isa = PBXGroup;
+			children = (
+				56A149B81FE51F35008B6BED /* test.js */,
+				56A149C81FE552D1008B6BED /* app.objs */,
+			);
+			path = test;
+			sourceTree = "<group>";
+		};
+		56A149BE1FE53CA0008B6BED /* ObjectiveScriptTests */ = {
+			isa = PBXGroup;
+			children = (
+				56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */,
+				56A149C11FE53CA0008B6BED /* Info.plist */,
+			);
+			path = ObjectiveScriptTests;
+			sourceTree = "<group>";
+		};
+		56D5882C1FE43A1500CF5720 /* objs-transpiler */ = {
+			isa = PBXGroup;
+			children = (
+				56D5882F1FE43A3800CF5720 /* index.js */,
+				56D588311FE43A3800CF5720 /* syntax.js */,
+				56D5882E1FE43A3800CF5720 /* helpers.js */,
+				56D588301FE43A3800CF5720 /* webpack.config.js */,
+				56D5882D1FE43A3800CF5720 /* package.json */,
+				56A149B71FE51F1B008B6BED /* test */,
+				56D5883C1FE4441300CF5720 /* ob.js */,
+			);
+			path = "objs-transpiler";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		56D588321FE43A8300CF5720 /* objs-transpiler */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "run \"build:$(ACTION)\"";
+			buildConfigurationList = 56D588331FE43A8300CF5720 /* Build configuration list for PBXLegacyTarget "objs-transpiler" */;
+			buildPhases = (
+			);
+			buildToolPath = npm;
+			buildWorkingDirectory = "${TARGET_NAME}";
+			dependencies = (
+			);
+			name = "objs-transpiler";
+			passBuildSettingsInEnvironment = 0;
+			productName = "objs-transpiler";
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXNativeTarget section */
+		565B35D71FE41EF500A9EEA8 /* ObjectiveScript */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 565B35E11FE41EF500A9EEA8 /* Build configuration list for PBXNativeTarget "ObjectiveScript" */;
+			buildPhases = (
+				565B35D41FE41EF500A9EEA8 /* Sources */,
+				565B35D51FE41EF500A9EEA8 /* Frameworks */,
+				565B35D61FE41EF500A9EEA8 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ObjectiveScript;
+			productName = ObjectiveScript;
+			productReference = 565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		56A149BC1FE53CA0008B6BED /* ObjectiveScriptTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 56A149C51FE53CA0008B6BED /* Build configuration list for PBXNativeTarget "ObjectiveScriptTests" */;
+			buildPhases = (
+				56A149B91FE53CA0008B6BED /* Sources */,
+				56A149BA1FE53CA0008B6BED /* Frameworks */,
+				56A149BB1FE53CA0008B6BED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				56A149C41FE53CA0008B6BED /* PBXTargetDependency */,
+			);
+			name = ObjectiveScriptTests;
+			productName = ObjectiveScriptTests;
+			productReference = 56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		565B35D01FE41EF500A9EEA8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0920;
+				ORGANIZATIONNAME = "Kabir Oberai";
+				TargetAttributes = {
+					565B35D71FE41EF500A9EEA8 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					56A149BC1FE53CA0008B6BED = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					56D588321FE43A8300CF5720 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 565B35D31FE41EF500A9EEA8 /* Build configuration list for PBXProject "ObjectiveScript" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 565B35CF1FE41EF500A9EEA8;
+			productRefGroup = 565B35D91FE41EF500A9EEA8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				565B35D71FE41EF500A9EEA8 /* ObjectiveScript */,
+				56D588321FE43A8300CF5720 /* objs-transpiler */,
+				56A149BC1FE53CA0008B6BED /* ObjectiveScriptTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		56A149BB1FE53CA0008B6BED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				56A149C91FE552D1008B6BED /* app.objs in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		565B35D41FE41EF500A9EEA8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565B35ED1FE4203800A9EEA8 /* JXHookInfo.m in Sources */,
+				565B35EE1FE4203800A9EEA8 /* JXFFIInterface.m in Sources */,
+				565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */,
+				56D558E31FE4345800CF5720 /* JXFFITypes.m in Sources */,
+				565B35F11FE4203800A9EEA8 /* JXBox.m in Sources */,
+				565B35F01FE4203800A9EEA8 /* JXJSInterop.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		56A149B91FE53CA0008B6BED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				56A149C01FE53CA0008B6BED /* ObjectiveScriptTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		56A149C41FE53CA0008B6BED /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 565B35D71FE41EF500A9EEA8 /* ObjectiveScript */;
+			targetProxy = 56A149C31FE53CA0008B6BED /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		565B35DF1FE41EF500A9EEA8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		565B35E01FE41EF500A9EEA8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		565B35E21FE41EF500A9EEA8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/ObjectiveScript/include/**";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ObjectiveScript",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		565B35E31FE41EF500A9EEA8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/ObjectiveScript/include/**";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ObjectiveScript",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		56A149C61FE53CA0008B6BED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				INFOPLIST_FILE = ObjectiveScriptTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kabiroberai.ObjectiveScriptTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		56A149C71FE53CA0008B6BED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				INFOPLIST_FILE = ObjectiveScriptTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kabiroberai.ObjectiveScriptTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		56D588341FE43A8300CF5720 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEBUGGING_SYMBOLS = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		56D588351FE43A8300CF5720 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		565B35D31FE41EF500A9EEA8 /* Build configuration list for PBXProject "ObjectiveScript" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565B35DF1FE41EF500A9EEA8 /* Debug */,
+				565B35E01FE41EF500A9EEA8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		565B35E11FE41EF500A9EEA8 /* Build configuration list for PBXNativeTarget "ObjectiveScript" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565B35E21FE41EF500A9EEA8 /* Debug */,
+				565B35E31FE41EF500A9EEA8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		56A149C51FE53CA0008B6BED /* Build configuration list for PBXNativeTarget "ObjectiveScriptTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56A149C61FE53CA0008B6BED /* Debug */,
+				56A149C71FE53CA0008B6BED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		56D588331FE43A8300CF5720 /* Build configuration list for PBXLegacyTarget "objs-transpiler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56D588341FE43A8300CF5720 /* Debug */,
+				56D588351FE43A8300CF5720 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 565B35D01FE41EF500A9EEA8 /* Project object */;
+}

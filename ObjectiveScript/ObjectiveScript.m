@@ -9,8 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import <objc/runtime.h>
-#import "JXFFIInterface.h"
+#import "JXRuntimeInterface.h"
+#import "JXStruct.h"
 #import "JXJSInterop.h"
+#import "Block.h"
 
 @interface NSInvocation (Hax)
 
@@ -21,35 +23,15 @@
 // [class : [ivar : key]]
 static NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSString *> *> *allAssociatedObjects;
 
-// Loop through the passed in args array and call `block` with each element, bridged to objc
-static void parseJSArgs(JSValue *args, NSMethodSignature *sig, void (^block)(int, void *)) {
-	if ([args isUndefined]) return;
-	int length = [args[@"length"] toUInt32];
-	for (int i = 0; i < length; i++) {
-		JSValue *arg = [args objectAtIndexedSubscript:i];
-		const char *type = [sig getArgumentTypeAtIndex:2+i];
-		JXConvertFromJSValue(arg, type, ^(void *ptr) {
-			// Pass in 2+i because each JSValue arg corresponds to the
-			// actual arg 2 indices further down (as 0 & 1 are self & _cmd)
-			block(2+i, ptr);
-		});
-	}
-}
-
-// Note: ret is lazily evaluated (i.e. if the ret val is void then it's not called)
-static JSValue *parseRet(NSMethodSignature *sig, JSContext *ctx, BOOL transferOwnership, void *(^ret)(void)) {
-	// If return type is void, return undefined
-	const char *returnType = sig.methodReturnType;
-	if (is(returnType, void)) return [JSValue valueWithUndefinedInContext:ctx];
-	
-	// Otherwise return a JSValue-wrapped ret
-	return _JXConvertToJSValue(ret(), returnType, ctx, transferOwnership);
-}
+static JSClassRef JXGlobalClass;
+static JSClassRef JXFunctionClass;
+JSClassRef JXObjectClass;
+JSClassRef JXAutoreleasingObjectClass;
 
 // iterate through the methods of JS dict `obj`
 static void iterateMethods(JSValue *dict, void (^iter)(JSValue *func, BOOL isClassMethod, SEL sel, NSString *sig)) {
 	// .context returns the JSContext of the JSValue
-	NSArray *methodNames = [[dict.context[@"Object"][@"keys"] callWithArguments:@[dict]] toArray];
+	NSArray *methodNames = JXKeysOfDict(dict);
 	// Loop through all names
 	for (NSString *methodName in methodNames) {
 		// Get the func associated with methodName
@@ -58,14 +40,8 @@ static void iterateMethods(JSValue *dict, void (^iter)(JSValue *func, BOOL isCla
 		// eg. v@:-viewDidload will result in isClassMethod=NO, components=["v@:", "viewDidLoad"]
 		BOOL isClassMethod = [methodName containsString:@"+"];
 		NSArray<NSString *> *components = [methodName componentsSeparatedByString:(isClassMethod ? @"+" : @"-")];
-		NSString *methodName;
-		NSString *sig = nil;
-		if (components.count == 1) { // no method signature (eg. -viewDidLoad)
-			methodName = components[0];
-		} else { // has method signature at start (eg. v@:-viewDidLoad)
-			sig = components[0];
-			methodName = components[1];
-		}
+		NSString *sig = components[0];
+		NSString *methodName = components[1];
 		
 		SEL sel = NSSelectorFromString(methodName);
 		iter(func, isClassMethod, sel, sig);
@@ -83,82 +59,212 @@ static void registerAssociatedObjects(NSDictionary<NSString *, NSString *> *asso
 	[dict addEntriesFromDictionary:associatedObjects];
 }
 
-// Use a single VM to support concurrency
-static JSVirtualMachine *vm;
+static NSString *stringFromJSStringRef(JSStringRef ref) {
+	CFStringRef cfName = JSStringCopyCFString(kCFAllocatorDefault, ref);
+	return (__bridge_transfer NSString *)cfName;
+}
 
-JSContext *JXCreateContext(void) {
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{
-		vm = [[JSVirtualMachine alloc] init];
-		allAssociatedObjects = [NSMutableDictionary new];
-	});
+static JSContext *contextFromJSContextRef(JSContextRef ref) {
+	JSGlobalContextRef global = JSContextGetGlobalContext(ref);
+	return [JSContext contextWithJSGlobalContextRef:global];
+}
+
+static const void *keyForAssociatedObject(NSString *name, id obj) {
+	NSString *key = allAssociatedObjects[NSStringFromClass([obj class])][name];
+	return (__bridge const void *)key;
+}
+
+// TODO: Fix ivar memory management (allow different OBJC_ASSOCIATIONs)
+
+// Intercept global getProperty calls to return a class with the name propertyName if there isn't an object by the same name
+static JSValueRef globalGetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS, JSValueRef *exception) {
+	NSString *propertyName = stringFromJSStringRef(propertyNameJS);
 	
-	JSContext *ctx = [[JSContext alloc] initWithVirtualMachine:vm];
-	ctx.exceptionHandler = ^(JSContext *ctx, JSValue *exception) {
-		NSLog(@"%@", exception);
+	// Skip any blacklisted properties to let JS handle them by returning NULL
+	// self is blacklisted to avoid unwanted recursion due to the currSelfJS statement below
+	NSArray<NSString *> *blacklist = @[@"Object", @"self"];
+	if ([blacklist containsObject:propertyName]) return NULL;
+	
+	JX_DEBUG(@"Searching for class %@", propertyName);
+	
+	JSContext *ctx = contextFromJSContextRef(ctxRef);
+	JSValue *currSelfJS = ctx[@"self"];
+	id currSelf = JXObjectFromJSValue(currSelfJS);
+	// can't check for currSelfJS.isUndefined because that's true when using JXObject
+	if (currSelf) {
+		const void *key = keyForAssociatedObject(propertyName, currSelf);
+		if (key) {
+			id obj = objc_getAssociatedObject(currSelf, key);
+			return JXObjectToJSValue(obj, ctx).JSValueRef;
+		}
+	}
+	
+	// Otherwise return the ObjC class named propertyName (if any)
+	Class cls = NSClassFromString(propertyName);
+	if (!cls) return NULL;
+	return JXObjectToJSValue(cls, ctx).JSValueRef;
+}
+
+static bool globalSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS,
+							  JSValueRef valueRef, JSValueRef *exception) {
+	NSString *propertyName = stringFromJSStringRef(propertyNameJS);
+	
+	// Skip any blacklisted properties to let JS handle them by returning NULL
+	NSArray<NSString *> *blacklist = @[@"Object"];
+	if ([blacklist containsObject:propertyName]) return false;
+	
+	JSContext *ctx = contextFromJSContextRef(ctxRef);
+	JSValue *currSelfJS = ctx[@"self"];
+	if (currSelfJS.isUndefined) return false;
+	JSValue *valueJS = [JSValue valueWithJSValueRef:valueRef inContext:ctx];
+	// otherwise treat propertyName as an ivar on currentSelf
+	id currSelf = JXObjectFromJSValue(currSelfJS);
+	const void *key = keyForAssociatedObject(propertyName, currSelf);
+	if (!key) return false;
+	id value = JXObjectFromJSValue(valueJS);
+	if (!value) return false;
+	objc_setAssociatedObject(currSelf, key, value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	return true;
+}
+
+// Returns a JXFunctionClass that holds the selector that was specified as propertyName
+// When JXFunctionClass is called as a function, it passes the selector, `this` (i.e. the JXObjectClass), and arguments to msgSend
+static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS, JSValueRef *exception) {
+	NSString *propertyName = stringFromJSStringRef(propertyNameJS);
+	
+	id __unsafe_unretained private = (__bridge id __unsafe_unretained)JSObjectGetPrivate(object);
+	
+	if ([private isKindOfClass:JXStruct.class]) {
+		JXStruct *jxStruct = (JXStruct *)private;
+		const char *type;
+		void *val = [jxStruct getValueAtIndex:propertyName.intValue type:&type];
+		JSContext *ctx = contextFromJSContextRef(ctxRef);
+		// memoryMode doesn't really matter here because structs can't contain objects (when using ARC)
+		JSValue *jsVal = JXConvertToJSValue(val, type, ctx, JXMemoryModeStrong);
+		return jsVal.JSValueRef;
+	}
+	
+	return JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)propertyName);
+}
+
+static void releasePrivate(JSObjectRef object) {
+	// We can't retrieve objects directly during finalize, so get the
+	// private val of the object and then call dealloc later, on the main queue
+	// TODO: Figure out if this causes any threading issues
+	void *private = JSObjectGetPrivate(object);
+	JX_DEBUG(@"Releasing %@", (__bridge id)private);
+	dispatch_async(dispatch_get_main_queue(), ^{
+		CFRelease(private);
+	});
+}
+
+static JSValueRef callAsFunction(JSContextRef jsCtx, JSObjectRef function, JSObjectRef objRef,
+						  size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
+	JSContext *ctx = contextFromJSContextRef(jsCtx);
+
+	JSValue *objJS = [JSValue valueWithJSValueRef:objRef inContext:ctx];
+	id obj = JXObjectFromJSValue(objJS);
+	
+	NSString *selName = (__bridge id)JSObjectGetPrivate(function);
+
+	JSValue *args = [JSValue valueWithNewArrayInContext:ctx];
+	for (size_t i = 0; i < argumentCount; i++) {
+		args[i] = [JSValue valueWithJSValueRef:arguments[i] inContext:ctx];
+	}
+	
+	BOOL isSuper = NO;
+	if ([selName hasPrefix:@"^"]) {
+		selName = [selName substringFromIndex:1];
+		isSuper = YES;
+	}
+	
+	// TODO: Add varargs support if possible (although even Swift-ObjC interop doesn't have it)
+	
+	size_t implicitArgs = argumentCount; // the number of trailing colons to add
+	// decrement the number of implicit colons every time we see one explicitly added
+	for (int i = 0; i < [selName lengthOfBytesUsingEncoding:NSUTF8StringEncoding]; i++) {
+		if ([selName characterAtIndex:i] == ':') implicitArgs--;
+	}
+	// add the final num of implicit colons to the end
+	selName = [selName stringByPaddingToLength:selName.length+implicitArgs withString:@":" startingAtIndex:0];
+	
+	Class cls = isSuper ? [NSClassFromString([ctx[@"clsName"] toString]) superclass] : [obj class];
+	
+	JSValue *jsVal;
+	@try {
+		jsVal = JXMsgSend(cls, ctx, obj, selName, args);
+	} @catch (NSException *e) {
+		*exception = JXConvertToError(e, ctx).JSValueRef;
+	}
+	return jsVal.JSValueRef;
+}
+
+static void setup() {
+	allAssociatedObjects = [NSMutableDictionary new];
+	
+	// https://code.google.com/archive/p/jscocoa/wikis/JavascriptCore.wiki
+	JSClassDefinition globalDef = kJSClassDefinitionEmpty;
+	globalDef.getProperty = globalGetProperty;
+	globalDef.setProperty = globalSetProperty;
+	JXGlobalClass = JSClassCreate(&globalDef);
+	
+	JSClassDefinition functionDef = kJSClassDefinitionEmpty;
+	functionDef.callAsFunction = callAsFunction;
+	functionDef.finalize = releasePrivate;
+	JXFunctionClass = JSClassCreate(&functionDef);
+	
+	JSClassDefinition objectDef = kJSClassDefinitionEmpty;
+	objectDef.getProperty = objectGetProperty;
+	JXObjectClass = JSClassCreate(&objectDef);
+	
+	JSClassDefinition autoreleasingObjectDef = kJSClassDefinitionEmpty;
+	autoreleasingObjectDef.parentClass = JXObjectClass;
+	autoreleasingObjectDef.finalize = releasePrivate;
+	JXAutoreleasingObjectClass = JSClassCreate(&autoreleasingObjectDef);
+}
+
+// Called when a custom block is copied
+static void copyHelper(struct JXBlockLiteral *dst, const struct JXBlockLiteral *src) {
+	_Block_object_assign(&dst->info, src->info, BLOCK_FIELD_IS_OBJECT);
+}
+
+// Called when a custom block is disposed
+static void disposeHelper(const struct JXBlockLiteral *src) {
+	free(src->descriptor);
+	_Block_object_dispose(src->info, BLOCK_FIELD_IS_OBJECT);
+}
+
+// non-static so that it can be tested
+JSContext *JXCreateContext() {
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{ setup(); });
+	
+	JSGlobalContextRef ctxRef = JSGlobalContextCreate(JXGlobalClass);
+	JSContext *ctx = [JSContext contextWithJSGlobalContextRef:ctxRef];
+	// ctx retains ctxRef, so we can release our ownership
+	JSGlobalContextRelease(ctxRef);
+	
+	ctx.exceptionHandler = ^(JSContext *ctx, JSValue *error) {
+		@throw JXConvertFromError(error);
 	};
 	
 	// For logging messages
 	ctx[@"NSLog"] = ^(JSValue *msg) {
-		NSLog(@"%@", JXObjectFromJSValue(msg));
+		NSLog(@"%@", [msg toString]);
 	};
-	
-	// Create a weak reference to ctx for use in the block
-	__weak JSContext *weakCtx = ctx;
 	
 	// Create the JS method hookClass(name: String, hooks: { String : Function })
 	ctx[@"hookClass"] = ^(NSString *clsName, NSDictionary<NSString *, NSString *> *associatedObjects, JSValue *hooks) {
 		Class cls = NSClassFromString(clsName);
 		registerAssociatedObjects(associatedObjects, clsName);
-		iterateMethods(hooks, ^(JSValue *func, BOOL isClassMethod, SEL sel, NSString *nilTypeSig) {
-			// (nilTypeSig will always be `nil`, so ignore it)
-			
-			// Get the method signature for interop to/from JSValue
-			NSMethodSignature *sig;
-			if (isClassMethod) {
-				sig = [cls methodSignatureForSelector:sel];
-			} else {
-				sig = [cls instanceMethodSignatureForSelector:sel];
-			}
-			
-			JXSwizzle(cls, isClassMethod, sel, ^(ffi_cif *cif, void *ret, void **args, OrigBlock orig) {
-				// First arg is self
-				id self = *(__unsafe_unretained id *)args[0];
-				
-				// Create a function that JS can call, to call the original method
-				id origJS = ^JSValue *(JSValue *argsJS) {
-					// Parse the args passed into origJS and populate the args array accordingly
-					parseJSArgs(argsJS, sig, ^(int i, void *val) {
-						memcpy(args[i], val, cif->arg_types[i]->size);
-					});
-					
-					// Call orig to and return a bridged return value
-					return parseRet(sig, weakCtx, NO, orig);
-				};
-				
-				// Construct an array of JSValue arguments to pass to the JS method,
-				// based on the original arguments passed by the callee
-				NSUInteger argc = sig.numberOfArguments;
-				NSMutableArray<JSValue *> *methodArgs = [NSMutableArray arrayWithCapacity:argc];
-				// first arg is the origJS function that we just made
-				methodArgs[0] = [JSValue valueWithObject:origJS inContext:weakCtx];
-				// second is self
-				methodArgs[1] = [JSValue valueWithObject:self inContext:weakCtx];
-				// the rest are the same as the original args that the method was called with
-				for (int i = 2; i < argc; i++) {
-					const char *type = [sig getArgumentTypeAtIndex:i];
-					methodArgs[i] = JXConvertToJSValue(args[i], type, weakCtx);
-				}
-				
-				// Call the method and get the modified return value
-				JSValue *jsRet = [func callWithArguments:methodArgs];
-				
-				// Set the original invocation's return to the modified return
-				JXConvertFromJSValue(jsRet, sig.methodReturnType, ^(void *val) {
-					memcpy(ret, val, cif->rtype->size);
-				});
+		@try {
+			iterateMethods(hooks, ^(JSValue *func, BOOL isClassMethod, SEL sel, NSString *sig) {
+				JXSwizzle(func, cls, isClassMethod, sel, sig);
 			});
-		});
+		} @catch (NSException *e) {
+			JSContext *ctx = [JSContext currentContext];
+			ctx.exception = JXConvertToError(e, ctx);
+		}
 	};
 	
 	ctx[@"defineClass"] = ^(NSString *clsName, NSString *superclsName,
@@ -174,88 +280,67 @@ JSContext *JXCreateContext(void) {
 			class_addProtocol(cls, protocol);
 		}
 		
-		// Register associated objects
-		registerAssociatedObjects(associatedObjects, clsName);
-		
 		// Add methods
 		iterateMethods(methods, ^(JSValue *func, BOOL isClassMethod, SEL sel, NSString *sig) {
 			const char *types = sig.UTF8String;
-			IMP imp = JXCreateImpFromJS(func, types);
-			class_addMethod(cls, sel, imp, types);
+			JXTrampInfo *info = JXCreateTramp(func, types, cls);
+			[info retainForever];
+			class_addMethod(cls, sel, info.tramp, types);
 		});
 		
 		// Register class
 		objc_registerClassPair(cls);
+		
+		// Register associated objects
+		registerAssociatedObjects(associatedObjects, clsName);
 	};
 	
-	ctx[@"_msgSend"] = ^JSValue *(BOOL callSuper, JSValue *jsObj, NSString *selName, JSValue *args) {
-		// Get the info required to construct an NSInvocation
-		id obj = JXObjectFromJSValue(jsObj);
-		SEL sel = NSSelectorFromString(selName);
-		if (!sel || !obj) return [JSValue valueWithUndefinedInContext:weakCtx];
-		NSMethodSignature *sig = [obj methodSignatureForSelector:sel];
-		NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
-		inv.target = obj;
+	ctx[@"defineBlock"] = ^JSValue *(NSString *sig, JSValue *func) {
+		JXTrampInfo *info = JXCreateTramp(func, sig.UTF8String, nil);
 		
-		// Set the args of the NSInvocation to the passed in ones
-		parseJSArgs(args, sig, ^(int i, void *val) {
-			[inv setArgument:val atIndex:i];
-		});
-		
-		// Handle `super` calls separately (start method search from superclass)
-		if (callSuper) {
-			// Get the superclass' implementation for the method
-			Method m = (object_isClass(obj) ? class_getClassMethod : class_getInstanceMethod)([obj superclass], sel);
-			IMP imp = method_getImplementation(m);
-			// Invoke inv using that imp
-			[inv invokeUsingIMP:imp];
-		} else {
-			// Otherwise, invoke using the regular imp
-			inv.selector = sel;
-			[inv invoke];
+		int flags = BLOCK_HAS_SIGNATURE | BLOCK_HAS_COPY_DISPOSE;
+		// TODO: check if sig has struct return
+		BOOL hasStret = NO;
+		if (hasStret) {
+			flags |= BLOCK_HAS_STRET;
 		}
 		
-		void *ret = malloc(sig.methodReturnLength);
+		struct JXBlockDescriptor *descriptor = malloc(sizeof(struct JXBlockDescriptor));
+		*descriptor = (struct JXBlockDescriptor) {
+			.size = sizeof(struct JXBlockLiteral),
+			.copyHelper = copyHelper,
+			.disposeHelper = disposeHelper,
+			.signature = info.types
+		};
 		
-		// https://github.com/bang590/JSPatch/wiki/How-JSPatch-works#ii-memery-leak (sic)
-		// (not sure exactly what this does, might have to figure out if it actually works)
-		BOOL transferOwnership =
-		[selName isEqualToString:@"alloc"] ||
-		[selName isEqualToString:@"new"] ||
-		[selName isEqualToString:@"copy"] ||
-		[selName isEqualToString:@"mutableCopy"];
+		struct JXBlockLiteral block = {
+			.isa = &_NSConcreteStackBlock,
+			.flags = flags,
+			.invoke = info.tramp,
+			.descriptor = descriptor,
+			.info = (__bridge CFTypeRef)info,
+		};
 		
-		JSValue *parsed = parseRet(sig, weakCtx, transferOwnership, ^void * {
-			[inv getReturnValue:ret];
-			return ret;
-		});
-		
-		free(ret);
-		
-		return parsed;
+		return JXObjectToJSValue((__bridge Block)&block, [JSContext currentContext]);
 	};
 	
-	ctx[@"cls"] = ^id(NSString *cls) {
-		return NSClassFromString(cls);
+	ctx[@"box"] = ^JSValue *(JSValue *val) {
+		id unboxedVal = JXObjectFromJSValue(val);
+		return JXObjectToJSValue(unboxedVal, [JSContext currentContext]);
 	};
 	
-	ctx[@"associatedObject"] = ^JSValue *(id obj, NSString *name, /* optional */ JSValue *value) {
-		NSString *type = allAssociatedObjects[NSStringFromClass([obj class])][name];
-		const void *key = (__bridge const void *)type;
-		if (!value.isUndefined) {
-			// If `ivar` is called with `value`, then set the associated object
-			objc_setAssociatedObject(obj, key, value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-			return [JSValue valueWithUndefinedInContext:weakCtx];
-		} else {
-			// If called without `value`, return the value of the ivar
-			return objc_getAssociatedObject(obj, key);
-		}
-		// Note: associated objects are stored directly as JSValues, because
-		// there isn't much point in converting them back and forth
+	ctx[@"unbox"] = ^id(JSValue *val) {
+		id obj = JXObjectFromJSValue(val);
+		// TODO: Can JXObjectClass values be preserved here?
+		return [obj copy];
 	};
-	
-	[ctx evaluateScript:@"msgSend=(obj,sel,...args)=>_msgSend(false,obj,sel,args)"];
-	[ctx evaluateScript:@"msgSendSuper=(obj,sel,...args)=>_msgSend(true,obj,sel,args)"];
 	
 	return ctx;
 }
+
+void JXRunScript(NSString *script, NSString *resourcesPath) {
+	JSContext *ctx = JXCreateContext();
+	ctx[@"resourcesPath"] = JXObjectToJSValue(resourcesPath, ctx);
+	[ctx evaluateScript:script];
+}
+

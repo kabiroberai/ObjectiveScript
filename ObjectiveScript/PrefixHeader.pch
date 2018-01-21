@@ -1,0 +1,28 @@
+//
+//  PrefixHeader.pch
+//  ObjectiveScript
+//
+//  Created by Kabir Oberai on 07/01/18.
+//  Copyright © 2018 Kabir Oberai. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+//// JX_STATIC un-static-ifies functions when testing
+//
+//#ifdef TEST
+//#define JX_STATIC
+//#else
+//#define JX_STATIC static
+//#endif
+
+//#define JX_VERBOSE
+
+#ifdef JX_VERBOSE
+#define JX_DEBUG(...) NSLog(__VA_ARGS__)
+#else
+#define JX_DEBUG(...)
+#endif // JX_VERBOSE
+
+#endif /* PrefixHeader_pch */

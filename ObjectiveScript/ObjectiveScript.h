@@ -9,4 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 
-JSContext *JXCreateContext(void);
+NS_ASSUME_NONNULL_BEGIN
+
+void JXRunScript(NSString *script, NSString * _Nullable resourcesPath);
+
+NS_ASSUME_NONNULL_END

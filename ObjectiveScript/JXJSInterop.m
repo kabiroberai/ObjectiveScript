@@ -9,49 +9,59 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import "JXJSInterop.h"
+#import "JXStruct.h"
+#import "JXFFITypes.h"
+#import "ObjectiveScript.h"
+#import "Block.h"
 
-#define isType(primitive) is(type, primitive)
+#define isType(primitive) (is(type, primitive))
 
-// [to|from]JSValue Inspired by Aspects and https://github.com/ReactiveCocoa/ReactiveCocoa/blob/db51e2bb2ceb7464db71b190cf133105e83dd378/ReactiveObjC/NSInvocation%2BRACTypeParsing.m
+JSClassRef JXAutoreleasingObjectClass;
+JSClassRef JXObjectClass;
 
-static const char *extractType(const char *type) {
-	switch (*type) {
-		case 'j':
-		case 'r':
-		case 'n':
-		case 'N':
-		case 'o':
-		case 'O':
-		case 'R':
-		case 'V': return extractType(++type);
-		default : return type;
+NSArray<NSString *> *JXKeysOfDict(JSValue *dict) {
+	return [[dict.context[@"Object"][@"keys"] callWithArguments:@[dict]] toArray];
+}
+
+NSException *JXCreateException(NSString *reason) {
+	return [NSException exceptionWithName:@"JXException" reason:reason userInfo:nil];
+}
+
+/// Create a JS error from an NSException
+JSValue *JXConvertToError(NSException *e, JSContext *ctx) {
+	NSString *message = [NSString stringWithFormat:@"%@: %@", e.name, e.reason];
+	JSValue *error = [JSValue valueWithNewErrorFromMessage:message inContext:ctx];
+	error[@"nsException"] = e;
+	return error;
+}
+
+/// Create an NSException from a JS error
+NSException *JXConvertFromError(JSValue *error) {
+	NSException *e = [error[@"nsException"] toObjectOfClass:NSException.class];
+	if (e) {
+		return e;
+	} else {
+		NSString *name = [error[@"name"] toString];
+		NSString *reason = [error[@"message"] toString];
+		return [NSException exceptionWithName:name reason:reason userInfo:nil];
 	}
 }
 
-JSValue *_JXConvertToJSValue(void *val, const char *rawType, JSContext *ctx, BOOL transferOwnership) {
-	if (val == nil) return nil;
+// JXConvert[To|From]JSValue Inspired by https://github.com/steipete/Aspects and https://github.com/ReactiveCocoa/ReactiveCocoa/blob/db51e2bb2ceb7464db71b190cf133105e83dd378/ReactiveObjC/NSInvocation%2BRACTypeParsing.m
+
+JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXMemoryMode memoryMode) {
+	if (val == NULL) return nil;
 	
-	const char *type = extractType(rawType);
+	JXRemoveQualifiers(&type);
 	id object;
 	
-#define cmpSet(primitive) else if (isType(primitive)) object = @(*(primitive *)val);
+#define retObj(obj) return [JSValue valueWithObject:obj inContext:ctx]
+#define cmpSet(primitive) else if (isType(primitive)) retObj(@(*(primitive *)val));
 #define cmpSetPair(primitive) cmpSet(primitive) cmpSet(unsigned primitive)
 	
-	// TODO: __unsafe_unretained/__strong/__weak/__autoreleasing here?
-	if (isType(id) || isType(Class) || isType(void (^)(void))) {
-		void *idVal = *(void **)val;
-		if (transferOwnership) {
-			object = (__bridge_transfer id)idVal;
-		} else {
-			object = (__bridge id)idVal;
-		}
-	}
-	//	else if (isType(void (^)(void))) object = [*(__unsafe_unretained id *)val copy]; // TODO: Maybe add this if needed?
-	else if (isType(SEL)) object = NSStringFromSelector(val);
-	// TODO: Add support for structs in general instead of just rect/size/point
-	else if (isType(CGRect)) return [JSValue valueWithRect:*(CGRect *)val inContext:ctx];
-	else if (isType(CGSize)) return [JSValue valueWithSize:*(CGSize *)val inContext:ctx];
-	else if (isType(CGPoint)) return [JSValue valueWithPoint:*(CGPoint *)val inContext:ctx];
+	if (isType(id) || isType(Class) || isType(Block)) object = *(id __unsafe_unretained *)val;
+	else if (isType(SEL)) retObj(NSStringFromSelector(val));
+	else if (*type == '{') object = [JXStruct structWithVal:val type:type];
 	cmpSet(char *)
 	cmpSetPair(char)
 	cmpSetPair(short)
@@ -66,24 +76,67 @@ JSValue *_JXConvertToJSValue(void *val, const char *rawType, JSContext *ctx, BOO
 #undef cmpSet
 #undef cmpSetPair
 	
-	// box object if it's a array/dict/string
-	if (isType(id)) {
-		object = [JXBox boxIfNeeded:object];
-	}
+	if (object == nil) return [JSValue valueWithNullInContext:ctx];
 	
-	return [JSValue valueWithObject:object inContext:ctx];
+	// Handle all other ObjC objects in a special manner, by wrapping them in JXObjectClass
+	void *bridged = (__bridge void *)object;
+	
+	BOOL retain = (memoryMode == JXMemoryModeStrong);
+	BOOL autorelease = (memoryMode != JXMemoryModeNone);
+	
+	if (retain) CFRetain(bridged);
+	JSObjectRef ref = JSObjectMake(ctx.JSGlobalContextRef, autorelease ? JXAutoreleasingObjectClass : JXObjectClass, bridged);
+	JX_DEBUG(@"<JSObjectRef: %p; memoryMode = %li; private = %@>", ref, (long)memoryMode, object);
+	return [JSValue valueWithJSValueRef:ref inContext:ctx];
 }
 
-void JXConvertFromJSValue(JSValue *value, const char *rawType, void (^block)(void *)) {
-	if (value.isUndefined) return;
+JSValue *JXObjectToJSValue(id val, JSContext *ctx) {
+	return JXConvertToJSValue(&val, @encode(id), ctx, JXMemoryModeStrong);
+}
+
+void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *)) {
+	JXRemoveQualifiers(&type);
 	
-	const char *type = extractType(rawType);
+	id obj;
 	
-	// Set obj to an unboxed object version of value
-	id obj = [JXBox unboxIfNeeded:[value toObject]];
-	// null in JS is passed to objc as NSNull, so convert it to nil
-	if ([obj isKindOfClass:NSNull.class]) obj = nil;
-	
+	JSContext *ctx = value.context;
+	JSContextRef ctxRef = ctx.JSGlobalContextRef;
+	JSValueRef valRef = value.JSValueRef;
+	if (JSValueIsObjectOfClass(ctxRef, valRef, JXObjectClass)) {
+		// If value is our JXObjectClass type, fetch it accordingly
+		JSObjectRef ref = JSValueToObject(ctxRef, valRef, nil);
+		obj = (__bridge id)JSObjectGetPrivate(ref);
+		// Otherwise, it's an ObjC JSValue
+	} else if (value.isUndefined) {
+		// if the JSValue is undefined, return
+		return;
+	} else if (value.isNull) {
+		// if the JSValue is null, set obj to nil
+		obj = nil;
+	} else if (value.isArray) {
+		// if it's a JS array, recursively convert it
+		uint32_t len = value[@"length"].toUInt32;
+		NSMutableArray *arr = [NSMutableArray arrayWithCapacity:len];
+		for (uint32_t i = 0; i < len; i++) {
+			arr[i] = JXObjectFromJSValue(value[i]);
+		}
+		// if not for __autoreleasing, immutableArr would be deallocated after method return
+		NSArray * __autoreleasing immutableArr = [arr copy];
+		obj = immutableArr;
+	} else if (!value.isDate && [value isInstanceOf:ctx[@"Object"]]) {
+		// if it's a JS dict, recursively convert it
+		NSArray<NSString *> *keys = JXKeysOfDict(value);
+		NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:keys.count];
+		for (NSString *key in keys) {
+			dict[key] = JXObjectFromJSValue(value[key]);
+		}
+		NSDictionary * __autoreleasing immutableDict = [dict copy];
+		obj = immutableDict;
+	} else {
+		// otherwise convert it from a native JS object
+		obj = [value toObject];
+	}
+
 	void *arg;
 	
 	// primitive = methodValue
@@ -96,27 +149,15 @@ void JXConvertFromJSValue(JSValue *value, const char *rawType, void (^block)(voi
 	// primitive = primitiveValue; unsigned primitive = unsignedValue
 #define cmpSetPair(primitive, Primitive) cmpSetType(primitive) cmpSet(unsigned primitive, unsigned##Primitive)
 	
-	if (isType(id) || isType(Class) || isType(void (^)(void))) arg = &obj;
-//	else if (isType(void (^)(void))) { // TODO: Figure out if this is needed
-//		id blck = [obj copy];
-//		arg = &blck;
-//	}
+	if (isType(id) || isType(Class) || isType(Block)) arg = &obj;
 	else if (isType(SEL)) {
 		SEL sel = NSSelectorFromString(obj);
 		arg = &sel;
 	} else if (isType(char *)) {
 		const char *str = [obj UTF8String];
 		arg = &str;
-	} else if (isType(CGRect)) {
-		// TODO: Add support for structs in general instead of just rect/size/point
-		CGRect val = [value toRect];
-		arg = &val;
-	} else if (isType(CGSize)) {
-		CGSize val = [value toSize];
-		arg = &val;
-	} else if (isType(CGPoint)) {
-		CGPoint val = [value toPoint];
-		arg = &val;
+	} else if (*type == '{') {
+		arg = [obj val];
 	}
 	cmpSetPair(char, Char)
 	cmpSetPair(short, Short)
@@ -132,6 +173,8 @@ void JXConvertFromJSValue(JSValue *value, const char *rawType, void (^block)(voi
 		arg = &val;
 	}
 	
+	// TODO: both `long` and `long long` turn into `q`, whereas `long` should become `l`. `long` seems to be the same as `int` though, so not sure what the point of supporting it is.
+	
 #undef cmpSet
 #undef cmpSetType
 #undef cmpSetPair
@@ -139,14 +182,10 @@ void JXConvertFromJSValue(JSValue *value, const char *rawType, void (^block)(voi
 	block(arg);
 }
 
-JSValue *JXConvertToJSValue(void *val, const char *rawType, JSContext *ctx) {
-	return _JXConvertToJSValue(val, rawType, ctx, NO);
-}
-
 id JXObjectFromJSValue(JSValue *value) {
 	__block id obj;
 	JXConvertFromJSValue(value, @encode(id), ^(void *ptr) {
-		obj = *(__autoreleasing id *)ptr;
+		obj = *(id __unsafe_unretained *)ptr;
 	});
 	return obj;
 }

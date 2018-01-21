@@ -11,7 +11,7 @@
 #import "JXFFITypes.h"
 
 // Strip any qualifiers from `type` (const, inout, etc)
-static void removeQualifiers(const char **type) {
+void JXRemoveQualifiers(const char **type) {
 	switch (**type) {
 		case 'j':
 		case 'r':
@@ -24,7 +24,7 @@ static void removeQualifiers(const char **type) {
 			// Advance the type str by 1
 			*type += 1;
 			// Remove any more qualifiers
-			removeQualifiers(type);
+			JXRemoveQualifiers(type);
 	}
 }
 
@@ -36,7 +36,7 @@ static ffi_type *ffiTypeForStructEncoding(const char **strippedEnc);
 // because when ffiTypeFor[Struct|Array]Encoding recursively calls this with strippedEnc,
 // it'll move it forward by the correct length, to the next value in the list
 static ffi_type *ffiTypeForEncoding(const char **enc) {
-	removeQualifiers(enc);
+	JXRemoveQualifiers(enc);
 	
 	// get the first (non-qualifier) char of enc
 	char first = **enc;
@@ -141,4 +141,57 @@ static ffi_type *ffiTypeForStructEncoding(const char **strippedEnc) {
 // Calls internal ffiTypeForEncoding with a pointer to enc
 ffi_type *JXFFITypeForEncoding(const char *enc) {
 	return ffiTypeForEncoding(&enc);
+}
+
+void JXFreeType(ffi_type *type) {
+	// don't free unless it's a struct
+	if (type->type != FFI_TYPE_STRUCT) return;
+	// first free all nested structs
+	for (ffi_type **el = type->elements; *el; el++) {
+		JXFreeType(*el);
+	}
+	// then free the elements array
+	free(type->elements);
+	// then free the struct itself
+	free(type);
+}
+
+void JXFreeClosure(ffi_closure *closure) {
+	ffi_cif *cif = closure->cif;
+	// free all struct args of cif
+	for (size_t i = 0; i < cif->nargs; i++) {
+		JXFreeType(cif->arg_types[i]);
+	}
+	// free the arg types array
+	free(cif->arg_types);
+	// free the rtype
+	JXFreeType(cif->rtype);
+	// free the cif itself
+	free(cif);
+	// free the closure
+	ffi_closure_free(closure);
+}
+
+const char *JXEncodingForFFIType(ffi_type *type) {
+#define cmpSet(t, v) else if (type == &ffi_type_##t) return @encode(v);
+#define cmpSetPair(t, v) cmpSet(s##t, v) cmpSet(u##t, unsigned v)
+	if (false);
+	cmpSetPair(int8, char)
+	cmpSetPair(int16, short)
+	cmpSetPair(int32, int)
+	cmpSetPair(int64, long long)
+	cmpSet(pointer, void *)
+	cmpSet(float, float)
+	cmpSet(double, double)
+	cmpSet(void, void)
+	else if (type->type == FFI_TYPE_STRUCT) {
+		NSMutableString *mutableStr = [@"{???=" mutableCopy];
+		for (size_t i = 0; type->elements[i]; i++) {
+			const char *enc = JXEncodingForFFIType(type->elements[i]);
+			[mutableStr appendString:[NSString stringWithUTF8String:enc]];
+		}
+		[mutableStr appendString:@"}"];
+		return mutableStr.UTF8String;
+	}
+	return NULL;
 }

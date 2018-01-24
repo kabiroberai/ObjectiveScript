@@ -325,14 +325,15 @@ JSContext *JXCreateContext() {
 	};
 	
 	ctx[@"box"] = ^JSValue *(JSValue *val) {
-		id unboxedVal = JXObjectFromJSValue(val);
-		return JXObjectToJSValue(unboxedVal, [JSContext currentContext]);
+		// takes advantage of the fact that JXObjectFromJSValue deep-converts native JS types
+		id obj = JXObjectFromJSValue(val);
+		// once the type has been turned into its objc counterpart, simply wrap
+		return JXObjectToJSValue(obj, [JSContext currentContext]);
 	};
 	
-	ctx[@"unbox"] = ^id(JSValue *val) {
+	ctx[@"unbox"] = ^JSValue *(JSValue *val) {
 		id obj = JXObjectFromJSValue(val);
-		// TODO: Can JXObjectClass values be preserved here?
-		return [obj copy];
+		return JXUnboxValue(obj, [JSContext currentContext]);
 	};
 	
 	return ctx;

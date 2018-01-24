@@ -94,6 +94,40 @@ JSValue *JXObjectToJSValue(id val, JSContext *ctx) {
 	return JXConvertToJSValue(&val, @encode(id), ctx, JXMemoryModeStrong);
 }
 
+// Returns a (relatively) lossless, native JS representation of `obj` if
+// possible. If there is no native representation, returns a wrapped object
+// as JXObjectToJSValue would.
+//
+// This function is helpful because calling +[JSValue valueWithObject:inContext:]
+// does not preserve JXObjectClass values that are embedded in arrays/dicts.
+JSValue *JXUnboxValue(id obj, JSContext *ctx) {
+	if ([obj isKindOfClass:NSArray.class]) {
+		// Deep convert arrays
+		NSArray *arr = (NSArray *)obj;
+		JSValue *jsArr = [JSValue valueWithNewArrayInContext:ctx];
+		for (NSUInteger i = 0; i < arr.count; i++) {
+			jsArr[i] = JXUnboxValue(arr[i], ctx);
+		}
+		return jsArr;
+	} else if ([obj isKindOfClass:NSDictionary.class]) {
+		// Deep convert dicts
+		NSDictionary *dict = (NSDictionary *)obj;
+		JSValue *jsDict = [JSValue valueWithNewObjectInContext:ctx];
+		for (NSString *key in dict) {
+			jsDict[key] = JXUnboxValue(dict[key], ctx);
+		}
+		return jsDict;
+	} else if ([obj isKindOfClass:NSString.class]) {
+		// Copy strings because if the string is mutable, JS won't like it
+		return [JSValue valueWithObject:[obj copy] inContext:ctx];
+	} else if ([obj isKindOfClass:NSDate.class] || [obj isKindOfClass:NSNumber.class]) {
+		return [JSValue valueWithObject:obj inContext:ctx];
+	} else {
+		// If it can't be losslessly converted, use JXObjectToJSValue as normal
+		return JXObjectToJSValue(obj, ctx);
+	}
+}
+
 void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *)) {
 	JXRemoveQualifiers(&type);
 	
@@ -156,7 +190,7 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
 	} else if (isType(char *)) {
 		const char *str = [obj UTF8String];
 		arg = &str;
-	} else if (*type == '{') {
+	} else if (*type == '{') { // obj is a JXStruct
 		arg = [obj val];
 	}
 	cmpSetPair(char, Char)

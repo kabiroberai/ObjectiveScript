@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		56002CF32019FEB400AFEA2C /* JXBlockInterop.m in Sources */ = {isa = PBXBuildFile; fileRef = 56002CF22019FEB400AFEA2C /* JXBlockInterop.m */; };
+		56002CF5201A012A00AFEA2C /* JXAssociatedObjects.m in Sources */ = {isa = PBXBuildFile; fileRef = 56002CF4201A012A00AFEA2C /* JXAssociatedObjects.m */; };
 		5616A8202018A5E7004DD204 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5616A81E2018A5C3004DD204 /* libffi.a */; };
 		565B35ED1FE4203800A9EEA8 /* JXTrampInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */; };
 		565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */; };
@@ -44,6 +46,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		56002CF22019FEB400AFEA2C /* JXBlockInterop.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXBlockInterop.m; sourceTree = "<group>"; };
+		56002CF4201A012A00AFEA2C /* JXAssociatedObjects.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXAssociatedObjects.m; sourceTree = "<group>"; };
+		56002CF6201A013200AFEA2C /* JXAssociatedObjects.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXAssociatedObjects.h; sourceTree = "<group>"; };
 		5616A80E2018A5C3004DD204 /* ffi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
 		5616A80F2018A5C3004DD204 /* fficonfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fficonfig.h; sourceTree = "<group>"; };
 		5616A8102018A5C3004DD204 /* ffitarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
@@ -60,7 +65,7 @@
 		5616A81C2018A5C3004DD204 /* ffitarget_i386.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_i386.h; sourceTree = "<group>"; };
 		5616A81D2018A5C3004DD204 /* ffitarget_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
 		5616A81E2018A5C3004DD204 /* libffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libffi.a; sourceTree = "<group>"; };
-		561ACF281FF3A1A100739CC6 /* Block.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Block.h; sourceTree = "<group>"; };
+		561ACF281FF3A1A100739CC6 /* JXBlockInterop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXBlockInterop.h; sourceTree = "<group>"; };
 		564A5ED2200238640089C69C /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libObjectiveScript.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTrampInfo.m; sourceTree = "<group>"; };
@@ -102,6 +107,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		56002CEF2019FDBD00AFEA2C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				565B35EA1FE4203800A9EEA8 /* JXTrampInfo.h */,
+				565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */,
+				567830962010803E00298EDC /* JXStruct.h */,
+				567830972010803E00298EDC /* JXStruct.m */,
+				56667B6D2019CB980032DFFF /* JXSymbol.h */,
+				56667B6E2019CB980032DFFF /* JXSymbol.m */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		56002CF02019FDD400AFEA2C /* Interop */ = {
+			isa = PBXGroup;
+			children = (
+				561ACF281FF3A1A100739CC6 /* JXBlockInterop.h */,
+				56002CF22019FEB400AFEA2C /* JXBlockInterop.m */,
+				56002CF6201A013200AFEA2C /* JXAssociatedObjects.h */,
+				56002CF4201A012A00AFEA2C /* JXAssociatedObjects.m */,
+				565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */,
+				565B35E91FE4203800A9EEA8 /* JXJSInterop.m */,
+				56D558E41FE4345E00CF5720 /* JXFFITypes.h */,
+				56D558E21FE4345800CF5720 /* JXFFITypes.m */,
+				565B35E81FE4203700A9EEA8 /* JXRuntimeInterface.h */,
+				565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */,
+			);
+			path = Interop;
+			sourceTree = "<group>";
+		};
 		5616A80B2018A5C3004DD204 /* vendored */ = {
 			isa = PBXGroup;
 			children = (
@@ -179,22 +214,11 @@
 		565B35DA1FE41EF500A9EEA8 /* ObjectiveScript */ = {
 			isa = PBXGroup;
 			children = (
-				564A5ED2200238640089C69C /* PrefixHeader.pch */,
-				561ACF281FF3A1A100739CC6 /* Block.h */,
-				565B35EA1FE4203800A9EEA8 /* JXTrampInfo.h */,
-				565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */,
-				567830962010803E00298EDC /* JXStruct.h */,
-				567830972010803E00298EDC /* JXStruct.m */,
-				56667B6D2019CB980032DFFF /* JXSymbol.h */,
-				56667B6E2019CB980032DFFF /* JXSymbol.m */,
-				565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */,
-				565B35E91FE4203800A9EEA8 /* JXJSInterop.m */,
-				56D558E41FE4345E00CF5720 /* JXFFITypes.h */,
-				56D558E21FE4345800CF5720 /* JXFFITypes.m */,
-				565B35E81FE4203700A9EEA8 /* JXRuntimeInterface.h */,
-				565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */,
+				56002CEF2019FDBD00AFEA2C /* Model */,
+				56002CF02019FDD400AFEA2C /* Interop */,
 				56D558E01FE4234A00CF5720 /* ObjectiveScript.h */,
 				565B35E71FE4203700A9EEA8 /* ObjectiveScript.m */,
+				564A5ED2200238640089C69C /* PrefixHeader.pch */,
 			);
 			path = ObjectiveScript;
 			sourceTree = "<group>";
@@ -299,12 +323,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				565B35ED1FE4203800A9EEA8 /* JXTrampInfo.m in Sources */,
+				56002CF32019FEB400AFEA2C /* JXBlockInterop.m in Sources */,
 				56667B6F2019CB980032DFFF /* JXSymbol.m in Sources */,
 				565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */,
 				565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */,
 				56D558E31FE4345800CF5720 /* JXFFITypes.m in Sources */,
 				565B35F01FE4203800A9EEA8 /* JXJSInterop.m in Sources */,
 				567830982010803E00298EDC /* JXStruct.m in Sources */,
+				56002CF5201A012A00AFEA2C /* JXAssociatedObjects.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,16 +14,14 @@
 #import "JXStruct.h"
 #import "JXSymbol.h"
 #import "JXJSInterop.h"
-#import "Block.h"
+#import "JXBlockInterop.h"
+#import "JXAssociatedObjects.h"
 
 @interface NSInvocation (Hax)
 
 - (void)invokeUsingIMP:(IMP)imp;
 
 @end
-
-// [class : [ivar : key]]
-static NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSString *> *> *allAssociatedObjects;
 
 static JSClassRef JXGlobalClass;
 static JSClassRef JXMethodClass;
@@ -51,17 +49,6 @@ static void iterateMethods(JSValue *dict, void (^iter)(JSValue *func, BOOL isCla
 	}
 }
 
-static void registerAssociatedObjects(NSDictionary<NSString *, NSString *> *associatedObjects, NSString *clsName) {
-	// Add associated object keys
-	// Get the existing keys for this class
-	NSMutableDictionary *dict = allAssociatedObjects[clsName];
-	if (!dict) {
-		dict = [NSMutableDictionary new];
-		allAssociatedObjects[clsName] = dict;
-	}
-	[dict addEntriesFromDictionary:associatedObjects];
-}
-
 static NSString *stringFromJSStringRef(JSStringRef ref) {
 	CFStringRef cfName = JSStringCopyCFString(kCFAllocatorDefault, ref);
 	return (__bridge_transfer NSString *)cfName;
@@ -70,11 +57,6 @@ static NSString *stringFromJSStringRef(JSStringRef ref) {
 static JSContext *contextFromJSContextRef(JSContextRef ref) {
 	JSGlobalContextRef global = JSContextGetGlobalContext(ref);
 	return [JSContext contextWithJSGlobalContextRef:global];
-}
-
-static const void *keyForAssociatedObject(NSString *name, id obj) {
-	NSString *key = allAssociatedObjects[NSStringFromClass([obj class])][name];
-	return (__bridge const void *)key;
 }
 
 // TODO: Fix ivar memory management (allow different OBJC_ASSOCIATIONs)
@@ -95,11 +77,8 @@ static JSValueRef globalGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
 	id currSelf = JXObjectFromJSValue(currSelfJS);
 	// can't check for currSelfJS.isUndefined because that's true when using JXObject
 	if (currSelf) {
-		const void *key = keyForAssociatedObject(propertyName, currSelf);
-		if (key) {
-			id obj = objc_getAssociatedObject(currSelf, key);
-			return JXObjectToJSValue(obj, ctx).JSValueRef;
-		}
+		id obj = JXGetAssociatedObject(propertyName, currSelf);
+		if (obj) return JXObjectToJSValue(obj, ctx).JSValueRef;
 	}
 	
 	// Otherwise return the ObjC class named propertyName (if any)
@@ -122,12 +101,8 @@ static bool globalSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
 	JSValue *valueJS = [JSValue valueWithJSValueRef:valueRef inContext:ctx];
 	// otherwise treat propertyName as an ivar on currentSelf
 	id currSelf = JXObjectFromJSValue(currSelfJS);
-	const void *key = keyForAssociatedObject(propertyName, currSelf);
-	if (!key) return false;
 	id value = JXObjectFromJSValue(valueJS);
-	if (!value) return false;
-	objc_setAssociatedObject(currSelf, key, value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-	return true;
+	return JXSetAssociatedObject(propertyName, currSelf, value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 // Returns a JXMethodClass that holds the selector that was specified as propertyName
@@ -219,8 +194,6 @@ static JSClassRef createClass(const char *name, void (^configure)(JSClassDefinit
 }
 
 static void setup() {
-	allAssociatedObjects = [NSMutableDictionary new];
-	
 	// https://code.google.com/archive/p/jscocoa/wikis/JavascriptCore.wiki
 	JXGlobalClass = createClass("OBJS", ^(JSClassDefinition *def) {
 		def->getProperty = globalGetProperty;
@@ -247,27 +220,7 @@ static void setup() {
 	});
 }
 
-// Called when a custom block is copied
-static void copyHelper(struct JXBlockLiteral *dst, const struct JXBlockLiteral *src) {
-	_Block_object_assign(&dst->info, src->info, BLOCK_FIELD_IS_OBJECT);
-}
-
-// Called when a custom block is disposed
-static void disposeHelper(const struct JXBlockLiteral *src) {
-	free(src->descriptor);
-	_Block_object_dispose(src->info, BLOCK_FIELD_IS_OBJECT);
-}
-
-// non-static so that it can be tested
-JSContext *JXCreateContext() {
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{ setup(); });
-	
-	JSGlobalContextRef ctxRef = JSGlobalContextCreate(JXGlobalClass);
-	JSContext *ctx = [JSContext contextWithJSGlobalContextRef:ctxRef];
-	// ctx retains ctxRef, so we can release our ownership
-	JSGlobalContextRelease(ctxRef);
-	
+static void configureContext(JSContext *ctx) {
 	ctx.exceptionHandler = ^(JSContext *ctx, JSValue *error) {
 		@throw JXConvertFromError(error);
 	};
@@ -280,7 +233,7 @@ JSContext *JXCreateContext() {
 	// Create the JS method hookClass(name: String, hooks: { String : Function })
 	ctx[@"hookClass"] = ^(NSString *clsName, NSDictionary<NSString *, NSString *> *associatedObjects, JSValue *hooks) {
 		Class cls = NSClassFromString(clsName);
-		registerAssociatedObjects(associatedObjects, clsName);
+		JXRegisterAssociatedObjects(associatedObjects, clsName);
 		@try {
 			iterateMethods(hooks, ^(JSValue *func, BOOL isClassMethod, SEL sel, NSString *sig) {
 				JXSwizzle(func, cls, isClassMethod, sel, sig);
@@ -316,36 +269,11 @@ JSContext *JXCreateContext() {
 		objc_registerClassPair(cls);
 		
 		// Register associated objects
-		registerAssociatedObjects(associatedObjects, clsName);
+		JXRegisterAssociatedObjects(associatedObjects, clsName);
 	};
 	
 	ctx[@"defineBlock"] = ^JSValue *(NSString *sig, JSValue *func) {
-		JXTrampInfo *info = JXCreateTramp(func, sig.UTF8String, nil);
-		
-		int flags = BLOCK_HAS_SIGNATURE | BLOCK_HAS_COPY_DISPOSE;
-		// TODO: check if sig has struct return
-		BOOL hasStret = NO;
-		if (hasStret) {
-			flags |= BLOCK_HAS_STRET;
-		}
-		
-		struct JXBlockDescriptor *descriptor = malloc(sizeof(struct JXBlockDescriptor));
-		*descriptor = (struct JXBlockDescriptor) {
-			.size = sizeof(struct JXBlockLiteral),
-			.copyHelper = copyHelper,
-			.disposeHelper = disposeHelper,
-			.signature = info.types
-		};
-		
-		struct JXBlockLiteral block = {
-			.isa = &_NSConcreteStackBlock,
-			.flags = flags,
-			.invoke = info.tramp,
-			.descriptor = descriptor,
-			.info = (__bridge CFTypeRef)info,
-		};
-		
-		return JXObjectToJSValue((__bridge Block)&block, [JSContext currentContext]);
+		return JXCreateBlock(sig, func);
 	};
 	
 	ctx[@"box"] = ^JSValue *(JSValue *val) {
@@ -365,18 +293,26 @@ JSContext *JXCreateContext() {
 		JSContextRef ctxRef = ctx.JSGlobalContextRef;
 		
 #define raiseExceptionIfNULL(val) if (!val) { \
-		NSException *e = JXCreateException([NSString stringWithUTF8String:dlerror()]); \
-		ctx.exception = JXConvertToError(e, ctx); \
-		return [JSValue valueWithUndefinedInContext:ctx]; \
+	NSException *e = JXCreateException([NSString stringWithUTF8String:dlerror()]); \
+	ctx.exception = JXConvertToError(e, ctx); \
+	return [JSValue valueWithUndefinedInContext:ctx]; \
 }
 		
-		// only allow the executable to be searched via `handle` (RTLD_LOCAL),
-		// and when searching don't check other images (RTLD_FIRST)
-		void *handle = library.isString ? dlopen([library toString].UTF8String, RTLD_LOCAL | RTLD_FIRST) : RTLD_DEFAULT;
-		raiseExceptionIfNULL(handle)
+		void *handle;
+		if (library.isString) {
+			const char *path = [library toString].UTF8String;
+			// only allow the executable to be searched via `handle` (RTLD_LOCAL),
+			// and when searching don't check other images (RTLD_FIRST)
+			handle = dlopen(path, RTLD_LOCAL | RTLD_FIRST);
+			raiseExceptionIfNULL(handle)
+		} else {
+			handle = RTLD_DEFAULT;
+		}
 		
 		void *sym = dlsym(handle, name.UTF8String);
 		raiseExceptionIfNULL(sym)
+		
+#undef raiseExceptionIfNULL
 		
 		JXSymbol *symbol = [[JXSymbol alloc] initWithSymbol:sym types:types];
 		JSObjectRef obj = JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)symbol);
@@ -385,6 +321,19 @@ JSContext *JXCreateContext() {
 		if (defineGlobally) ctx[name] = func;
 		return func;
 	};
+}
+
+// non-static so that it can be tested
+JSContext *JXCreateContext() {
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{ setup(); });
+	
+	JSGlobalContextRef ctxRef = JSGlobalContextCreate(JXGlobalClass);
+	JSContext *ctx = [JSContext contextWithJSGlobalContextRef:ctxRef];
+	// ctx retains ctxRef, so we can release our ownership
+	JSGlobalContextRelease(ctxRef);
+	
+	configureContext(ctx);
 	
 	return ctx;
 }

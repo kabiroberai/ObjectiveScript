@@ -42,3 +42,5 @@ enum {
 	BLOCK_FIELD_IS_WEAK     = 16,  // declared __weak, only used in byref copy helpers
 	BLOCK_BYREF_CALLER      = 128, // called from __block (byref) copy/dispose support routines.
 };
+
+JSValue *JXCreateBlock(NSString *sig, JSValue *func);

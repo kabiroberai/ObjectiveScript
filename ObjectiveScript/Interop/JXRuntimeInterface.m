@@ -14,7 +14,7 @@
 #import "JXJSInterop.h"
 #import "JXRuntimeInterface.h"
 #import "JXFFITypes.h"
-#import "Block.h"
+#import "JXBlockInterop.h"
 
 @interface NSInvocation (hacks)
 - (void)invokeUsingIMP:(IMP)imp;

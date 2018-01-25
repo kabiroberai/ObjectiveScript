@@ -12,7 +12,7 @@
 #import "JXStruct.h"
 #import "JXFFITypes.h"
 #import "ObjectiveScript.h"
-#import "Block.h"
+#import "JXBlockInterop.h"
 
 #define isType(primitive) (is(type, primitive))
 

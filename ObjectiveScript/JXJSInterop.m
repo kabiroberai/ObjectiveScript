@@ -38,13 +38,11 @@ JSValue *JXConvertToError(NSException *e, JSContext *ctx) {
 /// Create an NSException from a JS error
 NSException *JXConvertFromError(JSValue *error) {
 	NSException *e = [error[@"nsException"] toObjectOfClass:NSException.class];
-	if (e) {
-		return e;
-	} else {
-		NSString *name = [error[@"name"] toString];
-		NSString *reason = [error[@"message"] toString];
-		return [NSException exceptionWithName:name reason:reason userInfo:nil];
-	}
+	if (e) return e;
+	
+	NSString *name = [error[@"name"] toString];
+	NSString *reason = [error[@"message"] toString];
+	return [NSException exceptionWithName:name reason:reason userInfo:nil];
 }
 
 // JXConvert[To|From]JSValue Inspired by https://github.com/steipete/Aspects and https://github.com/ReactiveCocoa/ReactiveCocoa/blob/db51e2bb2ceb7464db71b190cf133105e83dd378/ReactiveObjC/NSInvocation%2BRACTypeParsing.m
@@ -168,7 +166,8 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
 		obj = immutableDict;
 	} else {
 		// otherwise convert it from a native JS object
-		obj = [value toObject];
+		id __autoreleasing valObj = [value toObject];
+		obj = valObj;
 	}
 
 	void *arg;
@@ -178,10 +177,8 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
 	primitive num = [(NSNumber*)obj method##Value]; \
 	arg = &num; \
 }
-	// primitive = primitiveValue
-#define cmpSetType(primitive) cmpSet(primitive, primitive)
 	// primitive = primitiveValue; unsigned primitive = unsignedValue
-#define cmpSetPair(primitive, Primitive) cmpSetType(primitive) cmpSet(unsigned primitive, unsigned##Primitive)
+#define cmpSetPair(primitive, Primitive) cmpSet(primitive, primitive) cmpSet(unsigned primitive, unsigned##Primitive)
 	
 	if (isType(id) || isType(Class) || isType(Block)) arg = &obj;
 	else if (isType(SEL)) {
@@ -199,8 +196,8 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
 	cmpSetPair(long, Long)
 	cmpSet(long long, longLong)
 	cmpSet(unsigned long long, unsignedLongLong)
-	cmpSetType(float)
-	cmpSetType(double)
+	cmpSet(float, float)
+	cmpSet(double, double)
 	cmpSet(bool, bool) // Otherwise method would be _BoolValue
 	else {
 		id val = nil;
@@ -222,4 +219,18 @@ id JXObjectFromJSValue(JSValue *value) {
 		obj = *(id __unsafe_unretained *)ptr;
 	});
 	return obj;
+}
+
+// TODO: Maybe create a JS `TypeWrapper` class that allows you to explicitly set a type.
+// If `value` is an instance of that, then return its supplied type.
+// Eg. { type: "i", value: 10 } returns "i"
+// Also, JXConvertFromJSValue should operate on TypeWrapper.value when a TypeWrapper is supplied
+const char *JXInferType(JSValue *value) {
+	// TODO: Create JXTypeWrapper or whatever, and uncomment this
+//	if (JSValueIsObjectOfClass(value.context.JSGlobalContextRef, value.JSValueRef, JXTypeWrapper)) {
+//		return [value[@"type"] toString].UTF8String;
+//	}
+	if (value.isBoolean) return @encode(BOOL);
+	else if (value.isNumber) return @encode(double);
+	else return @encode(id);
 }

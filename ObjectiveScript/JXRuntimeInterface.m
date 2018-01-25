@@ -146,6 +146,78 @@ JSValue *JXMsgSend(Class cls, JSContext *ctx, id obj, NSString *selName, JSValue
 	return parsed;
 }
 
+JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValueRef jsArgs[], JSContext *ctx) {
+	// Just checking if (nargs > nfixedargs) won't suffice because
+	// sometimes a variadic call may be made with no additional args.
+	// So if types ends with "...", let it indicate that it's variadic.
+	NSString *varSuffix = @"...";
+	BOOL isVariadic = [types hasSuffix:varSuffix];
+	if (isVariadic) {
+		// remove "..." from the end
+		types = [types substringToIndex:types.length-varSuffix.length];
+	}
+	
+	// Create an NSMethodSignature from `types`, and get its metadata.
+	NSMethodSignature *sig = [NSMethodSignature signatureWithObjCTypes:types.UTF8String];
+	const char *ret = sig.methodReturnType;
+	// `numberOfArguments` will be num of fixed args here because `types` only contains fixed arg types even if variadic
+	uint32_t nfixedargs = (uint32_t)sig.numberOfArguments;
+	ffi_type *rtype = JXFFITypeForEncoding(ret);
+	
+	// if variadic, guess the rest of the types based on the arguments, and append them to `sig`
+	if (isVariadic) {
+		NSMutableString *var = [NSMutableString stringWithCapacity:nargs-nfixedargs];
+		// start guessing from the first vararg supplied
+		for (uint32_t i = nfixedargs; i < nargs; i++) {
+			JSValue *val = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
+			const char *type = JXInferType(val);
+			[var appendString:[NSString stringWithUTF8String:type]];
+		}
+		NSString *fullTypes = [types stringByAppendingString:var];
+		sig = [NSMethodSignature signatureWithObjCTypes:fullTypes.UTF8String];
+	}
+	
+	ffi_type *args[nargs];
+	for (uint32_t i = 0; i < nargs; i++) {
+		args[i] = JXFFITypeForEncoding([sig getArgumentTypeAtIndex:i]);
+	}
+	
+	// create cif
+	ffi_cif cif;
+	if (isVariadic) {
+		ffi_prep_cif_var(&cif, FFI_DEFAULT_ABI, nfixedargs, nargs, rtype, args);
+	} else {
+		ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, rtype, args);
+	}
+	
+	// malloc a buffer large enough to hold rval
+	void *rval = malloc(rtype->size);
+	
+	// create an array of argument values
+	void *argvals[nargs];
+	for (uint32_t i = 0; i < nargs; i++) {
+		size_t argSize = args[i]->size;
+		// we can't assign to argvals[i] directly because the compiler doesn't like it, so make a temp var
+		__block void *_val = malloc(argSize);
+		JSValue *val = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
+		JXConvertFromJSValue(val, [sig getArgumentTypeAtIndex:i], ^(void *val) {
+			// copy val into the _val buffer
+			memcpy(_val, val, argSize);
+		});
+		argvals[i] = _val;
+	}
+	
+	ffi_call(&cif, sym, rval, argvals);
+	
+	JSValue *retVal = JXConvertToJSValue(rval, ret, ctx, JXMemoryModeStrong);
+	
+	// cleanup
+	free(rval);
+	for (uint32_t i = 0; i < nargs; i++) free(argvals[i]);
+	
+	return retVal;
+}
+
 void objc_msgSendSuper2(struct objc_super *super, SEL op, ...);
 
 // the generic implementation to use for js funcs
@@ -275,3 +347,4 @@ void JXSwizzle(JSValue *func, Class cls, BOOL isClassMethod, SEL sel, NSString *
 		method_setImplementation(m, info.tramp);
 	}
 }
+

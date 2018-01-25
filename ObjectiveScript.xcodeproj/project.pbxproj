@@ -12,6 +12,7 @@
 		565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */; };
 		565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E71FE4203700A9EEA8 /* ObjectiveScript.m */; };
 		565B35F01FE4203800A9EEA8 /* JXJSInterop.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E91FE4203800A9EEA8 /* JXJSInterop.m */; };
+		56667B6F2019CB980032DFFF /* JXSymbol.m in Sources */ = {isa = PBXBuildFile; fileRef = 56667B6E2019CB980032DFFF /* JXSymbol.m */; };
 		567830982010803E00298EDC /* JXStruct.m in Sources */ = {isa = PBXBuildFile; fileRef = 567830972010803E00298EDC /* JXStruct.m */; };
 		56A149C01FE53CA0008B6BED /* ObjectiveScriptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */; };
 		56A149C21FE53CA0008B6BED /* libObjectiveScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */; };
@@ -69,6 +70,8 @@
 		565B35E91FE4203800A9EEA8 /* JXJSInterop.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXJSInterop.m; sourceTree = "<group>"; };
 		565B35EA1FE4203800A9EEA8 /* JXTrampInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTrampInfo.h; sourceTree = "<group>"; };
 		565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXJSInterop.h; sourceTree = "<group>"; };
+		56667B6D2019CB980032DFFF /* JXSymbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXSymbol.h; sourceTree = "<group>"; };
+		56667B6E2019CB980032DFFF /* JXSymbol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXSymbol.m; sourceTree = "<group>"; };
 		567830962010803E00298EDC /* JXStruct.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXStruct.h; sourceTree = "<group>"; };
 		567830972010803E00298EDC /* JXStruct.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXStruct.m; sourceTree = "<group>"; };
 		56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ObjectiveScriptTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -182,6 +185,8 @@
 				565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */,
 				567830962010803E00298EDC /* JXStruct.h */,
 				567830972010803E00298EDC /* JXStruct.m */,
+				56667B6D2019CB980032DFFF /* JXSymbol.h */,
+				56667B6E2019CB980032DFFF /* JXSymbol.m */,
 				565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */,
 				565B35E91FE4203800A9EEA8 /* JXJSInterop.m */,
 				56D558E41FE4345E00CF5720 /* JXFFITypes.h */,
@@ -294,6 +299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				565B35ED1FE4203800A9EEA8 /* JXTrampInfo.m in Sources */,
+				56667B6F2019CB980032DFFF /* JXSymbol.m in Sources */,
 				565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */,
 				565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */,
 				56D558E31FE4345800CF5720 /* JXFFITypes.m in Sources */,

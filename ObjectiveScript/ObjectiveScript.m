@@ -9,8 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import <objc/runtime.h>
+#import <dlfcn.h>
 #import "JXRuntimeInterface.h"
 #import "JXStruct.h"
+#import "JXSymbol.h"
 #import "JXJSInterop.h"
 #import "Block.h"
 
@@ -24,6 +26,7 @@
 static NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSString *> *> *allAssociatedObjects;
 
 static JSClassRef JXGlobalClass;
+static JSClassRef JXMethodClass;
 static JSClassRef JXFunctionClass;
 JSClassRef JXObjectClass;
 JSClassRef JXAutoreleasingObjectClass;
@@ -127,8 +130,8 @@ static bool globalSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
 	return true;
 }
 
-// Returns a JXFunctionClass that holds the selector that was specified as propertyName
-// When JXFunctionClass is called as a function, it passes the selector, `this` (i.e. the JXObjectClass), and arguments to msgSend
+// Returns a JXMethodClass that holds the selector that was specified as propertyName
+// When JXMethodClass is called as a function, it passes the selector, `this` (i.e. the JXObjectClass), and arguments to msgSend
 static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS, JSValueRef *exception) {
 	NSString *propertyName = stringFromJSStringRef(propertyNameJS);
 	
@@ -144,7 +147,7 @@ static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
 		return jsVal.JSValueRef;
 	}
 	
-	return JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)propertyName);
+	return JSObjectMake(ctxRef, JXMethodClass, (__bridge_retained void *)propertyName);
 }
 
 static void releasePrivate(JSObjectRef object) {
@@ -158,7 +161,7 @@ static void releasePrivate(JSObjectRef object) {
 	});
 }
 
-static JSValueRef callAsFunction(JSContextRef jsCtx, JSObjectRef function, JSObjectRef objRef,
+static JSValueRef callAsMethod(JSContextRef jsCtx, JSObjectRef function, JSObjectRef objRef,
 						  size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
 	JSContext *ctx = contextFromJSContextRef(jsCtx);
 
@@ -199,28 +202,49 @@ static JSValueRef callAsFunction(JSContextRef jsCtx, JSObjectRef function, JSObj
 	return jsVal.JSValueRef;
 }
 
+static JSValueRef callAsFunction(JSContextRef ctxRef, JSObjectRef function, JSObjectRef objRef,
+							   size_t nargs, const JSValueRef arguments[], JSValueRef *exception) {
+	JSContext *ctx = contextFromJSContextRef(ctxRef);
+	
+	JXSymbol *private = (__bridge id)JSObjectGetPrivate(function);
+	
+	return JXCallFunction(private.symbol, private.types, (uint32_t)nargs, arguments, ctx).JSValueRef;
+}
+
+static JSClassRef createClass(const char *name, void (^configure)(JSClassDefinition *)) {
+	JSClassDefinition def = kJSClassDefinitionEmpty;
+	def.className = name;
+	configure(&def);
+	return JSClassCreate(&def);
+}
+
 static void setup() {
 	allAssociatedObjects = [NSMutableDictionary new];
 	
 	// https://code.google.com/archive/p/jscocoa/wikis/JavascriptCore.wiki
-	JSClassDefinition globalDef = kJSClassDefinitionEmpty;
-	globalDef.getProperty = globalGetProperty;
-	globalDef.setProperty = globalSetProperty;
-	JXGlobalClass = JSClassCreate(&globalDef);
+	JXGlobalClass = createClass("OBJS", ^(JSClassDefinition *def) {
+		def->getProperty = globalGetProperty;
+		def->setProperty = globalSetProperty;
+	});
 	
-	JSClassDefinition functionDef = kJSClassDefinitionEmpty;
-	functionDef.callAsFunction = callAsFunction;
-	functionDef.finalize = releasePrivate;
-	JXFunctionClass = JSClassCreate(&functionDef);
+	JXMethodClass = createClass("JXMethod", ^(JSClassDefinition *def) {
+		def->callAsFunction = callAsMethod;
+		def->finalize = releasePrivate;
+	});
 	
-	JSClassDefinition objectDef = kJSClassDefinitionEmpty;
-	objectDef.getProperty = objectGetProperty;
-	JXObjectClass = JSClassCreate(&objectDef);
+	JXFunctionClass = createClass("JXFunction", ^(JSClassDefinition *def) {
+		def->callAsFunction = callAsFunction;
+		def->finalize = releasePrivate;
+	});
 	
-	JSClassDefinition autoreleasingObjectDef = kJSClassDefinitionEmpty;
-	autoreleasingObjectDef.parentClass = JXObjectClass;
-	autoreleasingObjectDef.finalize = releasePrivate;
-	JXAutoreleasingObjectClass = JSClassCreate(&autoreleasingObjectDef);
+	JXObjectClass = createClass("JXObject", ^(JSClassDefinition *def) {
+		def->getProperty = objectGetProperty;
+	});
+	
+	JXAutoreleasingObjectClass = createClass("JXAutoreleasingObject", ^(JSClassDefinition *def) {
+		def->parentClass = JXObjectClass;
+		def->finalize = releasePrivate;
+	});
 }
 
 // Called when a custom block is copied
@@ -334,6 +358,32 @@ JSContext *JXCreateContext() {
 	ctx[@"unbox"] = ^JSValue *(JSValue *val) {
 		id obj = JXObjectFromJSValue(val);
 		return JXUnboxValue(obj, [JSContext currentContext]);
+	};
+	
+	ctx[@"defineFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL defineGlobally, JSValue *library) {
+		JSContext *ctx = [JSContext currentContext];
+		JSContextRef ctxRef = ctx.JSGlobalContextRef;
+		
+#define raiseExceptionIfNULL(val) if (!val) { \
+		NSException *e = JXCreateException([NSString stringWithUTF8String:dlerror()]); \
+		ctx.exception = JXConvertToError(e, ctx); \
+		return [JSValue valueWithUndefinedInContext:ctx]; \
+}
+		
+		// only allow the executable to be searched via `handle` (RTLD_LOCAL),
+		// and when searching don't check other images (RTLD_FIRST)
+		void *handle = library.isString ? dlopen([library toString].UTF8String, RTLD_LOCAL | RTLD_FIRST) : RTLD_DEFAULT;
+		raiseExceptionIfNULL(handle)
+		
+		void *sym = dlsym(handle, name.UTF8String);
+		raiseExceptionIfNULL(sym)
+		
+		JXSymbol *symbol = [[JXSymbol alloc] initWithSymbol:sym types:types];
+		JSObjectRef obj = JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)symbol);
+		
+		JSValue *func = [JSValue valueWithJSValueRef:obj inContext:ctx];
+		if (defineGlobally) ctx[name] = func;
+		return func;
 	};
 	
 	return ctx;

@@ -141,7 +141,7 @@ JSValue *JXMsgSend(Class cls, JSContext *ctx, id obj, NSString *selName, JSValue
 		free(ret);
 	}
 	
-	JX_DEBUG(@"Returning: %@", parsed);
+	JX_DEBUG(@"Returning: %p", parsed);
 	
 	return parsed;
 }
@@ -163,7 +163,7 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 	// `numberOfArguments` will be num of fixed args here because `types` only contains fixed arg types even if variadic
 	uint32_t nfixedargs = (uint32_t)sig.numberOfArguments;
 	ffi_type *rtype = JXFFITypeForEncoding(ret);
-	
+
 	// if variadic, guess the rest of the types based on the arguments, and append them to `sig`
 	if (isVariadic) {
 		NSMutableString *var = [NSMutableString stringWithCapacity:nargs-nfixedargs];
@@ -176,12 +176,12 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 		NSString *fullTypes = [types stringByAppendingString:var];
 		sig = [NSMethodSignature signatureWithObjCTypes:fullTypes.UTF8String];
 	}
-	
+
 	ffi_type *args[nargs];
 	for (uint32_t i = 0; i < nargs; i++) {
 		args[i] = JXFFITypeForEncoding([sig getArgumentTypeAtIndex:i]);
 	}
-	
+
 	// create cif
 	ffi_cif cif;
 	if (isVariadic) {
@@ -189,10 +189,10 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 	} else {
 		ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, rtype, args);
 	}
-	
+
 	// malloc a buffer large enough to hold rval
 	void *rval = malloc(rtype->size);
-	
+
 	// create an array of argument values
 	void *argvals[nargs];
 	for (uint32_t i = 0; i < nargs; i++) {
@@ -206,15 +206,15 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 		});
 		argvals[i] = _val;
 	}
-	
+
 	ffi_call(&cif, sym, rval, argvals);
-	
+
 	JSValue *retVal = JXConvertToJSValue(rval, ret, ctx, JXMemoryModeStrong);
-	
+
 	// cleanup
 	free(rval);
 	for (uint32_t i = 0; i < nargs; i++) free(argvals[i]);
-	
+
 	return retVal;
 }
 

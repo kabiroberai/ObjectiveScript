@@ -32,10 +32,10 @@ NSException *JXConvertFromError(JSValue *error);
 JSValue * _Nullable JXConvertToJSValue(void *val, const char *rawType, JSContext *ctx, JXMemoryMode memoryMode);
 JSValue * _Nullable JXObjectToJSValue(id _Nullable val, JSContext *ctx);
 
-JSValue * _Nullable JXUnboxValue(id _Nullable obj, JSContext *ctx);
-
 void JXConvertFromJSValue(JSValue *value, const char *rawType, void (^block)(void *));
 id _Nullable JXObjectFromJSValue(JSValue *value);
+
+JSValue * _Nullable JXUnboxValue(id _Nullable obj, JSContext *ctx);
 
 const char *JXInferType(JSValue *value);
 

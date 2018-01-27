@@ -51,45 +51,143 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXMemor
 	if (val == NULL) return nil;
 	
 	JXRemoveQualifiers(&type);
-	id object;
 	
-#define retObj(obj) return [JSValue valueWithObject:obj inContext:ctx]
-#define cmpSet(primitive) else if (isType(primitive)) retObj(@(*(primitive *)val));
-#define cmpSetPair(primitive) cmpSet(primitive) cmpSet(unsigned primitive)
+	id obj;
 	
-	if (isType(id) || isType(Class) || isType(Block)) object = *(id __unsafe_unretained *)val;
-	else if (isType(SEL)) retObj(NSStringFromSelector(val));
-	else if (*type == '{') object = [JXStruct structWithVal:val type:type];
-	cmpSet(char *)
-	cmpSetPair(char)
-	cmpSetPair(short)
-	cmpSetPair(int)
-	cmpSetPair(long)
-	cmpSetPair(long long)
-	cmpSet(float)
-	cmpSet(double)
-	cmpSet(bool)
+#define as(type) (*(type *)(val))
+
+#define retWrapped(obj) return JXObjectToJSValue(obj, ctx, memoryMode);
+#define retRaw(obj) return [JSValue valueWithObject:obj inContext:ctx];
+
+#define retIf(primitive) else if (isType(primitive)) retRaw(@(as(primitive)))
+#define retIfPair(primitive) retIf(primitive) retIf(unsigned primitive)
+	
+	if (isType(id) || isType(Class) || isType(Block)) obj = as(id __unsafe_unretained);
+	else if (*type == '{') obj = [JXStruct structWithVal:val type:type];
+	else if (isType(SEL)) retRaw(NSStringFromSelector(as(SEL)))
+	retIf(char *)
+	retIf(float)
+	retIf(double)
+	retIf(bool)
+	retIfPair(char)
+	retIfPair(short)
+	retIfPair(int)
+	retIfPair(long long)
 	else return [JSValue valueWithUndefinedInContext:ctx];
 	
-#undef cmpSet
-#undef cmpSetPair
+#undef as
+#undef retWrapped
+#undef retRaw
+#undef retIf
+#undef retIfPair
 	
-	if (object == nil) return [JSValue valueWithNullInContext:ctx];
+	if (obj == nil) return [JSValue valueWithNullInContext:ctx];
 	
-	// Handle all other ObjC objects in a special manner, by wrapping them in JXObjectClass
-	void *bridged = (__bridge void *)object;
+	// Handle ObjC objects in a special manner, by wrapping them in JXObjectClass
+	void *bridged = (__bridge void *)obj;
 	
 	BOOL retain = (memoryMode == JXMemoryModeStrong);
 	BOOL autorelease = (memoryMode != JXMemoryModeNone);
 	
 	if (retain) CFRetain(bridged);
 	JSObjectRef ref = JSObjectMake(ctx.JSGlobalContextRef, autorelease ? JXAutoreleasingObjectClass : JXObjectClass, bridged);
-	JX_DEBUG(@"<JSObjectRef: %p; memoryMode = %li; private = %@>", ref, (long)memoryMode, object);
+	JX_DEBUG(@"<JSObjectRef: %p; memoryMode = %li; private = %p>", ref, (long)memoryMode, obj);
 	return [JSValue valueWithJSValueRef:ref inContext:ctx];
 }
 
 JSValue *JXObjectToJSValue(id val, JSContext *ctx) {
 	return JXConvertToJSValue(&val, @encode(id), ctx, JXMemoryModeStrong);
+}
+
+void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *)) {
+	JXRemoveQualifiers(&type);
+	
+	// primitive = methodValue
+#define cmpSet(primitive, method) else if (isType(primitive)) { \
+	primitive num = [[value toObject] method##Value]; \
+	block(&num); \
+}
+	// primitive = primitiveValue; unsigned primitive = unsignedValue
+#define cmpSetPair(primitive, Primitive) cmpSet(primitive, primitive) cmpSet(unsigned primitive, unsigned##Primitive)
+	
+	// if not for __autoreleasing, `val` would be deallocated after method return
+#define setAutoreleasing(val) id __autoreleasing immutable_##__LINE__ = val; obj = immutable_##__LINE__;
+	
+	if (isType(id) || isType(Class) || isType(Block)) {
+		id obj;
+		
+		JSContext *ctx = value.context;
+		JSContextRef ctxRef = ctx.JSGlobalContextRef;
+		JSValueRef valRef = value.JSValueRef;
+		
+		if (JSValueIsObjectOfClass(ctxRef, valRef, JXObjectClass)) {
+			// If value is our JXObjectClass type, fetch it accordingly
+			JSObjectRef ref = JSValueToObject(ctxRef, valRef, nil);
+			obj = (__bridge id)JSObjectGetPrivate(ref);
+			// Otherwise, it's an ObjC JSValue
+		} else if (value.isNull) {
+			// if the JSValue is null, return nil
+			obj = nil;
+		} else if (value.isString) {
+			setAutoreleasing([value toString]);
+		} else if (value.isDate) {
+			setAutoreleasing([value toDate]);
+		} else if (value.isArray) {
+			// if it's a JS array, recursively convert it
+			uint32_t len = value[@"length"].toUInt32;
+			NSMutableArray *arr = [NSMutableArray arrayWithCapacity:len];
+			for (uint32_t i = 0; i < len; i++) {
+				arr[i] = JXObjectFromJSValue(value[i]);
+			}
+			setAutoreleasing([arr copy]);
+		} else if (value.isObject) {
+			// if it's a JS dict, recursively convert it
+			NSArray<NSString *> *keys = JXKeysOfDict(value);
+			NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:keys.count];
+			for (NSString *key in keys) {
+				dict[key] = JXObjectFromJSValue(value[key]);
+			}
+			setAutoreleasing([dict copy])
+		} else {
+			// otherwise convert it from a native JS object
+			setAutoreleasing([value toObject])
+		}
+		block(&obj);
+	} else if (isType(SEL)) {
+		SEL sel = NSSelectorFromString([value toString]);
+		block(&sel);
+	} else if (isType(char *)) {
+		const char *str = [value toString].UTF8String;
+		block(&str);
+	} else if (*type == '{') { // obj is a JXStruct
+		JXStruct *obj = JXObjectFromJSValue(value);
+		// already a void *, don't pass memory address
+		block(obj.val);
+	}
+	cmpSetPair(char, Char)
+	cmpSetPair(short, Short)
+	cmpSetPair(int, Int)
+	cmpSet(long long, longLong)
+	cmpSet(unsigned long long, unsignedLongLong)
+	cmpSet(float, float)
+	cmpSet(double, double)
+	cmpSet(bool, bool) // Otherwise method would be _BoolValue
+	else {
+		id val = nil;
+		block(&val);
+	}
+	
+#undef cmpSet
+#undef cmpSetType
+#undef cmpSetPair
+}
+
+id JXObjectFromJSValue(JSValue *value) {
+	__block id obj;
+	JXConvertFromJSValue(value, @encode(id), ^(void *ptr) {
+		obj = *(id __unsafe_unretained *)ptr;
+	});
+	return obj;
 }
 
 // Returns a (relatively) lossless, native JS representation of `obj` if
@@ -124,101 +222,6 @@ JSValue *JXUnboxValue(id obj, JSContext *ctx) {
 		// If it can't be losslessly converted, use JXObjectToJSValue as normal
 		return JXObjectToJSValue(obj, ctx);
 	}
-}
-
-void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *)) {
-	JXRemoveQualifiers(&type);
-	
-	id obj;
-	
-	JSContext *ctx = value.context;
-	JSContextRef ctxRef = ctx.JSGlobalContextRef;
-	JSValueRef valRef = value.JSValueRef;
-	if (JSValueIsObjectOfClass(ctxRef, valRef, JXObjectClass)) {
-		// If value is our JXObjectClass type, fetch it accordingly
-		JSObjectRef ref = JSValueToObject(ctxRef, valRef, nil);
-		obj = (__bridge id)JSObjectGetPrivate(ref);
-		// Otherwise, it's an ObjC JSValue
-	} else if (value.isUndefined) {
-		// if the JSValue is undefined, return
-		return;
-	} else if (value.isNull) {
-		// if the JSValue is null, set obj to nil
-		obj = nil;
-	} else if (value.isArray) {
-		// if it's a JS array, recursively convert it
-		uint32_t len = value[@"length"].toUInt32;
-		NSMutableArray *arr = [NSMutableArray arrayWithCapacity:len];
-		for (uint32_t i = 0; i < len; i++) {
-			arr[i] = JXObjectFromJSValue(value[i]);
-		}
-		// if not for __autoreleasing, immutableArr would be deallocated after method return
-		NSArray * __autoreleasing immutableArr = [arr copy];
-		obj = immutableArr;
-	} else if (!value.isDate && [value isInstanceOf:ctx[@"Object"]]) {
-		// if it's a JS dict, recursively convert it
-		NSArray<NSString *> *keys = JXKeysOfDict(value);
-		NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:keys.count];
-		for (NSString *key in keys) {
-			dict[key] = JXObjectFromJSValue(value[key]);
-		}
-		NSDictionary * __autoreleasing immutableDict = [dict copy];
-		obj = immutableDict;
-	} else {
-		// otherwise convert it from a native JS object
-		id __autoreleasing valObj = [value toObject];
-		obj = valObj;
-	}
-
-	void *arg;
-	
-	// primitive = methodValue
-#define cmpSet(primitive, method) else if (isType(primitive)) { \
-	primitive num = [(NSNumber*)obj method##Value]; \
-	arg = &num; \
-}
-	// primitive = primitiveValue; unsigned primitive = unsignedValue
-#define cmpSetPair(primitive, Primitive) cmpSet(primitive, primitive) cmpSet(unsigned primitive, unsigned##Primitive)
-	
-	if (isType(id) || isType(Class) || isType(Block)) arg = &obj;
-	else if (isType(SEL)) {
-		SEL sel = NSSelectorFromString(obj);
-		arg = &sel;
-	} else if (isType(char *)) {
-		const char *str = [obj UTF8String];
-		arg = &str;
-	} else if (*type == '{') { // obj is a JXStruct
-		arg = [obj val];
-	}
-	cmpSetPair(char, Char)
-	cmpSetPair(short, Short)
-	cmpSetPair(int, Int)
-	cmpSetPair(long, Long)
-	cmpSet(long long, longLong)
-	cmpSet(unsigned long long, unsignedLongLong)
-	cmpSet(float, float)
-	cmpSet(double, double)
-	cmpSet(bool, bool) // Otherwise method would be _BoolValue
-	else {
-		id val = nil;
-		arg = &val;
-	}
-	
-	// TODO: both `long` and `long long` turn into `q`, whereas `long` should become `l`. `long` seems to be the same as `int` though, so not sure what the point of supporting it is.
-	
-#undef cmpSet
-#undef cmpSetType
-#undef cmpSetPair
-	
-	block(arg);
-}
-
-id JXObjectFromJSValue(JSValue *value) {
-	__block id obj;
-	JXConvertFromJSValue(value, @encode(id), ^(void *ptr) {
-		obj = *(id __unsafe_unretained *)ptr;
-	});
-	return obj;
 }
 
 // TODO: Maybe create a JS `TypeWrapper` class that allows you to explicitly set a type.

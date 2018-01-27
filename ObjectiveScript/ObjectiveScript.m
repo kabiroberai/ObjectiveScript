@@ -288,7 +288,7 @@ static void configureContext(JSContext *ctx) {
 		return JXUnboxValue(obj, [JSContext currentContext]);
 	};
 	
-	ctx[@"defineFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL defineGlobally, JSValue *library) {
+	ctx[@"loadFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL defineGlobally, JSValue *library) {
 		JSContext *ctx = [JSContext currentContext];
 		JSContextRef ctxRef = ctx.JSGlobalContextRef;
 		

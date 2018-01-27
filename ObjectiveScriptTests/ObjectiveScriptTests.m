@@ -35,6 +35,30 @@ JSContext *JXCreateContext(void);
 	XCTAssertNotNil(_ctx, @"ctx is nil");
 }
 
+- (void)testNativePerformance {
+	[self measureBlock:^{
+		for (int i = 0; i < 1000000; i++) strcmp("hello", "henlo");
+	}];
+}
+
+- (void)testJSPerformance {
+	JSContext *ctx = JXCreateContext();
+	[ctx evaluateScript:@"loadFunc('strcmp', 'i**', true);"];
+	
+	[self measureBlock:^{
+		[ctx evaluateScript:@"for (var i = 0; i < 10000; i++) strcmp('hello', 'henlo');"];
+	}];
+}
+
+- (void)testHookPerformance {
+	JSContext *ctx = JXCreateContext();
+	[self measureBlock:^{
+		for (int i = 0; i < 200; i++) {
+			[ctx evaluateScript:@"hookClass('UIViewController', {}, { 'v@:B-viewDidAppear:':function(){} })"];
+		}
+	}];
+}
+
 // TODO: Add more tests
 
 @end

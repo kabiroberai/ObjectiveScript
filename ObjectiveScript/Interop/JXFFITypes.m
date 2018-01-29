@@ -188,7 +188,7 @@ const char *JXEncodingForFFIType(ffi_type *type) {
 		NSMutableString *mutableStr = [@"{???=" mutableCopy];
 		for (size_t i = 0; type->elements[i]; i++) {
 			const char *enc = JXEncodingForFFIType(type->elements[i]);
-			[mutableStr appendString:[NSString stringWithUTF8String:enc]];
+			[mutableStr appendString:@(enc)];
 		}
 		[mutableStr appendString:@"}"];
 		return mutableStr.UTF8String;

@@ -171,7 +171,7 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 		for (uint32_t i = nfixedargs; i < nargs; i++) {
 			JSValue *val = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
 			const char *type = JXInferType(val);
-			[var appendString:[NSString stringWithUTF8String:type]];
+			[var appendString:@(type)];
 		}
 		NSString *fullTypes = [types stringByAppendingString:var];
 		sig = [NSMethodSignature signatureWithObjCTypes:fullTypes.UTF8String];

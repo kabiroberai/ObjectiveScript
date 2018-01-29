@@ -293,7 +293,7 @@ static void configureContext(JSContext *ctx) {
 		JSContextRef ctxRef = ctx.JSGlobalContextRef;
 		
 #define raiseExceptionIfNULL(val) if (!val) { \
-	NSException *e = JXCreateException([NSString stringWithUTF8String:dlerror()]); \
+	NSException *e = JXCreateException(@(dlerror())); \
 	ctx.exception = JXConvertToError(e, ctx); \
 	return [JSValue valueWithUndefinedInContext:ctx]; \
 }

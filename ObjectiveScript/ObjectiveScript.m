@@ -16,6 +16,8 @@
 #import "JXJSInterop.h"
 #import "JXBlockInterop.h"
 #import "JXAssociatedObjects.h"
+#import "JXType.h"
+#import "JXPointer.h"
 
 @interface NSInvocation (Hax)
 
@@ -67,9 +69,9 @@ static JSValueRef globalGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
 	
 	// Skip any blacklisted properties to let JS handle them by returning NULL
 	// self is blacklisted to avoid unwanted recursion due to the currSelfJS statement below
-	NSArray<NSString *> *blacklist = @[@"Object", @"self"];
+	NSArray<NSString *> *blacklist = @[@"Object", @"self", @"JXPointer"];
 	if ([blacklist containsObject:propertyName]) return NULL;
-	
+
 	JX_DEBUG(@"Searching for class %@", propertyName);
 	
 	JSContext *ctx = contextFromJSContextRef(ctxRef);
@@ -111,18 +113,30 @@ static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
 	NSString *propertyName = stringFromJSStringRef(propertyNameJS);
 	
 	id __unsafe_unretained private = (__bridge id __unsafe_unretained)JSObjectGetPrivate(object);
-	
-	if ([private isKindOfClass:JXStruct.class]) {
-		JXStruct *jxStruct = (JXStruct *)private;
-		const char *type;
-		void *val = [jxStruct getValueAtIndex:propertyName.intValue type:&type];
-		JSContext *ctx = contextFromJSContextRef(ctxRef);
-		// memoryMode doesn't really matter here because structs can't contain objects (when using ARC)
-		JSValue *jsVal = JXConvertToJSValue(val, type, ctx, JXMemoryModeStrong);
-		return jsVal.JSValueRef;
-	}
+    // if the object implements custom JS KVC behaviour (eg a JXStruct for withType), forward the request to it
+    if ([private conformsToProtocol:@protocol(JXKVC)]) {
+        JSContext *ctx = contextFromJSContextRef(ctxRef);
+        JSValue *val = [private jsPropertyForKey:propertyName ctx:ctx];
+        if (val) return val.JSValueRef;
+        else return [JSValue valueWithUndefinedInContext:ctx].JSValueRef;
+    }
 	
 	return JSObjectMake(ctxRef, JXMethodClass, (__bridge_retained void *)propertyName);
+}
+
+static bool objectSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS,
+                              JSValueRef valueRef, JSValueRef *exception) {
+    NSString *propertyName = stringFromJSStringRef(propertyNameJS);
+
+    id __unsafe_unretained private = (__bridge id __unsafe_unretained)JSObjectGetPrivate(object);
+    if ([private conformsToProtocol:@protocol(JXKVC)] && [private respondsToSelector:@selector(setJSProperty:forKey:ctx:)]) {
+        JSContext *ctx = contextFromJSContextRef(ctxRef);
+        JSValue *property = [JSValue valueWithJSValueRef:valueRef inContext:ctx];
+        [private setJSProperty:property forKey:propertyName ctx:ctx];
+        return true;
+    }
+
+    return false;
 }
 
 static void releasePrivate(JSObjectRef object) {
@@ -136,8 +150,10 @@ static void releasePrivate(JSObjectRef object) {
 	});
 }
 
-static JSValueRef callAsMethod(JSContextRef jsCtx, JSObjectRef function, JSObjectRef objRef,
+static JSValueRef methodCall(JSContextRef jsCtx, JSObjectRef function, JSObjectRef objRef,
 						  size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
+    // cleans up selector name, and then calls JXCallMethod
+
 	JSContext *ctx = contextFromJSContextRef(jsCtx);
 
 	JSValue *objJS = [JSValue valueWithJSValueRef:objRef inContext:ctx];
@@ -170,14 +186,14 @@ static JSValueRef callAsMethod(JSContextRef jsCtx, JSObjectRef function, JSObjec
 	
 	JSValue *jsVal;
 	@try {
-		jsVal = JXMsgSend(cls, ctx, obj, selName, args);
+		jsVal = JXCallMethod(cls, ctx, obj, selName, args);
 	} @catch (NSException *e) {
 		*exception = JXConvertToError(e, ctx).JSValueRef;
 	}
 	return jsVal.JSValueRef;
 }
 
-static JSValueRef callAsFunction(JSContextRef ctxRef, JSObjectRef function, JSObjectRef objRef,
+static JSValueRef functionCall(JSContextRef ctxRef, JSObjectRef function, JSObjectRef objRef,
 							   size_t nargs, const JSValueRef arguments[], JSValueRef *exception) {
 	JSContext *ctx = contextFromJSContextRef(ctxRef);
 	
@@ -201,17 +217,18 @@ static void setup() {
 	});
 	
 	JXMethodClass = createClass("JXMethod", ^(JSClassDefinition *def) {
-		def->callAsFunction = callAsMethod;
+		def->callAsFunction = methodCall;
 		def->finalize = releasePrivate;
 	});
 	
 	JXFunctionClass = createClass("JXFunction", ^(JSClassDefinition *def) {
-		def->callAsFunction = callAsFunction;
+		def->callAsFunction = functionCall;
 		def->finalize = releasePrivate;
 	});
 	
 	JXObjectClass = createClass("JXObject", ^(JSClassDefinition *def) {
 		def->getProperty = objectGetProperty;
+        def->setProperty = objectSetProperty;
 	});
 	
 	JXAutoreleasingObjectClass = createClass("JXAutoreleasingObject", ^(JSClassDefinition *def) {
@@ -288,7 +305,7 @@ static void configureContext(JSContext *ctx) {
 		return JXUnboxValue(obj, [JSContext currentContext]);
 	};
 	
-	ctx[@"loadFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL defineGlobally, JSValue *library) {
+	ctx[@"loadFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL returnOnly, JSValue *library) {
 		JSContext *ctx = [JSContext currentContext];
 		JSContextRef ctxRef = ctx.JSGlobalContextRef;
 		
@@ -297,7 +314,7 @@ static void configureContext(JSContext *ctx) {
 	ctx.exception = JXConvertToError(e, ctx); \
 	return [JSValue valueWithUndefinedInContext:ctx]; \
 }
-		
+
 		void *handle;
 		if (library.isString) {
 			const char *path = [library toString].UTF8String;
@@ -318,9 +335,17 @@ static void configureContext(JSContext *ctx) {
 		JSObjectRef obj = JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)symbol);
 		
 		JSValue *func = [JSValue valueWithJSValueRef:obj inContext:ctx];
-		if (defineGlobally) ctx[name] = func;
+		if (!returnOnly) ctx[name] = func;
 		return func;
 	};
+
+    ctx[@"Pointer"] = ^JSValue *(NSString *enc) {
+        // equivalent to loadFunc("malloc", "^vQ", false)(loadFunc("JXSizeForEncoding", "Q*", false)(enc)).withType(enc);
+        void *ptr = malloc(JXSizeForEncoding(enc.UTF8String));
+        const char *fullType = [@"^" stringByAppendingString:enc].UTF8String;
+        return JXConvertToJSValue(&ptr, fullType, [JSContext currentContext], JXInteropOptionRetain | JXInteropOptionAutorelease);
+    };
+
 }
 
 // non-static so that it can be tested

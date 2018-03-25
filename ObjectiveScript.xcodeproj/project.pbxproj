@@ -9,17 +9,29 @@
 /* Begin PBXBuildFile section */
 		56002CF32019FEB400AFEA2C /* JXBlockInterop.m in Sources */ = {isa = PBXBuildFile; fileRef = 56002CF22019FEB400AFEA2C /* JXBlockInterop.m */; };
 		56002CF5201A012A00AFEA2C /* JXAssociatedObjects.m in Sources */ = {isa = PBXBuildFile; fileRef = 56002CF4201A012A00AFEA2C /* JXAssociatedObjects.m */; };
+		560C069C20541E1000CE992C /* JXBasicType.m in Sources */ = {isa = PBXBuildFile; fileRef = 560C069B20541E1000CE992C /* JXBasicType.m */; };
+		560E02142066DC9000D73F28 /* JXArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 560E02132066DC9000D73F28 /* JXArray.m */; };
 		5616A8202018A5E7004DD204 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5616A81E2018A5C3004DD204 /* libffi.a */; };
+		561BCE3A2053E6B5002165F4 /* JXType.m in Sources */ = {isa = PBXBuildFile; fileRef = 561BCE392053E6B5002165F4 /* JXType.m */; };
+		56374B06205D07000068FDAB /* JXTypeDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 56374B05205D07000068FDAB /* JXTypeDescription.m */; };
 		565B35ED1FE4203800A9EEA8 /* JXTrampInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */; };
 		565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */; };
 		565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E71FE4203700A9EEA8 /* ObjectiveScript.m */; };
 		565B35F01FE4203800A9EEA8 /* JXJSInterop.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E91FE4203800A9EEA8 /* JXJSInterop.m */; };
+		565D299920568225003D7E83 /* JXBitFieldType.m in Sources */ = {isa = PBXBuildFile; fileRef = 565D299820568225003D7E83 /* JXBitFieldType.m */; };
+		565D299C20568DFF003D7E83 /* JXTypeQualifiers.m in Sources */ = {isa = PBXBuildFile; fileRef = 565D299B20568DFF003D7E83 /* JXTypeQualifiers.m */; };
 		56667B6F2019CB980032DFFF /* JXSymbol.m in Sources */ = {isa = PBXBuildFile; fileRef = 56667B6E2019CB980032DFFF /* JXSymbol.m */; };
+		566F05DE204E99570088199B /* JXPointer.m in Sources */ = {isa = PBXBuildFile; fileRef = 566F05DD204E99570088199B /* JXPointer.m */; };
+		5677DF5520550B8900891379 /* JXIDType.m in Sources */ = {isa = PBXBuildFile; fileRef = 5677DF5420550B8900891379 /* JXIDType.m */; };
 		567830982010803E00298EDC /* JXStruct.m in Sources */ = {isa = PBXBuildFile; fileRef = 567830972010803E00298EDC /* JXStruct.m */; };
 		56A149C01FE53CA0008B6BED /* ObjectiveScriptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */; };
 		56A149C21FE53CA0008B6BED /* libObjectiveScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */; };
+		56AF99862055968200F58032 /* JXComplexType.m in Sources */ = {isa = PBXBuildFile; fileRef = 56AF99852055968200F58032 /* JXComplexType.m */; };
+		56AF998920559A6700F58032 /* JXUnionType.m in Sources */ = {isa = PBXBuildFile; fileRef = 56AF998820559A6700F58032 /* JXUnionType.m */; };
+		56B357932054399A00B73EBA /* JXStructType.m in Sources */ = {isa = PBXBuildFile; fileRef = 56B357922054399A00B73EBA /* JXStructType.m */; };
+		56B35796205441C700B73EBA /* JXArrayType.m in Sources */ = {isa = PBXBuildFile; fileRef = 56B35795205441C700B73EBA /* JXArrayType.m */; };
+		56B35799205445EB00B73EBA /* JXPointerType.m in Sources */ = {isa = PBXBuildFile; fileRef = 56B35798205445EB00B73EBA /* JXPointerType.m */; };
 		56D558E11FE4252A00CF5720 /* ObjectiveScript.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56D558E01FE4234A00CF5720 /* ObjectiveScript.h */; };
-		56D558E31FE4345800CF5720 /* JXFFITypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 56D558E21FE4345800CF5720 /* JXFFITypes.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +61,10 @@
 		56002CF22019FEB400AFEA2C /* JXBlockInterop.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXBlockInterop.m; sourceTree = "<group>"; };
 		56002CF4201A012A00AFEA2C /* JXAssociatedObjects.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXAssociatedObjects.m; sourceTree = "<group>"; };
 		56002CF6201A013200AFEA2C /* JXAssociatedObjects.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXAssociatedObjects.h; sourceTree = "<group>"; };
+		560C069A20541E1000CE992C /* JXBasicType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXBasicType.h; sourceTree = "<group>"; };
+		560C069B20541E1000CE992C /* JXBasicType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXBasicType.m; sourceTree = "<group>"; };
+		560E02122066DC9000D73F28 /* JXArray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXArray.h; sourceTree = "<group>"; };
+		560E02132066DC9000D73F28 /* JXArray.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXArray.m; sourceTree = "<group>"; };
 		5616A80E2018A5C3004DD204 /* ffi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
 		5616A80F2018A5C3004DD204 /* fficonfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fficonfig.h; sourceTree = "<group>"; };
 		5616A8102018A5C3004DD204 /* ffitarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
@@ -66,6 +82,10 @@
 		5616A81D2018A5C3004DD204 /* ffitarget_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
 		5616A81E2018A5C3004DD204 /* libffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libffi.a; sourceTree = "<group>"; };
 		561ACF281FF3A1A100739CC6 /* JXBlockInterop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXBlockInterop.h; sourceTree = "<group>"; };
+		561BCE382053E6B5002165F4 /* JXType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXType.h; sourceTree = "<group>"; };
+		561BCE392053E6B5002165F4 /* JXType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXType.m; sourceTree = "<group>"; };
+		56374B04205D07000068FDAB /* JXTypeDescription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeDescription.h; sourceTree = "<group>"; };
+		56374B05205D07000068FDAB /* JXTypeDescription.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeDescription.m; sourceTree = "<group>"; };
 		564A5ED2200238640089C69C /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libObjectiveScript.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTrampInfo.m; sourceTree = "<group>"; };
@@ -75,16 +95,33 @@
 		565B35E91FE4203800A9EEA8 /* JXJSInterop.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXJSInterop.m; sourceTree = "<group>"; };
 		565B35EA1FE4203800A9EEA8 /* JXTrampInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTrampInfo.h; sourceTree = "<group>"; };
 		565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXJSInterop.h; sourceTree = "<group>"; };
+		565D299720568225003D7E83 /* JXBitFieldType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXBitFieldType.h; sourceTree = "<group>"; };
+		565D299820568225003D7E83 /* JXBitFieldType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXBitFieldType.m; sourceTree = "<group>"; };
+		565D299A20568DCC003D7E83 /* JXTypeQualifiers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeQualifiers.h; sourceTree = "<group>"; };
+		565D299B20568DFF003D7E83 /* JXTypeQualifiers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeQualifiers.m; sourceTree = "<group>"; };
 		56667B6D2019CB980032DFFF /* JXSymbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXSymbol.h; sourceTree = "<group>"; };
 		56667B6E2019CB980032DFFF /* JXSymbol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXSymbol.m; sourceTree = "<group>"; };
+		566F05DC204E99570088199B /* JXPointer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXPointer.h; sourceTree = "<group>"; };
+		566F05DD204E99570088199B /* JXPointer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXPointer.m; sourceTree = "<group>"; };
+		5677DF5320550B8900891379 /* JXIDType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXIDType.h; sourceTree = "<group>"; };
+		5677DF5420550B8900891379 /* JXIDType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXIDType.m; sourceTree = "<group>"; };
 		567830962010803E00298EDC /* JXStruct.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXStruct.h; sourceTree = "<group>"; };
 		567830972010803E00298EDC /* JXStruct.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXStruct.m; sourceTree = "<group>"; };
 		56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ObjectiveScriptTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveScriptTests.m; sourceTree = "<group>"; };
 		56A149C11FE53CA0008B6BED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		56AF99842055968200F58032 /* JXComplexType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXComplexType.h; sourceTree = "<group>"; };
+		56AF99852055968200F58032 /* JXComplexType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXComplexType.m; sourceTree = "<group>"; };
+		56AF998720559A6700F58032 /* JXUnionType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXUnionType.h; sourceTree = "<group>"; };
+		56AF998820559A6700F58032 /* JXUnionType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXUnionType.m; sourceTree = "<group>"; };
+		56B357912054399A00B73EBA /* JXStructType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXStructType.h; sourceTree = "<group>"; };
+		56B357922054399A00B73EBA /* JXStructType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXStructType.m; sourceTree = "<group>"; };
+		56B35794205441C700B73EBA /* JXArrayType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXArrayType.h; sourceTree = "<group>"; };
+		56B35795205441C700B73EBA /* JXArrayType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXArrayType.m; sourceTree = "<group>"; };
+		56B35797205445EB00B73EBA /* JXPointerType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXPointerType.h; sourceTree = "<group>"; };
+		56B35798205445EB00B73EBA /* JXPointerType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXPointerType.m; sourceTree = "<group>"; };
 		56D558E01FE4234A00CF5720 /* ObjectiveScript.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjectiveScript.h; sourceTree = "<group>"; };
-		56D558E21FE4345800CF5720 /* JXFFITypes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXFFITypes.m; sourceTree = "<group>"; };
-		56D558E41FE4345E00CF5720 /* JXFFITypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXFFITypes.h; sourceTree = "<group>"; };
+		56F2C3A62062720C00ED4712 /* JXKVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXKVC.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,10 +149,15 @@
 			children = (
 				565B35EA1FE4203800A9EEA8 /* JXTrampInfo.h */,
 				565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */,
+				56F2C3A62062720C00ED4712 /* JXKVC.h */,
 				567830962010803E00298EDC /* JXStruct.h */,
 				567830972010803E00298EDC /* JXStruct.m */,
 				56667B6D2019CB980032DFFF /* JXSymbol.h */,
 				56667B6E2019CB980032DFFF /* JXSymbol.m */,
+				566F05DC204E99570088199B /* JXPointer.h */,
+				566F05DD204E99570088199B /* JXPointer.m */,
+				560E02122066DC9000D73F28 /* JXArray.h */,
+				560E02132066DC9000D73F28 /* JXArray.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -129,8 +171,6 @@
 				56002CF4201A012A00AFEA2C /* JXAssociatedObjects.m */,
 				565B35EC1FE4203800A9EEA8 /* JXJSInterop.h */,
 				565B35E91FE4203800A9EEA8 /* JXJSInterop.m */,
-				56D558E41FE4345E00CF5720 /* JXFFITypes.h */,
-				56D558E21FE4345800CF5720 /* JXFFITypes.m */,
 				565B35E81FE4203700A9EEA8 /* JXRuntimeInterface.h */,
 				565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */,
 			);
@@ -191,6 +231,35 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		561BCE372053E6A8002165F4 /* Type Parsing */ = {
+			isa = PBXGroup;
+			children = (
+				561BCE382053E6B5002165F4 /* JXType.h */,
+				561BCE392053E6B5002165F4 /* JXType.m */,
+				560C069A20541E1000CE992C /* JXBasicType.h */,
+				560C069B20541E1000CE992C /* JXBasicType.m */,
+				5677DF5320550B8900891379 /* JXIDType.h */,
+				5677DF5420550B8900891379 /* JXIDType.m */,
+				565D299720568225003D7E83 /* JXBitFieldType.h */,
+				565D299820568225003D7E83 /* JXBitFieldType.m */,
+				56B35797205445EB00B73EBA /* JXPointerType.h */,
+				56B35798205445EB00B73EBA /* JXPointerType.m */,
+				56AF99842055968200F58032 /* JXComplexType.h */,
+				56AF99852055968200F58032 /* JXComplexType.m */,
+				56B357912054399A00B73EBA /* JXStructType.h */,
+				56B357922054399A00B73EBA /* JXStructType.m */,
+				56AF998720559A6700F58032 /* JXUnionType.h */,
+				56AF998820559A6700F58032 /* JXUnionType.m */,
+				56B35794205441C700B73EBA /* JXArrayType.h */,
+				56B35795205441C700B73EBA /* JXArrayType.m */,
+				56374B04205D07000068FDAB /* JXTypeDescription.h */,
+				56374B05205D07000068FDAB /* JXTypeDescription.m */,
+				565D299A20568DCC003D7E83 /* JXTypeQualifiers.h */,
+				565D299B20568DFF003D7E83 /* JXTypeQualifiers.m */,
+			);
+			path = "Type Parsing";
+			sourceTree = "<group>";
+		};
 		565B35CF1FE41EF500A9EEA8 = {
 			isa = PBXGroup;
 			children = (
@@ -214,6 +283,7 @@
 		565B35DA1FE41EF500A9EEA8 /* ObjectiveScript */ = {
 			isa = PBXGroup;
 			children = (
+				561BCE372053E6A8002165F4 /* Type Parsing */,
 				56002CEF2019FDBD00AFEA2C /* Model */,
 				56002CF02019FDD400AFEA2C /* Interop */,
 				56D558E01FE4234A00CF5720 /* ObjectiveScript.h */,
@@ -323,14 +393,26 @@
 			buildActionMask = 2147483647;
 			files = (
 				565B35ED1FE4203800A9EEA8 /* JXTrampInfo.m in Sources */,
+				56B35796205441C700B73EBA /* JXArrayType.m in Sources */,
 				56002CF32019FEB400AFEA2C /* JXBlockInterop.m in Sources */,
+				56AF99862055968200F58032 /* JXComplexType.m in Sources */,
 				56667B6F2019CB980032DFFF /* JXSymbol.m in Sources */,
 				565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */,
+				565D299C20568DFF003D7E83 /* JXTypeQualifiers.m in Sources */,
 				565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */,
-				56D558E31FE4345800CF5720 /* JXFFITypes.m in Sources */,
+				5677DF5520550B8900891379 /* JXIDType.m in Sources */,
+				56AF998920559A6700F58032 /* JXUnionType.m in Sources */,
 				565B35F01FE4203800A9EEA8 /* JXJSInterop.m in Sources */,
+				565D299920568225003D7E83 /* JXBitFieldType.m in Sources */,
 				567830982010803E00298EDC /* JXStruct.m in Sources */,
 				56002CF5201A012A00AFEA2C /* JXAssociatedObjects.m in Sources */,
+				560E02142066DC9000D73F28 /* JXArray.m in Sources */,
+				56B357932054399A00B73EBA /* JXStructType.m in Sources */,
+				561BCE3A2053E6B5002165F4 /* JXType.m in Sources */,
+				560C069C20541E1000CE992C /* JXBasicType.m in Sources */,
+				56B35799205445EB00B73EBA /* JXPointerType.m in Sources */,
+				56374B06205D07000068FDAB /* JXTypeDescription.m in Sources */,
+				566F05DE204E99570088199B /* JXPointer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -505,6 +587,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/vendored/**";
 				INFOPLIST_FILE = ObjectiveScriptTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -519,6 +602,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/vendored/**";
 				INFOPLIST_FILE = ObjectiveScriptTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";

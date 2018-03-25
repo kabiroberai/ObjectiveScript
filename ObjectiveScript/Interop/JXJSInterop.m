@@ -7,12 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <objc/runtime.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import "JXJSInterop.h"
 #import "JXStruct.h"
-#import "JXFFITypes.h"
+#import "JXType.h"
 #import "ObjectiveScript.h"
 #import "JXBlockInterop.h"
+#import "JXPointer.h"
+#import "JXTypeQualifiers.h"
+#import "JXArrayType.h"
+#import "JXArray.h"
 
 #define isType(primitive) (is(type, primitive))
 
@@ -47,7 +52,7 @@ NSException *JXConvertFromError(JSValue *error) {
 
 // JXConvert[To|From]JSValue Inspired by https://github.com/steipete/Aspects and https://github.com/ReactiveCocoa/ReactiveCocoa/blob/db51e2bb2ceb7464db71b190cf133105e83dd378/ReactiveObjC/NSInvocation%2BRACTypeParsing.m
 
-JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXMemoryMode memoryMode) {
+JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInteropOptions options) {
 	if (val == NULL) return nil;
 	
 	JXRemoveQualifiers(&type);
@@ -55,16 +60,35 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXMemor
 	id obj;
 	
 #define as(type) (*(type *)(val))
-
-#define retWrapped(obj) return JXObjectToJSValue(obj, ctx, memoryMode);
-#define retRaw(obj) return [JSValue valueWithObject:obj inContext:ctx];
-
-#define retIf(primitive) else if (isType(primitive)) retRaw(@(as(primitive)))
+#define ret(obj) return [JSValue valueWithObject:obj inContext:ctx];
+#define retIf(primitive) else if (isType(primitive)) ret(@(as(primitive)))
 #define retIfPair(primitive) retIf(primitive) retIf(unsigned primitive)
-	
-	if (isType(id) || isType(Class) || isType(Block)) obj = as(id __unsafe_unretained);
-	else if (*type == '{') obj = [JXStruct structWithVal:val type:type];
-	else if (isType(SEL)) retRaw(NSStringFromSelector(as(SEL)))
+
+    // *type == _C_ID accounts for objects and blocks, with or without class names
+	if (*type == _C_ID || isType(Class)) obj = as(id __strong);
+    else if (*type == _C_PTR) {
+        // type+1  removes the initial '^'
+        JXPointer *ptr = [JXPointer pointerWithVal:as(void *) type:@(type+1)];
+        obj = ptr;
+    }
+    else if (*type == _C_STRUCT_B) {
+        BOOL copyStructs = (options & JXInteropOptionCopyStructs);
+        JXStruct *jxStruct = [JXStruct structWithVal:val type:type copy:copyStructs];
+
+        JSValue *extendedMetadata = ctx[jxStruct.name];
+        if (extendedMetadata.isString) {
+            // if the ctx contains extended metadata info for the struct, change the type to the extended one
+            jxStruct = [JXStruct structWithVal:val type:[extendedMetadata toString].UTF8String copy:copyStructs];
+        }
+
+        obj = jxStruct;
+    }
+    else if (*type == _C_ARY_B) {
+        JXArrayType *arrayType = (JXArrayType *)JXTypeForEncoding(type);
+        JXArray *arr = [JXArray arrayWithVal:val type:arrayType.type.encoding count:arrayType.count];
+        obj = arr;
+    }
+	else if (isType(SEL)) ret(NSStringFromSelector(as(SEL)))
 	retIf(char *)
 	retIf(float)
 	retIf(double)
@@ -74,20 +98,19 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXMemor
 	retIfPair(int)
 	retIfPair(long long)
 	else return [JSValue valueWithUndefinedInContext:ctx];
-	
-#undef as
-#undef retWrapped
-#undef retRaw
-#undef retIf
+
 #undef retIfPair
+#undef retIf
+#undef ret
+#undef as
 	
 	if (obj == nil) return [JSValue valueWithNullInContext:ctx];
 	
 	// Handle ObjC objects in a special manner, by wrapping them in JXObjectClass
 	void *bridged = (__bridge void *)obj;
 	
-	BOOL retain = (memoryMode == JXMemoryModeStrong);
-	BOOL autorelease = (memoryMode != JXMemoryModeNone);
+	BOOL retain = (options & JXInteropOptionRetain);
+	BOOL autorelease = (options & JXInteropOptionAutorelease);
 	
 	if (retain) CFRetain(bridged);
 	JSObjectRef ref = JSObjectMake(ctx.JSGlobalContextRef, autorelease ? JXAutoreleasingObjectClass : JXObjectClass, bridged);
@@ -96,30 +119,30 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXMemor
 }
 
 JSValue *JXObjectToJSValue(id val, JSContext *ctx) {
-	return JXConvertToJSValue(&val, @encode(id), ctx, JXMemoryModeStrong);
+	return JXConvertToJSValue(&val, @encode(id), ctx, JXInteropOptionRetain | JXInteropOptionAutorelease);
 }
 
 void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *)) {
 	JXRemoveQualifiers(&type);
-	
-	// primitive = methodValue
-#define cmpSet(primitive, method) else if (isType(primitive)) { \
-	primitive num = [[value toObject] method##Value]; \
+
+    // all numbers are internally doubles in JS
+#define cmpSet(primitive) else if (isType(primitive)) { \
+	primitive num = (primitive)[value toDouble]; \
 	block(&num); \
 }
-	// primitive = primitiveValue; unsigned primitive = unsignedValue
-#define cmpSetPair(primitive, Primitive) cmpSet(primitive, primitive) cmpSet(unsigned primitive, unsigned##Primitive)
-	
+
+#define cmpSetPair(primitive) cmpSet(primitive) cmpSet(unsigned primitive)
+
 	// if not for __autoreleasing, `val` would be deallocated after method return
-#define setAutoreleasing(val) id __autoreleasing immutable_##__LINE__ = val; obj = immutable_##__LINE__;
+#define setAutoreleasing(val) id __autoreleasing autoreleasingVal = val; obj = autoreleasingVal;
 	
-	if (isType(id) || isType(Class) || isType(Block)) {
+	if (*type == _C_ID || isType(Class)) {
 		id obj;
-		
+
 		JSContext *ctx = value.context;
 		JSContextRef ctxRef = ctx.JSGlobalContextRef;
 		JSValueRef valRef = value.JSValueRef;
-		
+
 		if (JSValueIsObjectOfClass(ctxRef, valRef, JXObjectClass)) {
 			// If value is our JXObjectClass type, fetch it accordingly
 			JSObjectRef ref = JSValueToObject(ctxRef, valRef, nil);
@@ -153,28 +176,38 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
 			setAutoreleasing([value toObject])
 		}
 		block(&obj);
-	} else if (isType(SEL)) {
+    } else if (*type == _C_PTR) { // `value` is a pointer
+        JXPointer *ptr = JXObjectFromJSValue(value);
+        void *val = ptr.val;
+        // pass in `&val` because the implementation of `block` uses the _contents_ of
+        // the arg i.e. `*(&val)`, which results in `val`, which is the desired pointer
+        block(&val);
+    } else if (*type == _C_STRUCT_B) { // `value` is a JXStruct
+        JXStruct *obj = JXObjectFromJSValue(value);
+        // already a void *, don't pass memory address
+        block(obj.val);
+    } else if (*type == _C_ARY_B) {
+        JXType *jxType = JXTypeForEncoding(type);
+        @throw JXCreateException([NSString stringWithFormat:@"Array type '%@' is not assignable", jxType]);
+    } else if (isType(SEL)) {
 		SEL sel = NSSelectorFromString([value toString]);
 		block(&sel);
 	} else if (isType(char *)) {
 		const char *str = [value toString].UTF8String;
 		block(&str);
-	} else if (*type == '{') { // obj is a JXStruct
-		JXStruct *obj = JXObjectFromJSValue(value);
-		// already a void *, don't pass memory address
-		block(obj.val);
 	}
-	cmpSetPair(char, Char)
-	cmpSetPair(short, Short)
-	cmpSetPair(int, Int)
-	cmpSet(long long, longLong)
-	cmpSet(unsigned long long, unsignedLongLong)
-	cmpSet(float, float)
-	cmpSet(double, double)
-	cmpSet(bool, bool) // Otherwise method would be _BoolValue
+
+	cmpSetPair(char)
+	cmpSetPair(short)
+	cmpSetPair(int)
+	cmpSet(long long)
+	cmpSet(unsigned long long)
+	cmpSet(float)
+	cmpSet(double)
+	cmpSet(bool)
 	else {
-		id val = nil;
-		block(&val);
+        id val = nil;
+        block(&val);
 	}
 	
 #undef cmpSet
@@ -183,14 +216,14 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
 }
 
 id JXObjectFromJSValue(JSValue *value) {
-	__block id obj;
+	__block __unsafe_unretained id obj;
 	JXConvertFromJSValue(value, @encode(id), ^(void *ptr) {
 		obj = *(id __unsafe_unretained *)ptr;
 	});
 	return obj;
 }
 
-// Returns a (relatively) lossless, native JS representation of `obj` if
+// Returns a (I think) lossless, native JS representation of `obj` if
 // possible. If there is no native representation, returns a wrapped object
 // as JXObjectToJSValue would.
 //
@@ -217,23 +250,9 @@ JSValue *JXUnboxValue(id obj, JSContext *ctx) {
 		// Copy strings because if the string is mutable, JS won't like it
 		return [JSValue valueWithObject:[obj copy] inContext:ctx];
 	} else if ([obj isKindOfClass:NSDate.class] || [obj isKindOfClass:NSNumber.class]) {
-		return [JSValue valueWithObject:obj inContext:ctx];
+        return [JSValue valueWithObject:obj inContext:ctx];
 	} else {
 		// If it can't be losslessly converted, use JXObjectToJSValue as normal
 		return JXObjectToJSValue(obj, ctx);
 	}
-}
-
-// TODO: Maybe create a JS `TypeWrapper` class that allows you to explicitly set a type.
-// If `value` is an instance of that, then return its supplied type.
-// Eg. { type: "i", value: 10 } returns "i"
-// Also, JXConvertFromJSValue should operate on TypeWrapper.value when a TypeWrapper is supplied
-const char *JXInferType(JSValue *value) {
-	// TODO: Create JXTypeWrapper or whatever, and uncomment this
-//	if (JSValueIsObjectOfClass(value.context.JSGlobalContextRef, value.JSValueRef, JXTypeWrapper)) {
-//		return [value[@"type"] toString].UTF8String;
-//	}
-	if (value.isBoolean) return @encode(BOOL);
-	else if (value.isNumber) return @encode(double);
-	else return @encode(id);
 }

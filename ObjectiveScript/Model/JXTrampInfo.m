@@ -7,8 +7,8 @@
 //
 
 #import "JXTrampInfo.h"
-#import "JXFFITypes.h"
 #import "Block.h"
+#import "JXType.h"
 
 @implementation JXTrampInfo {
 	JXTrampInfo *_retained;
@@ -20,6 +20,7 @@
 		_func = func;
 		_types = malloc(sizeof(char) * strlen(types));
 		strcpy(_types, types);
+        _sig = [NSMethodSignature signatureWithObjCTypes:_types];
 		_cls = cls;
 	}
 	return self;
@@ -30,13 +31,19 @@
 	_retained = self;
 }
 
-- (NSMethodSignature *)sig {
-	return [NSMethodSignature signatureWithObjCTypes:_types];
-}
-
 - (void)dealloc {
 	free(_types);
-	JXFreeClosure(_closure);
+
+    // free _closure
+    ffi_cif *cif = _closure->cif;
+    for (size_t i = 0; i < cif->nargs; i++) {
+        // free all struct args of cif
+        JXFreeFFIType(cif->arg_types[i]);
+    }
+    free(cif->arg_types);
+    JXFreeFFIType(cif->rtype);
+    free(cif);
+    ffi_closure_free(_closure);
 }
 
 @end

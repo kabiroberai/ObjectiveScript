@@ -13,7 +13,7 @@
 #import "JXTrampInfo.h"
 #import "JXJSInterop.h"
 #import "JXRuntimeInterface.h"
-#import "JXFFITypes.h"
+#import "JXType.h"
 #import "JXBlockInterop.h"
 
 @interface NSInvocation (hacks)
@@ -38,7 +38,8 @@ static void withCallContext(NSDictionary *items, JSContext *ctx, void (^block)(v
 
 static JSValue *callFunc(JSValue *func, id self, Class cls, id orig, NSMutableArray<JSValue *> *methodArgs) {
 	JSContext *ctx = func.context;
-	JSValue *selfJS = JXConvertToJSValue(&self, @encode(id), ctx, JXMemoryModeNone);
+    // JXMemoryModeNone is needed because the method may be deinit where we can't retain/release self
+	JSValue *selfJS = JXConvertToJSValue(&self, @encode(id), ctx, JXInteropOptionNone);
 	
 #define COALESCE(val) ((val) ? : [NSNull null])
 	
@@ -74,7 +75,7 @@ static void parseArgs(JSValue *args, NSMethodSignature *sig, void (^block)(int, 
 }
 
 // cls indicates the class from which the method search should start
-JSValue *JXMsgSend(Class cls, JSContext *ctx, id obj, NSString *selName, JSValue *args) {
+JSValue *JXCallMethod(Class cls, JSContext *ctx, id obj, NSString *selName, JSValue *args) {
 	JX_DEBUG(@"Method %@ is being called on %@", selName, obj);
 	
 	if ([selName isEqualToString:@"Symbol.toPrimitive:"]) { // called by JS during type coercion
@@ -134,9 +135,10 @@ JSValue *JXMsgSend(Class cls, JSContext *ctx, id obj, NSString *selName, JSValue
 	} else {
 		void *ret = malloc(sig.methodReturnLength);
 		[inv getReturnValue:ret];
-		
-		JXMemoryMode mode = transferOwnership ? JXMemoryModeTransfer : JXMemoryModeStrong;
-		parsed = JXConvertToJSValue(ret, returnType, ctx, mode);
+
+        JXInteropOptions options = JXInteropOptionAutorelease | JXInteropOptionCopyStructs;
+        if (!transferOwnership) options |= JXInteropOptionRetain;
+		parsed = JXConvertToJSValue(ret, returnType, ctx, options);
 		
 		free(ret);
 	}
@@ -162,28 +164,31 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 	const char *ret = sig.methodReturnType;
 	// `numberOfArguments` will be num of fixed args here because `types` only contains fixed arg types even if variadic
 	uint32_t nfixedargs = (uint32_t)sig.numberOfArguments;
-	ffi_type *rtype = JXFFITypeForEncoding(ret);
+    uint32_t nvarargs = nargs - nfixedargs;
+	ffi_type *rtype = [JXTypeForEncoding(ret) ffiType];
 
-	// if variadic, guess the rest of the types based on the arguments, and append them to `sig`
+	// if variadic, append the rest of the types to `sig`
 	if (isVariadic) {
-		NSMutableString *var = [NSMutableString stringWithCapacity:nargs-nfixedargs];
-		// start guessing from the first vararg supplied
-		for (uint32_t i = nfixedargs; i < nargs; i++) {
-			JSValue *val = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
-			const char *type = JXInferType(val);
-			[var appendString:@(type)];
+		NSMutableString *var = [NSMutableString stringWithCapacity:nvarargs];
+        // every vararg is prefixed by its type on the JS side
+		for (uint32_t i = nfixedargs; i < nargs; i += 2) {
+            JSValue *val = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
+			[var appendString:val.toString];
 		}
 		NSString *fullTypes = [types stringByAppendingString:var];
 		sig = [NSMethodSignature signatureWithObjCTypes:fullTypes.UTF8String];
-	}
 
-	ffi_type *args[nargs];
-	for (uint32_t i = 0; i < nargs; i++) {
-		args[i] = JXFFITypeForEncoding([sig getArgumentTypeAtIndex:i]);
-	}
+        // set nargs to the real number of args (subtract the number of type indicators)
+        nargs = nfixedargs + nvarargs / 2;
+    }
 
-	// create cif
-	ffi_cif cif;
+    ffi_type *args[nargs];
+    for (uint32_t i = 0; i < nargs; i++) {
+        args[i] = [JXTypeForEncoding([sig getArgumentTypeAtIndex:i]) ffiType];
+    }
+
+    // prepare cif
+    ffi_cif cif;
 	if (isVariadic) {
 		ffi_prep_cif_var(&cif, FFI_DEFAULT_ABI, nfixedargs, nargs, rtype, args);
 	} else {
@@ -196,20 +201,32 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 	// create an array of argument values
 	void *argvals[nargs];
 	for (uint32_t i = 0; i < nargs; i++) {
+        // the index of the argument in the jsArgs array.
+        // equal to i for non-variadic calls, but for variadic
+        // ones it should fetch only the actual values, not the
+        // type arguments
+        uint32_t jsIdx;
+        if (i >= nfixedargs) {
+            uint32_t varidx = i - nfixedargs;
+            jsIdx = nfixedargs + 1 + varidx * 2;
+        } else {
+            jsIdx = i;
+        }
+
 		size_t argSize = args[i]->size;
 		// we can't assign to argvals[i] directly because the compiler doesn't like it, so make a temp var
-		__block void *_val = malloc(argSize);
-		JSValue *val = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
-		JXConvertFromJSValue(val, [sig getArgumentTypeAtIndex:i], ^(void *val) {
+		__block void *argval = malloc(argSize);
+		JSValue *jsVal = [JSValue valueWithJSValueRef:jsArgs[jsIdx] inContext:ctx];
+		JXConvertFromJSValue(jsVal, [sig getArgumentTypeAtIndex:i], ^(void *val) {
 			// copy val into the _val buffer
-			memcpy(_val, val, argSize);
+			memcpy(argval, val, argSize);
 		});
-		argvals[i] = _val;
+		argvals[i] = argval;
 	}
 
 	ffi_call(&cif, sym, rval, argvals);
 
-	JSValue *retVal = JXConvertToJSValue(rval, ret, ctx, JXMemoryModeStrong);
+	JSValue *retVal = JXConvertToJSValue(rval, ret, ctx, JXInteropOptionRetain | JXInteropOptionAutorelease | JXInteropOptionCopyStructs);
 
 	// cleanup
 	free(rval);
@@ -253,7 +270,7 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
 				JSContext *ctx = [JSContext currentContext];
 				ctx.exception = JXConvertToError(e, ctx);
 			}
-			JSValue *parsedRet = JXConvertToJSValue(rval, sig.methodReturnType, ctx, JXMemoryModeStrong);
+			JSValue *parsedRet = JXConvertToJSValue(rval, sig.methodReturnType, ctx, JXInteropOptionRetain | JXInteropOptionAutorelease | JXInteropOptionCopyStructs);
 			free(rval);
 			
 			return parsedRet;
@@ -271,7 +288,7 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
 	// set args to the original args that the method was called with
 	for (int i = ignored; i < argc; i++) {
 		const char *type = [sig getArgumentTypeAtIndex:i];
-		methodArgs[i-ignored] = JXConvertToJSValue(args[i], type, ctx, JXMemoryModeNone);
+		methodArgs[i-ignored] = JXConvertToJSValue(args[i], type, ctx, JXInteropOptionNone);
 	}
 	
 	JSValue *jsRet = callFunc(func, self, info.cls, origFunc, methodArgs);
@@ -294,15 +311,15 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
 // Create a trampoline given the required ffi types
 static void createTrampWithFFITypes(ffi_type *ret, unsigned int nargs, ffi_type **args, JXTrampInfo *info) {
 	void *imp;
-	
+
 	ffi_cif *cif = malloc(sizeof(ffi_cif));
 	if (ffi_prep_cif(cif, FFI_DEFAULT_ABI, nargs, ret, args) != FFI_OK) return;
-	
+
 	ffi_closure *closure = ffi_closure_alloc(sizeof(ffi_closure), &imp);
 	if (!closure) return;
 	// weak ref to info
 	if (ffi_prep_closure_loc(closure, cif, tramp, (__bridge void *)info, imp) != FFI_OK) return;
-	
+
 	info.closure = closure;
 	info.tramp = imp;
 }
@@ -314,11 +331,11 @@ JXTrampInfo *JXCreateTramp(JSValue *func, const char *types, Class cls) {
 	NSMethodSignature *sig = info.sig;
 	
 	unsigned int nargs = (unsigned int)sig.numberOfArguments;
-	ffi_type *ret = JXFFITypeForEncoding(sig.methodReturnType);
+	ffi_type *ret = [JXTypeForEncoding(sig.methodReturnType) ffiType];
 	
 	ffi_type **args = malloc(sig.numberOfArguments * sizeof(ffi_type *));
 	for (NSUInteger i = 0; i < sig.numberOfArguments; i++) {
-		args[i] = JXFFITypeForEncoding([sig getArgumentTypeAtIndex:i]);
+		args[i] = [JXTypeForEncoding([sig getArgumentTypeAtIndex:i]) ffiType];
 	}
 	
 	createTrampWithFFITypes(ret, nargs, args, info);
@@ -327,20 +344,18 @@ JXTrampInfo *JXCreateTramp(JSValue *func, const char *types, Class cls) {
 
 // swizzle sel if it exists, otherwise create a new method using fallbackTypes
 void JXSwizzle(JSValue *func, Class cls, BOOL isClassMethod, SEL sel, NSString *fallbackTypes) {
-	// Get the original method, encoding, and imp
 	Method m = (isClassMethod ? class_getClassMethod : class_getInstanceMethod)(cls, sel);
 	const char *types = m ? method_getTypeEncoding(m) : fallbackTypes.UTF8String;
-	
-	// Create a new IMP with `func` and the correct signature
+
 	JXTrampInfo *info = JXCreateTramp(func, types, cls);
 	[info retainForever];
-	
+
 	// if the specified method already exists,
 	if (m) {
 		// set orig to the old implementation of `m`
 		info.orig = method_getImplementation(m);
 	}
-	
+
 	// If the method is from a superclass (or if it's new), try adding the new tramp directly to the subclass
 	// Otherwise if it's directly on the subclass, replace the method's imp with the tramp one
 	if (!class_addMethod(cls, sel, info.tramp, types) && m) {

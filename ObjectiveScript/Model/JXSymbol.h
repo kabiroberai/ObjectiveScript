@@ -10,8 +10,8 @@
 
 @interface JXSymbol : NSObject
 
-@property (nonatomic, assign, readonly) void *symbol;
-@property (nonatomic, retain, readonly) NSString *types;
+@property (nonatomic, readonly) void *symbol;
+@property (nonatomic, readonly) NSString *types;
 
 - (instancetype)initWithSymbol:(void *)symbol types:(NSString *)types;
 

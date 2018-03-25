@@ -19,13 +19,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) JSValue *func;
 @property (nonatomic, readonly) char *types;
-@property (nonatomic, retain) Class cls;
+@property (nonatomic, readonly) Class cls;
+@property (nonatomic, readonly) NSMethodSignature *sig;
 
-@property (nonatomic, assign) ffi_closure *closure;
-@property (nonatomic, assign) IMP tramp;
-@property (nonatomic, assign, nullable) IMP orig; // only for hooks
-
-@property (nonatomic, readonly) NSMethodSignature *sig; // computed
+@property (nonatomic) ffi_closure *closure;
+@property (nonatomic) IMP tramp;
+@property (nonatomic, nullable) IMP orig; // only for hooks
 
 - (instancetype)initWithFunc:(JSValue *)func types:(const char *)types cls:(Class)cls;
 - (void)retainForever;

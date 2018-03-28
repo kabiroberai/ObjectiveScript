@@ -40,7 +40,7 @@
     JXTypeDescription *subDescription = [self.type descriptionWithPadding:padding];
     return [JXTypeDescription
             descriptionWithHead:subDescription.head
-            tail:[NSString stringWithFormat:@"[%lu]%@", self.count, subDescription.tail]];
+            tail:[NSString stringWithFormat:@"[%lu]%@", (long)self.count, subDescription.tail]];
 }
 
 @end

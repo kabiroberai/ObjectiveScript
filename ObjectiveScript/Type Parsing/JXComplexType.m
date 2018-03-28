@@ -110,7 +110,7 @@
     if (self.types) {
         [typesStr appendString:@" { "];
         for (NSUInteger i = 0; i < self.types.count; i++) {
-            NSString *subfieldName = self.fieldNames[i] ? : [NSString stringWithFormat:@"field%lu", i+1];
+            NSString *subfieldName = self.fieldNames[i] ? : [NSString stringWithFormat:@"field%lu", (long)(i+1)];
             JXTypeDescription *description = [self.types[i] descriptionWithPadding:YES];
             [typesStr appendFormat:@"%@%@%@; ", description.head, subfieldName, description.tail];
         }

@@ -32,7 +32,7 @@
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     return [JXTypeDescription
             descriptionWithHead:[@"unsigned int" stringByAppendingString: padding ? @" " : @""]
-            tail:[NSString stringWithFormat:@":%lu", self.bits]];
+            tail:[NSString stringWithFormat:@":%lu", (long)self.bits]];
 }
 
 @end

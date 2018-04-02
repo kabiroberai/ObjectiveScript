@@ -19,10 +19,10 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *_encoding;
 }
 
-// not necessarily the same as the enc passed to init
+// not necessarily the entire enc passed to init
 // because that may have more types after this one
+// (eg if this type is inside a struct)
 @property (nonatomic, readonly) NSString *encoding;
-
 @property (nonatomic, readonly) JXTypeQualifiers qualifiers;
 
 // `enc` is moved forward to the start of the next type.
@@ -31,11 +31,14 @@ NS_ASSUME_NONNULL_BEGIN
 // returns whether the encoding is supported based on its first char
 + (BOOL)supportsEncoding:(char)encoding;
 
+// without qualifiers (overriden by subclasses)
+- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding;
+// with qualifiers
+- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding;
+
+// helper methods
 - (NSString *)stringBetweenStart:(const char *)start end:(const char *)end;
 - (NSUInteger)numberFromEncoding:(const char * _Nonnull * _Nonnull)enc;
-
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding;
-- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding;
 
 @end
 

@@ -16,7 +16,7 @@
 #import "JXBlockInterop.h"
 #import "JXPointer.h"
 #import "JXTypeQualifiers.h"
-#import "JXArrayType.h"
+#import "JXTypeArray.h"
 #import "JXArray.h"
 
 #define isType(primitive) (is(type, primitive))
@@ -84,7 +84,7 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
         obj = jxStruct;
     }
     else if (*type == _C_ARY_B) {
-        JXArrayType *arrayType = (JXArrayType *)JXTypeForEncoding(type);
+        JXTypeArray *arrayType = (JXTypeArray *)JXTypeForEncoding(type);
         JXArray *arr = [JXArray arrayWithVal:val type:arrayType.type.encoding count:arrayType.count];
         obj = arr;
     }

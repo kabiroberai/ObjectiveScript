@@ -1,12 +1,12 @@
 //
-//  JXUnionType.h
+//  JXTypeUnion.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 11/03/18.
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#import "JXComplexType.h"
+#import "JXTypeComplex.h"
 
-@interface JXUnionType : JXComplexType
+@interface JXTypeUnion : JXTypeComplex
 @end

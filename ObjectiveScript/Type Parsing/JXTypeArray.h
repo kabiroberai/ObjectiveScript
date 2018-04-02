@@ -1,5 +1,5 @@
 //
-//  JXPointerType.h
+//  JXTypeArray.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
@@ -8,9 +8,13 @@
 
 #import "JXType.h"
 
-@interface JXPointerType : JXType
+NS_ASSUME_NONNULL_BEGIN
 
+@interface JXTypeArray : JXType
+
+@property (nonatomic, readonly) NSUInteger count;
 @property (nonatomic, readonly) JXType *type;
-@property (nonatomic, readonly) BOOL isFunction;
 
 @end
+
+NS_ASSUME_NONNULL_END

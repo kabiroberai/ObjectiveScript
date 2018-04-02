@@ -1,5 +1,5 @@
 //
-//  JXArrayType.h
+//  JXTypePointer.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
@@ -8,13 +8,9 @@
 
 #import "JXType.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@interface JXTypePointer : JXType
 
-@interface JXArrayType : JXType
-
-@property (nonatomic, readonly) NSUInteger count;
 @property (nonatomic, readonly) JXType *type;
+@property (nonatomic, readonly) BOOL isFunction;
 
 @end
-
-NS_ASSUME_NONNULL_END

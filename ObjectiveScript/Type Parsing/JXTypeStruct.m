@@ -1,5 +1,5 @@
 //
-//  JXStructType.m
+//  JXTypeStruct.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
@@ -7,9 +7,9 @@
 //
 
 #import <objc/runtime.h>
-#import "JXStructType.h"
+#import "JXTypeStruct.h"
 
-@implementation JXStructType
+@implementation JXTypeStruct
 
 + (char)startDelim { return _C_STRUCT_B; }
 + (char)endDelim { return _C_STRUCT_E; }
@@ -18,7 +18,7 @@
 @end
 
 #if JX_USE_FFI
-@implementation JXStructType (FFI)
+@implementation JXTypeStruct (FFI)
 
 - (ffi_type *)ffiType {
     if (!self.types) return NULL;

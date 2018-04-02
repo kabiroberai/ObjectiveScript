@@ -1,5 +1,5 @@
 //
-//  JXStructType.h
+//  JXTypeStruct.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "JXComplexType.h"
+#import "JXTypeComplex.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface JXStructType : JXComplexType
+@interface JXTypeStruct : JXTypeComplex
 @end
 
 NS_ASSUME_NONNULL_END

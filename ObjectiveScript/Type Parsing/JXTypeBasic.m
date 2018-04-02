@@ -1,5 +1,5 @@
 //
-//  JXBasicType.m
+//  JXTypeBasic.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
@@ -7,9 +7,9 @@
 //
 
 #import <objc/runtime.h>
-#import "JXBasicType.h"
+#import "JXTypeBasic.h"
 
-@implementation JXBasicType
+@implementation JXTypeBasic
 
 + (BOOL)supportsEncoding:(char)encoding {
     switch (encoding) {
@@ -63,7 +63,7 @@
 @end
 
 #if JX_USE_FFI
-@implementation JXBasicType (FFI)
+@implementation JXTypeBasic (FFI)
 
 - (ffi_type *)ffiType {
     switch (*self.encoding.UTF8String) {

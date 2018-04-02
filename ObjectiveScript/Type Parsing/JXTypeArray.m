@@ -1,5 +1,5 @@
 //
-//  JXArrayType.m
+//  JXTypeArray.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
@@ -7,10 +7,10 @@
 //
 
 #import <objc/runtime.h>
-#import "JXArrayType.h"
-#import "JXPointerType.h"
+#import "JXTypeArray.h"
+#import "JXTypePointer.h"
 
-@implementation JXArrayType
+@implementation JXTypeArray
 
 + (BOOL)supportsEncoding:(char)encoding {
     return encoding == _C_ARY_B;
@@ -46,7 +46,7 @@
 @end
 
 #if JX_USE_FFI
-@implementation JXArrayType (FFI)
+@implementation JXTypeArray (FFI)
 
 - (ffi_type *)ffiType {
     ffi_type *compoundType = JXAllocateCompoundFFIType(self.count);

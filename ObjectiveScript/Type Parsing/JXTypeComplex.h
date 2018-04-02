@@ -1,5 +1,5 @@
 //
-//  JXComplexType.h
+//  JXTypeComplex.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 11/03/18.
@@ -10,9 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern BOOL JXComplexTypeHasTypeInfo;
-
-@interface JXComplexType : JXType
+@interface JXTypeComplex : JXType
 
 + (char)startDelim;
 + (char)endDelim;

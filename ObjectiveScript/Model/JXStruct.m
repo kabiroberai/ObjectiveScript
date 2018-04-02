@@ -9,18 +9,18 @@
 #import <ffi.h>
 #import "JXJSInterop.h"
 #import "JXStruct.h"
-#import "JXStructType.h"
+#import "JXTypeStruct.h"
 
 @implementation JXStruct {
 	size_t *_offsets;
-	JXStructType *_type;
+	JXTypeStruct *_type;
     BOOL _isCopy;
 }
 
 - (instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy {
 	self = [super init];
 	if (self) {
-		_type = (JXStructType *)JXTypeForEncoding(type);
+		_type = (JXTypeStruct *)JXTypeForEncoding(type);
 
         _name = _type.name;
 

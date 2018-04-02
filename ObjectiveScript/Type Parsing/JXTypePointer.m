@@ -1,15 +1,15 @@
 //
-//  JXPointerType.m
+//  JXTypePointer.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#import "JXPointerType.h"
+#import "JXTypePointer.h"
 #import <objc/runtime.h>
 
-@implementation JXPointerType
+@implementation JXTypePointer
 
 + (BOOL)supportsEncoding:(char)encoding {
     return encoding == _C_PTR;
@@ -46,7 +46,7 @@
 @end
 
 #if JX_USE_FFI
-@implementation JXPointerType (FFI)
+@implementation JXTypePointer (FFI)
 
 - (ffi_type *)ffiType {
     return &ffi_type_pointer;

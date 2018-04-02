@@ -1,5 +1,5 @@
 //
-//  JXBitFieldType.h
+//  JXTypeBitField.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 12/03/18.
@@ -8,7 +8,7 @@
 
 #import "JXType.h"
 
-@interface JXBitFieldType : JXType
+@interface JXTypeBitField : JXType
 
 @property (nonatomic) NSUInteger bits;
 

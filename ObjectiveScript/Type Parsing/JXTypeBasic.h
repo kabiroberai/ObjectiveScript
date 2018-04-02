@@ -1,5 +1,5 @@
 //
-//  JXBasicType.h
+//  JXTypeBasic.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 10/03/18.
@@ -9,5 +9,5 @@
 #import <Foundation/Foundation.h>
 #import "JXType.h"
 
-@interface JXBasicType : JXType
+@interface JXTypeBasic : JXType
 @end

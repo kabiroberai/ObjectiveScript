@@ -1,5 +1,5 @@
 //
-//  JXUnionType.m
+//  JXTypeUnion.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 11/03/18.
@@ -7,9 +7,9 @@
 //
 
 #import <objc/runtime.h>
-#import "JXUnionType.h"
+#import "JXTypeUnion.h"
 
-@implementation JXUnionType
+@implementation JXTypeUnion
 
 + (char)startDelim { return _C_UNION_B; }
 + (char)endDelim { return _C_UNION_E; }

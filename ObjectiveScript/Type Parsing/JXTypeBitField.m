@@ -1,5 +1,5 @@
 //
-//  JXBitFieldType.m
+//  JXTypeBitField.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 12/03/18.
@@ -7,9 +7,9 @@
 //
 
 #import <objc/runtime.h>
-#import "JXBitFieldType.h"
+#import "JXTypeBitField.h"
 
-@implementation JXBitFieldType
+@implementation JXTypeBitField
 
 + (BOOL)supportsEncoding:(char)encoding {
     return encoding == _C_BFLD;

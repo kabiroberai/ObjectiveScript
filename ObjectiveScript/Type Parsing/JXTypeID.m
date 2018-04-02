@@ -1,5 +1,5 @@
 //
-//  JXIDType.m
+//  JXTypeID.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 11/03/18.
@@ -7,11 +7,11 @@
 //
 
 #import <objc/runtime.h>
-#import "JXIDType.h"
+#import "JXTypeID.h"
 
-BOOL JXIDTypeIgnoreName = NO;
+BOOL __thread JXTypeIDIgnoreName = NO;
 
-@implementation JXIDType
+@implementation JXTypeID
 
 + (BOOL)supportsEncoding:(char)encoding {
     return encoding == _C_ID;
@@ -24,8 +24,8 @@ BOOL JXIDTypeIgnoreName = NO;
         *enc += 1;
 
         // ids may have names in front of them, eg. @"NSString", so parse them if needed
-        // see JXStructType initWithEncoding for details on `JXIDTypeIgnoreName`
-        if (!JXIDTypeIgnoreName && **enc == '"') {
+        // see JXTypeComplex initWithEncoding for details on `JXTypeIDIgnoreName`
+        if (!JXTypeIDIgnoreName && **enc == '"') {
             *enc += 1;
             const char *nameStart = *enc;
             char *nameEnd = strchr(*enc, '"');
@@ -90,7 +90,7 @@ BOOL JXIDTypeIgnoreName = NO;
 @end
 
 #if JX_USE_FFI
-@implementation JXIDType (FFI)
+@implementation JXTypeID (FFI)
 
 - (ffi_type *)ffiType {
     return &ffi_type_pointer;

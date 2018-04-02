@@ -1,23 +1,23 @@
 //
-//  JXComplexType.m
+//  JXTypeComplex.m
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 11/03/18.
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#import "JXComplexType.h"
-#import "JXIDType.h"
+#import "JXTypeComplex.h"
+#import "JXTypeID.h"
 #import "JXJSInterop.h"
 
-@implementation JXComplexType
+@implementation JXTypeComplex
 
 // NOTE: references to structs in the comments also apply to unions
 
 + (char)startDelim { return 0; }
 + (char)endDelim { return 0; }
 + (NSString *)typeName {
-    @throw JXCreateException(@"+[JXComplexType typeName] should not be called directly.");
+    @throw JXCreateException([NSString stringWithFormat:@"%s should not be called directly.", __PRETTY_FUNCTION__]);
 }
 
 + (BOOL)supportsEncoding:(char)encoding {
@@ -66,17 +66,17 @@
                         // the previous type was an untyped id which ate the following type's name
                         // eg. struct Foo { id bar; int baz; }
                         // which turned into {Foo="bar"@"baz"i}
-                        // but JXIDType thought the "baz" was its own type
+                        // but JXTypeID thought the "baz" was its own type
 
                         // backtrack and tell the type to not take eat names this time
-                        // note: we don't simply use the JXIDType initializer because the type may be ^@"baz" too
+                        // note: we don't simply use the JXTypeID initializer because the type may be ^@"baz" too
                         [types removeLastObject];
                         *enc = prevTypeEnc;
 
                         // TODO: Add thread lock or whatever here
-                        JXIDTypeIgnoreName = YES;
+                        JXTypeIDIgnoreName = YES;
                         [types addObject:JXTypeWithEncoding(enc)];
-                        JXIDTypeIgnoreName = NO;
+                        JXTypeIDIgnoreName = NO;
                     }
                     *enc += 1; // eat '"'
                     const char *fieldEnd = strchr(*enc, '"');

@@ -8,15 +8,48 @@
 
 #import <objc/runtime.h>
 #import "JXType.h"
-#import "JXBasicType.h"
-#import "JXIDType.h"
-#import "JXBitFieldType.h"
-#import "JXPointerType.h"
-#import "JXStructType.h"
-#import "JXUnionType.h"
-#import "JXArrayType.h"
+#import "JXTypeBasic.h"
+#import "JXTypeID.h"
+#import "JXTypeBitField.h"
+#import "JXTypePointer.h"
+#import "JXTypeStruct.h"
+#import "JXTypeUnion.h"
+#import "JXTypeArray.h"
 
 @implementation JXType
+
++ (BOOL)supportsEncoding:(char)encoding {
+    return NO;
+}
+
+- (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
+    self = [super init];
+    if (self) {
+        _qualifiers = qualifiers;
+    }
+    return self;
+}
+
+- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
+    // head comes before the field name, tail comes after
+    return [JXTypeDescription descriptionWithHead:@"" tail:@""];
+}
+
+- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding {
+    NSString *qualifiers = JXStringForTypeQualifiers(_qualifiers);
+    if (qualifiers) qualifiers = [qualifiers stringByAppendingString:@" "];
+    else qualifiers = @"";
+
+    JXTypeDescription *type = [self _descriptionWithPadding:padding];
+    return [JXTypeDescription
+            descriptionWithHead:[qualifiers stringByAppendingString:type.head]
+            tail:type.tail];
+}
+
+- (NSString *)description {
+    JXTypeDescription *desc = [self descriptionWithPadding:NO];
+    return [desc.head stringByAppendingString:desc.tail];
+}
 
 - (NSString *)stringBetweenStart:(const char *)start end:(const char *)end {
     long len = end - start;
@@ -37,41 +70,6 @@
     return num;
 }
 
-+ (BOOL)supportsEncoding:(char)encoding {
-    return NO;
-}
-
-- (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
-    self = [super init];
-    if (self) {
-        _qualifiers = qualifiers;
-    }
-    return self;
-}
-
-// without qualifiers (overriden by subclasses)
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
-    // head comes before the field name, tail comes after
-    return [JXTypeDescription descriptionWithHead:@"" tail:@""];
-}
-
-// with qualifiers
-- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding {
-    NSString *qualifiers = JXStringForTypeQualifiers(_qualifiers);
-    if (qualifiers) qualifiers = [qualifiers stringByAppendingString:@" "];
-    else qualifiers = @"";
-
-    JXTypeDescription *type = [self _descriptionWithPadding:padding];
-    return [JXTypeDescription
-            descriptionWithHead:[qualifiers stringByAppendingString:type.head]
-            tail:type.tail];
-}
-
-- (NSString *)description {
-    JXTypeDescription *desc = [self descriptionWithPadding:NO];
-    return [desc.head stringByAppendingString:desc.tail];
-}
-
 @end
 
 JXType *JXTypeForEncoding(const char *enc) {
@@ -84,13 +82,13 @@ JXType *JXTypeWithEncoding(const char **enc) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         allTypes = @[
-            [JXBasicType class],
-            [JXIDType class],
-            [JXBitFieldType class],
-            [JXPointerType class],
-            [JXStructType class],
-            [JXUnionType class],
-            [JXArrayType class]
+            [JXTypeBasic class],
+            [JXTypeID class],
+            [JXTypeBitField class],
+            [JXTypePointer class],
+            [JXTypeStruct class],
+            [JXTypeUnion class],
+            [JXTypeArray class]
         ];
     });
 

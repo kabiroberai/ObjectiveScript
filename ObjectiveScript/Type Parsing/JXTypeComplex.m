@@ -17,7 +17,7 @@
 + (char)startDelim { return 0; }
 + (char)endDelim { return 0; }
 + (NSString *)typeName {
-    @throw JXCreateException([NSString stringWithFormat:@"%s should not be called directly.", __PRETTY_FUNCTION__]);
+    @throw JXCreateExceptionFormat(@"%s should not be called directly.", __PRETTY_FUNCTION__);
 }
 
 + (BOOL)supportsEncoding:(char)encoding {

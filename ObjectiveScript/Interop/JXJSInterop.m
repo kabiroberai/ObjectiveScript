@@ -32,6 +32,14 @@ NSException *JXCreateException(NSString *reason) {
 	return [NSException exceptionWithName:@"JXException" reason:reason userInfo:nil];
 }
 
+NSException *JXCreateExceptionFormat(NSString *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    NSString *reason = [[NSString alloc] initWithFormat:format arguments:ap];
+    va_end(ap);
+    return JXCreateException(reason);
+}
+
 /// Create a JS error from an NSException
 JSValue *JXConvertToError(NSException *e, JSContext *ctx) {
 	NSString *message = [NSString stringWithFormat:@"%@: %@", e.name, e.reason];
@@ -188,7 +196,7 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
         block(obj.val);
     } else if (*type == _C_ARY_B) {
         JXType *jxType = JXTypeForEncoding(type);
-        @throw JXCreateException([NSString stringWithFormat:@"Array type '%@' is not assignable", jxType]);
+        @throw JXCreateExceptionFormat(@"Array type '%@' is not assignable", jxType);
     } else if (isType(SEL)) {
 		SEL sel = NSSelectorFromString([value toString]);
 		block(&sel);

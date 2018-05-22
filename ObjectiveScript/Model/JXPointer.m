@@ -50,8 +50,6 @@
     } else if ([key isEqualToString:@"advancedBy"]) {
 
         return [JSValue valueWithObject:^JSValue *(ptrdiff_t n) {
-//             // JXObjectFromJSValue will work with native JS numbers as well as NSNumbers
-//            ptrdiff_t num = [JXObjectFromJSValue(n) integerValue];
             void *newVal = (char *)self.val + n * self.size;
             // we use [JSContext currentContext] instead of ctx to avoid setting up a retain cycle
             return JXObjectToJSValue([JXPointer pointerWithVal:newVal type:self.type], [JSContext currentContext]);
@@ -62,11 +60,9 @@
         return [JSValue valueWithObject:^ptrdiff_t (JSValue *endJS) {
             JXPointer *end = JXObjectFromJSValue(endJS);
             if (![end.type isEqualToString:self.type]) {
-                @throw JXCreateException([NSString stringWithFormat:@"End type (\"%@\") not equal to callee type (\"%@\")", end.type, self.type]);
+                @throw JXCreateExceptionFormat(@"End type (\"%@\") not equal to callee type (\"%@\")", end.type, self.type);
             }
             return ((char *)end.val - (char *)self.val) / self.size;
-//            // return as NSDecimalNumber so that it stores 64 bit precision, and can have operations like add/subtract done on it
-//            return JXObjectToJSValue([NSDecimalNumber numberWithUnsignedInteger:dist], [JSContext currentContext]);
         } inContext:ctx];
 
     } else if ([key isEqualToString:@"withType"]) {

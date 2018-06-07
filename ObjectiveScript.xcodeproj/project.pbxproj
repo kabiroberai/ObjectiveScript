@@ -680,11 +680,6 @@
 		56E2096120C7E87B0078269A /* Testing */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					x86_64,
-					arm64,
-					armv7,
-				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/vendored/**";

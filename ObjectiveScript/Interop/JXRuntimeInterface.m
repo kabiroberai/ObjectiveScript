@@ -86,7 +86,11 @@ JSValue *JXCallMethod(Class cls, JSContext *ctx, id obj, NSString *selName, JSVa
 	SEL sel = NSSelectorFromString(selName);
 	if (!sel || !obj) return [JSValue valueWithUndefinedInContext:ctx];
 	NSMethodSignature *sig = [obj methodSignatureForSelector:sel];
-	if (!sig) return [JSValue valueWithUndefinedInContext:ctx];
+    BOOL isClassMethod = object_isClass(obj);
+    if (!sig) {
+        @throw JXCreateExceptionFormat(@"%@[%@ %@]: Attempted to send unrecognized selector to instance %p",
+                                       isClassMethod ? @"+" : @"-", NSStringFromClass(cls), selName, obj);
+    }
 	NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
 	inv.target = obj;
 	inv.selector = sel;
@@ -97,7 +101,7 @@ JSValue *JXCallMethod(Class cls, JSContext *ctx, id obj, NSString *selName, JSVa
 	});
 	
 	IMP imp;
-	if (object_isClass(obj)) {
+	if (isClassMethod) {
 		Method m = class_getClassMethod(cls, sel);
 		imp = method_getImplementation(m);
 	} else {

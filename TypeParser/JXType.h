@@ -6,8 +6,6 @@
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#define JX_USE_FFI 1
-
 #import <Foundation/Foundation.h>
 #import "JXTypeQualifiers.h"
 #import "JXTypeDescription.h"
@@ -42,25 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-#if JX_USE_FFI
-NS_ASSUME_NONNULL_END
-#import <ffi.h>
-NS_ASSUME_NONNULL_BEGIN
-
-@interface JXType (FFI)
-- (nullable ffi_type *)ffiType;
-@end
-#endif
-
 // returns a parsed JXType given an encoding. Use this as an entry point for parsing encodings.
 JXType * _Nullable JXTypeForEncoding(const char *enc);
 // same as above but moves enc forward by the length of the encoding
 JXType * _Nullable JXTypeWithEncoding(const char * _Nonnull * _Nonnull enc);
-
-#if JX_USE_FFI
-size_t JXSizeForEncoding(const char *enc);
-ffi_type *JXAllocateCompoundFFIType(size_t len);
-void JXFreeFFIType(ffi_type *type);
-#endif
 
 NS_ASSUME_NONNULL_END

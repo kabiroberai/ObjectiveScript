@@ -88,13 +88,3 @@ BOOL __thread JXTypeIDIgnoreName = NO;
 }
 
 @end
-
-#if JX_USE_FFI
-@implementation JXTypeID (FFI)
-
-- (ffi_type *)ffiType {
-    return &ffi_type_pointer;
-}
-
-@end
-#endif

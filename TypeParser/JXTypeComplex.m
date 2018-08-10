@@ -16,9 +16,7 @@
 
 + (char)startDelim { return 0; }
 + (char)endDelim { return 0; }
-+ (NSString *)typeName {
-    @throw JXCreateExceptionFormat(@"%s should not be called directly.", __PRETTY_FUNCTION__);
-}
++ (NSString *)typeName { return nil; }
 
 + (BOOL)supportsEncoding:(char)encoding {
     return encoding == [[self class] startDelim];

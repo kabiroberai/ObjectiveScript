@@ -8,7 +8,7 @@
 
 #import "JXTrampInfo.h"
 #import "Block.h"
-#import "JXType.h"
+#import "JXType+FFI.h"
 
 @implementation JXTrampInfo {
 	JXTrampInfo *_retained;

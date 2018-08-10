@@ -16,7 +16,7 @@
 #import "JXJSInterop.h"
 #import "JXBlockInterop.h"
 #import "JXAssociatedObjects.h"
-#import "JXType.h"
+#import "JXType+FFI.h"
 #import "JXPointer.h"
 
 @interface NSInvocation (Hax)

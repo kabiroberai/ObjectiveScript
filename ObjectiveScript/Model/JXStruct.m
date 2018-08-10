@@ -9,7 +9,7 @@
 #import <ffi.h>
 #import "JXJSInterop.h"
 #import "JXStruct.h"
-#import "JXTypeStruct.h"
+#import "JXTypeStruct+FFI.h"
 
 @implementation JXStruct {
 	size_t *_offsets;

@@ -10,6 +10,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#if __i386__
+// suppresses warning about using __thread on 32-bit simulator
+#define __thread
+#endif
+
 // __thread ensures that in the middle of one JXTypeWithEncoding call where this is YES,
 // if a JXTypeWithEncoding call occurs on another thread, this isn't YES on that thread
 // too, which would be incorrect

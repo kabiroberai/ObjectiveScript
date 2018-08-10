@@ -13,7 +13,8 @@
 #import "JXTrampInfo.h"
 #import "JXJSInterop.h"
 #import "JXRuntimeInterface.h"
-#import "JXType.h"
+#import "JXType+FFI.h"
+#import "JXTypeBasic+FFI.h"
 #import "JXBlockInterop.h"
 
 @interface NSInvocation (hacks)

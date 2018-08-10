@@ -9,7 +9,7 @@
 #import <ffi.h>
 #import "JXPointer.h"
 #import "JXJSInterop.h"
-#import "JXType.h"
+#import "JXType+FFI.h"
 
 @implementation JXPointer
 

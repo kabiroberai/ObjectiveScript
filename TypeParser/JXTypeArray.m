@@ -44,20 +44,3 @@
 }
 
 @end
-
-#if JX_USE_FFI
-@implementation JXTypeArray (FFI)
-
-- (ffi_type *)ffiType {
-    ffi_type *compoundType = JXAllocateCompoundFFIType(self.count);
-
-    // fill each slot of the compound type with `type`
-    for (NSUInteger i = 0; i < self.count; i++) {
-        compoundType->elements[i] = [self.type ffiType];
-    }
-
-    return compoundType;
-}
-
-@end
-#endif

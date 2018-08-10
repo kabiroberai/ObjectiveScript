@@ -1,26 +1,16 @@
 //
-//  JXTypeStruct.m
+//  JXTypeStruct+FFI.m
 //  ObjectiveScript
 //
-//  Created by Kabir Oberai on 10/03/18.
+//  Created by Kabir Oberai on 29/07/18.
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#import <objc/runtime.h>
-#import "JXTypeStruct.h"
+#import "JXTypeStruct+FFI.h"
 
-@implementation JXTypeStruct
-
-+ (char)startDelim { return _C_STRUCT_B; }
-+ (char)endDelim { return _C_STRUCT_E; }
-+ (NSString *)typeName { return @"struct"; }
-
-@end
-
-#if JX_USE_FFI
 @implementation JXTypeStruct (FFI)
 
-- (ffi_type *)ffiType {
+- (ffi_type *)_ffiType {
     if (!self.types) return NULL;
 
     NSUInteger len = self.types.count;
@@ -37,4 +27,3 @@
 }
 
 @end
-#endif

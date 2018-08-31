@@ -19,6 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *name;
 @property (nonatomic, readonly) void *val;
 
+// when copy is NO, saves a reference to the passed in `val` rather than copying it
+// this is useful when the struct is part of an L-value
+// eg. in ptr.pointee.width = 5 we would not want `pointee` to be copied
 - (instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy;
 + (instancetype)structWithVal:(void *)val type:(const char *)type copy:(BOOL)copy;
 // also copies the type of the value at `index` into `type`

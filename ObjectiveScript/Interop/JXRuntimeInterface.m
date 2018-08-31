@@ -39,7 +39,7 @@ static void withCallContext(NSDictionary *items, JSContext *ctx, void (^block)(v
 
 static JSValue *callFunc(JSValue *func, id self, Class cls, id orig, NSMutableArray<JSValue *> *methodArgs) {
 	JSContext *ctx = func.context;
-    // JXMemoryModeNone is needed because the method may be deinit where we can't retain/release self
+    // JXInteropOptionNone is needed because the method may be deinit where we can't retain/release self
 	JSValue *selfJS = JXConvertToJSValue(&self, @encode(id), ctx, JXInteropOptionNone);
 	
 #define COALESCE(val) ((val) ? : [NSNull null])

@@ -46,7 +46,7 @@
         _name = [self stringBetweenStart:encStart+1 end:*enc];
 
         // ? represents an anonymous struct/union
-        if ([_name isEqualToString:@"?"]) _name = nil;
+        if ([_name isEqualToString:@"?"] || [_name isEqualToString:@""]) _name = nil;
 
         if (hasTypeInfo) {
             *enc += 1; // eat '=' as well

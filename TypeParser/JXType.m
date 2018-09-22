@@ -71,6 +71,10 @@
 
 @end
 
+JXType *JXTypeVoid() {
+    return JXTypeForEncoding(@encode(void));
+}
+
 JXType *JXTypeForEncoding(const char *enc) {
     return JXTypeWithEncoding(&enc);
 }

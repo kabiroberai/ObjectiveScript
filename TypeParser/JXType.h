@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+JXType *JXTypeVoid(void);
 // returns a parsed JXType given an encoding. Use this as an entry point for parsing encodings.
 JXType * _Nullable JXTypeForEncoding(const char *enc);
 // same as above but moves enc forward by the length of the encoding

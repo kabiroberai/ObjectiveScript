@@ -9,5 +9,28 @@
 #import <Foundation/Foundation.h>
 #import "JXType.h"
 
+typedef NS_ENUM(NSUInteger, JXPrimitiveType) {
+    JXPrimitiveTypeCharPtr,
+    JXPrimitiveTypeClass,
+    JXPrimitiveTypeSelector,
+    JXPrimitiveTypeChar,
+    JXPrimitiveTypeUnsignedChar,
+    JXPrimitiveTypeShort,
+    JXPrimitiveTypeUnsignedShort,
+    JXPrimitiveTypeInt,
+    JXPrimitiveTypeUnsignedInt,
+    JXPrimitiveTypeLong,
+    JXPrimitiveTypeUnsignedLong,
+    JXPrimitiveTypeLongLong,
+    JXPrimitiveTypeUnsignedLongLong,
+    JXPrimitiveTypeFloat,
+    JXPrimitiveTypeDouble,
+    JXPrimitiveTypeBOOL,
+    JXPrimitiveTypeVoid
+};
+
 @interface JXTypeBasic : JXType
+
+@property (nonatomic, readonly) JXPrimitiveType primitiveType;
+
 @end

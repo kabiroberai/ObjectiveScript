@@ -71,10 +71,11 @@
                         [types removeLastObject];
                         *enc = prevTypeEnc;
 
-                        // TODO: Add thread lock or whatever here
-                        JXTypeIDIgnoreName = YES;
-                        [types addObject:JXTypeWithEncoding(enc)];
-                        JXTypeIDIgnoreName = NO;
+                        @synchronized (JXTypeIDIgnoreNameLock) {
+                            JXTypeIDIgnoreName = YES;
+                            [types addObject:JXTypeWithEncoding(enc)];
+                            JXTypeIDIgnoreName = NO;
+                        }
                     }
                     *enc += 1; // eat '"'
                     const char *fieldEnd = strchr(*enc, '"');

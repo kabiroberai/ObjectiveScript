@@ -1,7 +1,7 @@
-#ifdef __i386__
+#ifdef __x86_64__
 
 /* -----------------------------------------------------------------*-C-*-
-   libffi 3.99999 - Copyright (c) 2011, 2014 Anthony Green
+   libffi 3.3-rc0 - Copyright (c) 2011, 2014 Anthony Green
                     - Copyright (c) 1996-2003, 2007, 2008 Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person
@@ -51,8 +51,8 @@ extern "C" {
 #endif
 
 /* Specify which architecture libffi is configured for. */
-#ifndef X86_DARWIN
-#define X86_DARWIN
+#ifndef X86_64
+#define X86_64
 #endif
 
 /* ---- System configuration information --------------------------------- */
@@ -110,6 +110,32 @@ typedef struct _ffi_type
   struct _ffi_type **elements;
 } ffi_type;
 
+/* Need minimal decorations for DLLs to work on Windows.  GCC has
+   autoimport and autoexport.  Always mark externally visible symbols
+   as dllimport for MSVC clients, even if it means an extra indirection
+   when using the static version of the library.
+   Besides, as a workaround, they can define FFI_BUILDING if they
+   *know* they are going to link with the static library.  */
+#if defined _MSC_VER
+# if defined FFI_BUILDING_DLL /* Building libffi.DLL with msvcc.sh */
+#  define FFI_API __declspec(dllexport)
+# elif !defined FFI_BUILDING  /* Importing libffi.DLL */
+#  define FFI_API __declspec(dllimport)
+# else                        /* Building/linking static library */
+#  define FFI_API
+# endif
+#else
+# define FFI_API
+#endif
+
+/* The externally visible type declarations also need the MSVC DLL
+   decorations, or they will not be exported from the object file.  */
+#if defined LIBFFI_HIDE_BASIC_TYPES
+# define FFI_EXTERN FFI_API
+#else
+# define FFI_EXTERN extern FFI_API
+#endif
+
 #ifndef LIBFFI_HIDE_BASIC_TYPES
 #if SCHAR_MAX == 127
 # define ffi_type_uchar                ffi_type_uint8
@@ -157,19 +183,6 @@ typedef struct _ffi_type
 # define ffi_type_slong        ffi_type_sint64
 #else
  #error "long size not supported"
-#endif
-
-/* Need minimal decorations for DLLs to works on Windows.  GCC has
-   autoimport and autoexport.  Rely on Libtool to help MSVC export
-   from a DLL, but always declare data to be imported for MSVC
-   clients.  This costs an extra indirection for MSVC clients using
-   the static version of the library, but don't worry about that.
-   Besides, as a workaround, they can define FFI_BUILDING if they
-   *know* they are going to link with the static library.  */
-#if defined _MSC_VER && !defined FFI_BUILDING
-#define FFI_EXTERN extern __declspec(dllimport)
-#else
-#define FFI_EXTERN extern
 #endif
 
 /* These are defined in types.c.  */
@@ -258,26 +271,31 @@ typedef ffi_raw ffi_java_raw;
 #endif
 
 
+FFI_API 
 void ffi_raw_call (ffi_cif *cif,
 		   void (*fn)(void),
 		   void *rvalue,
 		   ffi_raw *avalue);
 
-void ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
-void ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
-size_t ffi_raw_size (ffi_cif *cif);
+FFI_API void ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
+FFI_API void ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
+FFI_API size_t ffi_raw_size (ffi_cif *cif);
 
 /* This is analogous to the raw API, except it uses Java parameter
    packing, even on 64-bit machines.  I.e. on 64-bit machines longs
    and doubles are followed by an empty 64-bit word.  */
 
+FFI_API
 void ffi_java_raw_call (ffi_cif *cif,
 			void (*fn)(void),
 			void *rvalue,
 			ffi_java_raw *avalue);
 
+FFI_API
 void ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_java_raw *raw);
+FFI_API
 void ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_java_raw *raw, void **args);
+FFI_API
 size_t ffi_java_raw_size (ffi_cif *cif);
 
 /* ---- Definitions for closures ----------------------------------------- */
@@ -309,10 +327,10 @@ typedef struct {
 # endif
 #endif
 
-void *ffi_closure_alloc (size_t size, void **code);
-void ffi_closure_free (void *);
+FFI_API void *ffi_closure_alloc (size_t size, void **code);
+FFI_API void ffi_closure_free (void *);
 
-ffi_status
+FFI_API ffi_status
 ffi_prep_closure (ffi_closure*,
 		  ffi_cif *,
 		  void (*fun)(ffi_cif*,void*,void**,void*),
@@ -324,7 +342,7 @@ ffi_prep_closure (ffi_closure*,
 #endif
   ;
 
-ffi_status
+FFI_API ffi_status
 ffi_prep_closure_loc (ffi_closure*,
 		      ffi_cif *,
 		      void (*fun)(ffi_cif*,void*,void**,void*),
@@ -385,26 +403,26 @@ typedef struct {
 
 } ffi_java_raw_closure;
 
-ffi_status
+FFI_API ffi_status
 ffi_prep_raw_closure (ffi_raw_closure*,
 		      ffi_cif *cif,
 		      void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
 		      void *user_data);
 
-ffi_status
+FFI_API ffi_status
 ffi_prep_raw_closure_loc (ffi_raw_closure*,
 			  ffi_cif *cif,
 			  void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
 			  void *user_data,
 			  void *codeloc);
 
-ffi_status
+FFI_API ffi_status
 ffi_prep_java_raw_closure (ffi_java_raw_closure*,
 		           ffi_cif *cif,
 		           void (*fun)(ffi_cif*,void*,ffi_java_raw*,void*),
 		           void *user_data);
 
-ffi_status
+FFI_API ffi_status
 ffi_prep_java_raw_closure_loc (ffi_java_raw_closure*,
 			       ffi_cif *cif,
 			       void (*fun)(ffi_cif*,void*,ffi_java_raw*,void*),
@@ -421,22 +439,24 @@ typedef struct {
   void     (*fun)(ffi_cif*,void*,void**,void*);
 } ffi_go_closure;
 
-ffi_status ffi_prep_go_closure (ffi_go_closure*, ffi_cif *,
+FFI_API ffi_status ffi_prep_go_closure (ffi_go_closure*, ffi_cif *,
 				void (*fun)(ffi_cif*,void*,void**,void*));
 
-void ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue,
+FFI_API void ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue,
 		  void **avalue, void *closure);
 
 #endif /* FFI_GO_CLOSURES */
 
 /* ---- Public interface definition -------------------------------------- */
 
+FFI_API 
 ffi_status ffi_prep_cif(ffi_cif *cif,
 			ffi_abi abi,
 			unsigned int nargs,
 			ffi_type *rtype,
 			ffi_type **atypes);
 
+FFI_API
 ffi_status ffi_prep_cif_var(ffi_cif *cif,
 			    ffi_abi abi,
 			    unsigned int nfixedargs,
@@ -444,11 +464,13 @@ ffi_status ffi_prep_cif_var(ffi_cif *cif,
 			    ffi_type *rtype,
 			    ffi_type **atypes);
 
+FFI_API
 void ffi_call(ffi_cif *cif,
 	      void (*fn)(void),
 	      void *rvalue,
 	      void **avalue);
 
+FFI_API
 ffi_status ffi_get_struct_offsets (ffi_abi abi, ffi_type *struct_type,
 				   size_t *offsets);
 

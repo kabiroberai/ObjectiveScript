@@ -12,4 +12,6 @@
 
 @property (nonatomic) NSUInteger bits;
 
+- (instancetype)initWithBits:(NSUInteger)bits;
+
 @end

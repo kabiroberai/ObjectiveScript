@@ -32,6 +32,18 @@
     return self;
 }
 
+- (instancetype)initWithType:(JXType *)type isFunction:(BOOL)isFunction {
+    NSString *encoding = [NSString stringWithFormat:@"^%@%@", isFunction ? @"?" : @"", type.encoding];
+    const char *enc = encoding.UTF8String;
+    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
+    if (self) {
+        _encoding = encoding;
+        _type = type;
+        _isFunction = isFunction;
+    }
+    return self;
+}
+
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     if (self.isFunction) {
         return [JXTypeDescription descriptionWithHead:@"void (*" tail:@")(void)"];

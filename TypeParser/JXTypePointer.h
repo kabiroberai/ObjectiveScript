@@ -13,4 +13,6 @@
 @property (nonatomic, readonly) JXType *type;
 @property (nonatomic, readonly) BOOL isFunction;
 
+- (instancetype)initWithType:(JXType *)type isFunction:(BOOL)isFunction;
+
 @end

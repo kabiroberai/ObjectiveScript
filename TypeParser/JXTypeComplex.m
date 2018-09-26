@@ -103,6 +103,28 @@
     return self;
 }
 
+- (instancetype)initWithName:(NSString *)name types:(NSArray<JXType *> *)types fieldNames:(NSArray<NSString *> *)fieldNames {
+    NSMutableString *str = [NSMutableString stringWithFormat:@"%c%@", [[self class] startDelim], name ?: @"?"];
+    if (types) {
+        [str appendString:@"="];
+        for (int i = 0; i < types.count; i++) {
+            if (fieldNames) {
+                [str appendFormat:@"\"%@\"", fieldNames[i]];
+            }
+            [str appendString:types[i].encoding];
+        }
+    }
+    const char *enc = str.UTF8String;
+    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
+    if (self) {
+        _encoding = [str copy];
+        _name = name;
+        _types = types;
+        _fieldNames = fieldNames;
+    }
+    return self;
+}
+
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     // if the type metadata is present, add it to the description
     NSMutableString *typesStr = [NSMutableString string];

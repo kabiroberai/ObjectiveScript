@@ -29,6 +29,17 @@
     return self;
 }
 
+- (instancetype)initWithBits:(NSUInteger)bits {
+    NSString *str = [NSString stringWithFormat:@"%c%lu", _C_BFLD, bits];
+    const char *enc = str.UTF8String;
+    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
+    if (self) {
+        _encoding = str;
+        _bits = bits;
+    }
+    return self;
+}
+
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     return [JXTypeDescription
             descriptionWithHead:[@"unsigned int" stringByAppendingString: padding ? @" " : @""]

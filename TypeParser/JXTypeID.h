@@ -19,6 +19,8 @@ extern NSString *JXTypeIDIgnoreNameLock;
 @property (nonatomic, readonly, nullable) NSArray<NSString *> *protocols;
 @property (nonatomic, readonly) BOOL isBlock;
 
+- (instancetype)initWithName:(nullable NSString *)name protocols:(nullable NSArray<NSString *> *)protocols isBlock:(BOOL)isBlock;
+
 @end
 
 NS_ASSUME_NONNULL_END

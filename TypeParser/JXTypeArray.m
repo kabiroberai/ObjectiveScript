@@ -36,6 +36,18 @@
     return self;
 }
 
+- (instancetype)initWithCount:(NSUInteger)count type:(JXType *)type {
+    NSString *encoding = [NSString stringWithFormat:@"[%lu%@]", count, type.encoding];
+    const char *enc = encoding.UTF8String;
+    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
+    if (self) {
+        _encoding = encoding;
+        _count = count;
+        _type = type;
+    }
+    return self;
+}
+
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     JXTypeDescription *subDescription = [self.type descriptionWithPadding:padding];
     return [JXTypeDescription

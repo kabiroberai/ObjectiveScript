@@ -33,6 +33,36 @@
     return self;
 }
 
+- (instancetype)initWithPrimitiveType:(JXPrimitiveType)primitiveType {
+    char type;
+    switch (primitiveType) {
+        case JXPrimitiveTypeCharPtr:          type = _C_CHARPTR; break;
+        case JXPrimitiveTypeClass:            type = _C_CLASS; break;
+        case JXPrimitiveTypeSelector:         type = _C_SEL; break;
+        case JXPrimitiveTypeChar:             type = _C_CHR; break;
+        case JXPrimitiveTypeUnsignedChar:     type = _C_UCHR; break;
+        case JXPrimitiveTypeShort:            type = _C_SHT; break;
+        case JXPrimitiveTypeUnsignedShort:    type = _C_USHT; break;
+        case JXPrimitiveTypeInt:              type = _C_INT; break;
+        case JXPrimitiveTypeUnsignedInt:      type = _C_UINT; break;
+        case JXPrimitiveTypeLong:             type = _C_LNG; break;
+        case JXPrimitiveTypeUnsignedLong:     type = _C_ULNG; break;
+        case JXPrimitiveTypeLongLong:         type = _C_LNG_LNG; break;
+        case JXPrimitiveTypeUnsignedLongLong: type = _C_ULNG_LNG; break;
+        case JXPrimitiveTypeFloat:            type = _C_FLT; break;
+        case JXPrimitiveTypeDouble:           type = _C_DBL; break;
+        case JXPrimitiveTypeBOOL:             type = _C_BOOL; break;
+        case JXPrimitiveTypeVoid:             type = '\0'; break;
+    }
+    NSString *encoding = [NSString stringWithFormat:@"%c", type];
+    const char *enc = encoding.UTF8String;
+    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
+    if (self) {
+        _encoding = encoding;
+    }
+    return self;
+}
+
 - (JXPrimitiveType)primitiveType {
     switch (*self.encoding.UTF8String) {
         case _C_CHARPTR:  return JXPrimitiveTypeCharPtr;

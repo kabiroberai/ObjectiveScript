@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSUInteger count;
 @property (nonatomic, readonly) JXType *type;
 
+- (instancetype)initWithCount:(NSUInteger)count type:(JXType *)type;
+
 @end
 
 NS_ASSUME_NONNULL_END

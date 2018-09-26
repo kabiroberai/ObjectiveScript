@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 // nil if no name info
 @property (nonatomic, readonly, nullable) NSArray<NSString *> *fieldNames;
 
+- (instancetype)initWithName:(nullable NSString *)name types:(nullable NSArray<JXType *> *)types fieldNames:(nullable NSArray<NSString *> *)fieldNames;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -67,6 +67,31 @@ NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
     return self;
 }
 
+- (instancetype)initWithName:(NSString *)name protocols:(NSArray<NSString *> *)protocols isBlock:(BOOL)isBlock {
+    NSMutableString *curr = [@(@encode(id)) mutableCopy];
+    if (isBlock) {
+        [curr appendString:@"?"];
+    } else {
+        if (name || protocols) [curr appendString:@"\""];
+        if (name) [curr appendString:name];
+        if (protocols) {
+            for (NSString *proto in protocols) {
+                [curr appendFormat:@"<%@>", proto];
+            }
+        }
+        if (name || protocols) [curr appendString:@"\""];
+    }
+    const char *enc = curr.UTF8String;
+    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
+    if (self) {
+        _encoding = [curr copy];
+        _name = name;
+        _protocols = protocols;
+        _isBlock = isBlock;
+    }
+    return self;
+}
+
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     // if there are any protocols, add them to the description
     NSString *protoList;

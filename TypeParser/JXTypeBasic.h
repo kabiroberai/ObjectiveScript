@@ -33,4 +33,6 @@ typedef NS_ENUM(NSUInteger, JXPrimitiveType) {
 
 @property (nonatomic, readonly) JXPrimitiveType primitiveType;
 
+- (instancetype)initWithPrimitiveType:(JXPrimitiveType)primitiveType;
+
 @end

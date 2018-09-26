@@ -30,7 +30,7 @@
 }
 
 - (instancetype)initWithBits:(NSUInteger)bits {
-    NSString *str = [NSString stringWithFormat:@"%c%lu", _C_BFLD, bits];
+    NSString *str = [NSString stringWithFormat:@"%c%lu", _C_BFLD, (long)bits];
     const char *enc = str.UTF8String;
     self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
     if (self) {

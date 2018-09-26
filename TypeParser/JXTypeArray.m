@@ -37,7 +37,7 @@
 }
 
 - (instancetype)initWithCount:(NSUInteger)count type:(JXType *)type {
-    NSString *encoding = [NSString stringWithFormat:@"[%lu%@]", count, type.encoding];
+    NSString *encoding = [NSString stringWithFormat:@"[%lu%@]", (long)count, type.encoding];
     const char *enc = encoding.UTF8String;
     self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
     if (self) {

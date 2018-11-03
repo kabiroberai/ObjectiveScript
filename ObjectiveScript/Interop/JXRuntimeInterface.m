@@ -261,16 +261,33 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
 	// If this is a swizzled method, create a function that JS can call, to call the original method
 	if (orig) {
 		origFunc = ^JSValue *(JSValue *argsJS) {
-			// Parse the args passed into origJS and populate the args array accordingly
+            uint32_t argsLen = 2 + [argsJS[@"length"] toUInt32];
+            // we can't use the original args array because if origFunc
+            // is captured, it may exist after args is freed
+            void **passedArgs = malloc(sizeof(void *) * (argsLen + 1));
+
+            passedArgs[0] = malloc(sizeof(id));
+            *(id __unsafe_unretained *)passedArgs[0] = self;
+
+            passedArgs[1] = malloc(sizeof(SEL));
+            *(SEL *)passedArgs[1] = _cmd;
+
+            passedArgs[argsLen] = NULL;
+
+			// Parse the args passed into origJS and populate the passedArgs array accordingly
 			parseArgs(argsJS, sig, ^(int i, void *val) {
-				memcpy(args[i], val, cif->arg_types[i]->size);
+                size_t argSize = cif->arg_types[i]->size;
+                passedArgs[i] = malloc(argSize);
+                memcpy(passedArgs[i], val, argSize);
 			});
-			
+
 			size_t size = cif->rtype->size;
 			
 			void *rval = malloc(size);
 			@try {
-				ffi_call(cif, orig, rval, args);
+				ffi_call(cif, orig, rval, passedArgs);
+                for (uint32_t i = 0; i < argsLen; i++) free(passedArgs[i]);
+                free(passedArgs);
 			} @catch (NSException *e) {
 				JSContext *ctx = [JSContext currentContext];
 				ctx.exception = JXConvertToError(e, ctx);

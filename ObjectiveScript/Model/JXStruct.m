@@ -59,7 +59,7 @@
     }
 
     if (idx >= _type.types.count) {
-        @throw JXCreateExceptionFormat(@"Index %lu out of bounds of struct %@", (unsigned long)idx, _type.name);
+        JXThrow(JXCreateExceptionFormat(@"Index %lu out of bounds of struct %@", (unsigned long)idx, _type.name));
     }
 
     *type = _type.types[idx].encoding.UTF8String;

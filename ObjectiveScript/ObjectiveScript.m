@@ -239,7 +239,7 @@ static void setup() {
 
 static void configureContext(JSContext *ctx) {
 	ctx.exceptionHandler = ^(JSContext *ctx, JSValue *error) {
-		@throw JXConvertFromError(error);
+		JXThrow(JXConvertFromError(error));
 	};
 	
 	// For logging messages

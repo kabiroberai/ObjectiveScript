@@ -28,6 +28,56 @@ NSArray<NSString *> *JXKeysOfDict(JSValue *dict) {
 	return [[dict.context[@"Object"][@"keys"] callWithArguments:@[dict]] toArray];
 }
 
+static NSString *makeExceptionLog(NSException *e) {
+    NSMutableDictionary *userInfo = [e.userInfo mutableCopy] ?: [NSMutableDictionary dictionary];
+
+    NSString *exceptionType;
+    if (userInfo[@"JXIsJSError"]) {
+        [userInfo removeObjectForKey:@"JXIsJSError"];
+        exceptionType = @"JS error";
+    } else {
+        exceptionType = @"exception";
+    }
+    NSMutableString *exceptionLog = [NSMutableString stringWithFormat:@"*** Terminating app due to uncaught %@ '%@'", exceptionType, e.name];
+    if (e.reason) {
+        [exceptionLog appendFormat:@", reason: '%@'", e.reason];
+    }
+
+    if (userInfo[@"JXStackTrace"]) {
+        NSString *jxStackTrace = [[userInfo[@"JXStackTrace"] componentsSeparatedByString:@"\n"] componentsJoinedByString:@"\n\t"];
+        [userInfo removeObjectForKey:@"JXStackTrace"];
+        [exceptionLog appendFormat:@"\n\n*** JS exception call stack:\n(\n\t%@\n)", jxStackTrace];
+    }
+    if (e.callStackSymbols) {
+        [exceptionLog appendFormat:@"\n\n*** First throw call stack:\n%@", e.callStackSymbols];
+    }
+    [exceptionLog appendFormat:@"\n\n*** Objective-C call stack:\n%@", NSThread.callStackSymbols];
+
+    if (userInfo.count > 0) {
+        [exceptionLog appendFormat:@"\n\n*** User info:\n%@", userInfo];
+    }
+
+    return [exceptionLog copy];
+}
+
+void JXThrow(NSException *e) {
+    NSURL *libraryURL = [NSFileManager.defaultManager URLForDirectory:NSLibraryDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:nil];
+    if (libraryURL) {
+        NSURL *logDir = [libraryURL URLByAppendingPathComponent:@"SuperchargeLogs"];
+        [NSFileManager.defaultManager createDirectoryAtURL:logDir withIntermediateDirectories:YES attributes:nil error:nil];
+
+        NSDateFormatter *formatter = [NSDateFormatter new];
+        [formatter setDateFormat:@"yyyy-MM-dd-HHmmss"];
+        NSString *filename = [formatter stringFromDate:[NSDate date]];
+        NSURL *logURL = [[logDir URLByAppendingPathComponent:filename] URLByAppendingPathExtension:@"crash"];
+
+        NSString *exceptionLog = makeExceptionLog(e);
+        [exceptionLog writeToURL:logURL atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        JX_DEBUG(@"Wrote exception log to %@", logURL);
+    }
+    @throw e;
+}
+
 NSException *JXCreateException(NSString *reason) {
 	return [NSException exceptionWithName:@"JXException" reason:reason userInfo:nil];
 }
@@ -55,7 +105,15 @@ NSException *JXConvertFromError(JSValue *error) {
 	
 	NSString *name = [error[@"name"] toString];
 	NSString *reason = [error[@"message"] toString];
-	return [NSException exceptionWithName:name reason:reason userInfo:nil];
+    NSString *stack = [error[@"stack"] toString];
+
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+    userInfo[@"JXIsJSError"] = @YES;
+    if (stack) {
+        userInfo[@"JXStackTrace"] = stack;
+    }
+
+    return [NSException exceptionWithName:name reason:reason userInfo:userInfo];
 }
 
 // JXConvert[To|From]JSValue Inspired by https://github.com/steipete/Aspects and https://github.com/ReactiveCocoa/ReactiveCocoa/blob/db51e2bb2ceb7464db71b190cf133105e83dd378/ReactiveObjC/NSInvocation%2BRACTypeParsing.m
@@ -196,7 +254,7 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
         block(obj.val);
     } else if (*type == _C_ARY_B) {
         JXType *jxType = JXTypeForEncoding(type);
-        @throw JXCreateExceptionFormat(@"Array type '%@' is not assignable", jxType);
+        JXThrow(JXCreateExceptionFormat(@"Array type '%@' is not assignable", jxType));
     } else if (isType(SEL)) {
 		SEL sel = NSSelectorFromString([value toString]);
 		block(&sel);

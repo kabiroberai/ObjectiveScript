@@ -20,6 +20,8 @@
 - (instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy {
 	self = [super init];
 	if (self) {
+        _rawType = @(type);
+
 		_type = (JXTypeStruct *)JXTypeForEncoding(type);
 
         _name = _type.name;
@@ -111,6 +113,15 @@
     JXConvertFromJSValue(property, type, ^(void *newVal) {
         memcpy(addr, newVal, JXSizeForEncoding(type));
     });
+}
+
+- (NSString *)extendedTypeInContext:(JSContext *)ctx {
+    JSValue *type = ctx[@"structDefs"][self.name];
+    if (type.isString) {
+        return type.toString;
+    } else {
+        return nil;
+    }
 }
 
 - (void)dealloc {

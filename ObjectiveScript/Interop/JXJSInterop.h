@@ -35,6 +35,9 @@ JSValue * _Nullable JXObjectToJSValue(id _Nullable val, JSContext *ctx);
 void JXConvertFromJSValue(JSValue *value, const char *rawType, void (^block)(void *));
 id _Nullable JXObjectFromJSValue(JSValue *value);
 
+JSValue * _Nullable JXCastValue(JSValue *value, const char *rawType);
+NSString * _Nullable JXGuessEncoding(JSValue *value);
+
 JSValue * _Nullable JXUnboxValue(id _Nullable obj, JSContext *ctx);
 
 NS_ASSUME_NONNULL_END

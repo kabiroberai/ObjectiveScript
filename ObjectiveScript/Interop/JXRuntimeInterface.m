@@ -79,11 +79,6 @@ static void parseArgs(JSValue *args, NSMethodSignature *sig, void (^block)(int, 
 JSValue *JXCallMethod(Class cls, JSContext *ctx, id obj, NSString *selName, JSValue *args) {
 	JX_DEBUG(@"Method %@ is being called on %@", selName, obj);
 	
-	if ([selName isEqualToString:@"Symbol.toPrimitive:"]) { // called by JS during type coercion
-//		NSString *hint = [args[0] toString]; // number, string, or default
-		return [JSValue valueWithObject:[obj description] inContext:ctx];
-	}
-	
 	SEL sel = NSSelectorFromString(selName);
 	if (!sel || !obj) return [JSValue valueWithUndefinedInContext:ctx];
 	NSMethodSignature *sig = [obj methodSignatureForSelector:sel];
@@ -175,16 +170,15 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 	// if variadic, append the rest of the types to `sig`
 	if (isVariadic) {
 		NSMutableString *var = [NSMutableString stringWithCapacity:nvarargs];
-        // every vararg is prefixed by its type on the JS side
-		for (uint32_t i = nfixedargs; i < nargs; i += 2) {
+		for (uint32_t i = nfixedargs; i < nargs; i++) {
             JSValue *val = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
-			[var appendString:val.toString];
+			[var appendString:JXGuessEncoding(val)];
 		}
 		NSString *fullTypes = [types stringByAppendingString:var];
 		sig = [NSMethodSignature signatureWithObjCTypes:fullTypes.UTF8String];
 
         // set nargs to the real number of args (subtract the number of type indicators)
-        nargs = nfixedargs + nvarargs / 2;
+        nargs = nfixedargs + nvarargs;
     }
 
     ffi_type *args[nargs];
@@ -206,22 +200,10 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 	// create an array of argument values
 	void *argvals[nargs];
 	for (uint32_t i = 0; i < nargs; i++) {
-        // the index of the argument in the jsArgs array.
-        // equal to i for non-variadic calls, but for variadic
-        // ones it should fetch only the actual values, not the
-        // type arguments
-        uint32_t jsIdx;
-        if (i >= nfixedargs) {
-            uint32_t varidx = i - nfixedargs;
-            jsIdx = nfixedargs + 1 + varidx * 2;
-        } else {
-            jsIdx = i;
-        }
-
 		size_t argSize = args[i]->size;
 		// we can't assign to argvals[i] directly because the compiler doesn't like it, so make a temp var
 		__block void *argval = malloc(argSize);
-		JSValue *jsVal = [JSValue valueWithJSValueRef:jsArgs[jsIdx] inContext:ctx];
+		JSValue *jsVal = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
 		JXConvertFromJSValue(jsVal, [sig getArgumentTypeAtIndex:i], ^(void *val) {
 			// copy val into the _val buffer
 			memcpy(argval, val, argSize);

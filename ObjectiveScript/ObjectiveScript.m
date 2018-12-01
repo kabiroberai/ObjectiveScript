@@ -29,6 +29,7 @@ static JSClassRef JXGlobalClass;
 static JSClassRef JXMethodClass;
 static JSClassRef JXFunctionClass;
 JSClassRef JXObjectClass;
+JSClassRef JXValueWrapperClass;
 JSClassRef JXAutoreleasingObjectClass;
 
 // iterate through the methods of JS dict `obj`
@@ -62,6 +63,43 @@ static JSContext *contextFromJSContextRef(JSContextRef ref) {
 }
 
 // TODO: Fix ivar memory management (allow different OBJC_ASSOCIATIONs)
+
+// common method call parsing code used by both JXMethod ([foo bar], i.e. foo["@bar"]()) and
+// property-like method calls (foo.bar)
+static JSValueRef methodCall(JSContextRef jsCtx, NSString *selName, JSObjectRef objRef,
+                             size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
+    // cleans up selector name, and then calls JXCallMethod
+
+    JSContext *ctx = contextFromJSContextRef(jsCtx);
+
+    JSValue *objJS = [JSValue valueWithJSValueRef:objRef inContext:ctx];
+    id obj = JXObjectFromJSValue(objJS);
+
+    JSValue *args = [JSValue valueWithNewArrayInContext:ctx];
+    for (size_t i = 0; i < argumentCount; i++) {
+        args[i] = [JSValue valueWithJSValueRef:arguments[i] inContext:ctx];
+    }
+
+    BOOL isSuper = NO;
+    if ([selName hasPrefix:@"^"]) {
+        selName = [selName substringFromIndex:1];
+        isSuper = YES;
+    } else if ([selName hasPrefix:@"@"]) {
+        selName = [selName substringFromIndex:1];
+    }
+
+    // TODO: Add varargs support if possible (although even Swift-ObjC interop doesn't have it)
+
+    Class cls = isSuper ? [NSClassFromString([ctx[@"clsName"] toString]) superclass] : [obj class];
+
+    JSValue *jsVal;
+    @try {
+        jsVal = JXCallMethod(cls, ctx, obj, selName, args);
+    } @catch (NSException *e) {
+        *exception = JXConvertToError(e, ctx).JSValueRef;
+    }
+    return jsVal.JSValueRef;
+}
 
 // Intercept global getProperty calls to return a class with the name propertyName if there isn't an object by the same name
 static JSValueRef globalGetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS, JSValueRef *exception) {
@@ -120,7 +158,31 @@ static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
         if (val) return val.JSValueRef;
         else return [JSValue valueWithUndefinedInContext:ctx].JSValueRef;
     }
-	
+
+    if ([propertyName isEqualToString:@"Symbol.toPrimitive"]) { // called by JS during type coercion
+//        NSString *hint = [args[0] toString]; // number, string, or default
+        JSContext *ctx = contextFromJSContextRef(ctxRef);
+        return [JSValue valueWithObject:^NSString *{
+            return [private description];
+        } inContext:ctx].JSValueRef;
+    }
+
+    if (![propertyName hasPrefix:@"@"] && ![propertyName hasPrefix:@"^"]) {
+        // check if there's an objc property by this name, which has a custom getter name
+        objc_property_t prop = class_getProperty([private class], propertyName.UTF8String);
+        if (prop) {
+            char *getterName = property_copyAttributeValue(prop, "getter");
+            if (getterName) {
+                // if so, then call that method
+                JSValueRef ret = methodCall(ctxRef, @(getterName), object, 0, NULL, exception);
+                free(getterName);
+                return ret;
+            }
+        }
+        // otherwise just call the method named propertyName
+        return methodCall(ctxRef, propertyName, object, 0, NULL, exception);
+    }
+
 	return JSObjectMake(ctxRef, JXMethodClass, (__bridge_retained void *)propertyName);
 }
 
@@ -136,7 +198,23 @@ static bool objectSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
         return true;
     }
 
-    return false;
+    const JSValueRef args[] = { valueRef };
+
+    objc_property_t prop = class_getProperty([private class], propertyName.UTF8String);
+    if (prop) {
+        char *setterName = property_copyAttributeValue(prop, "setter");
+        if (setterName) {
+            methodCall(ctxRef, @(setterName), object, 1, args, exception);
+            free(setterName);
+            return true;
+        }
+    }
+
+    NSString *setterSEL = [NSString stringWithFormat:@"set%@%@:",
+                           [[propertyName substringToIndex:1] uppercaseString],
+                           [propertyName substringFromIndex:1]];
+    methodCall(ctxRef, setterSEL, object, 1, args, exception);
+    return true;
 }
 
 static void releasePrivate(JSObjectRef object) {
@@ -150,47 +228,14 @@ static void releasePrivate(JSObjectRef object) {
 	});
 }
 
-static JSValueRef methodCall(JSContextRef jsCtx, JSObjectRef function, JSObjectRef objRef,
-						  size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
-    // cleans up selector name, and then calls JXCallMethod
-
-	JSContext *ctx = contextFromJSContextRef(jsCtx);
-
-	JSValue *objJS = [JSValue valueWithJSValueRef:objRef inContext:ctx];
-	id obj = JXObjectFromJSValue(objJS);
-	
-	NSString *selName = (__bridge id)JSObjectGetPrivate(function);
-
-	JSValue *args = [JSValue valueWithNewArrayInContext:ctx];
-	for (size_t i = 0; i < argumentCount; i++) {
-		args[i] = [JSValue valueWithJSValueRef:arguments[i] inContext:ctx];
-	}
-	
-	BOOL isSuper = NO;
-	if ([selName hasPrefix:@"^"]) {
-		selName = [selName substringFromIndex:1];
-		isSuper = YES;
-	}
-	
-	// TODO: Add varargs support if possible (although even Swift-ObjC interop doesn't have it)
-	
-	size_t implicitArgs = argumentCount; // the number of trailing colons to add
-	// decrement the number of implicit colons every time we see one explicitly added
-	for (int i = 0; i < [selName lengthOfBytesUsingEncoding:NSUTF8StringEncoding]; i++) {
-		if ([selName characterAtIndex:i] == ':') implicitArgs--;
-	}
-	// add the final num of implicit colons to the end
-	selName = [selName stringByPaddingToLength:selName.length+implicitArgs withString:@":" startingAtIndex:0];
-	
-	Class cls = isSuper ? [NSClassFromString([ctx[@"clsName"] toString]) superclass] : [obj class];
-	
-	JSValue *jsVal;
-	@try {
-		jsVal = JXCallMethod(cls, ctx, obj, selName, args);
-	} @catch (NSException *e) {
-		*exception = JXConvertToError(e, ctx).JSValueRef;
-	}
-	return jsVal.JSValueRef;
+static JSValueRef methodCallViaJSFunction(JSContextRef jsCtx,
+                                          JSObjectRef function,
+                                          JSObjectRef objRef,
+                                          size_t argumentCount,
+                                          const JSValueRef arguments[],
+                                          JSValueRef *exception) {
+    NSString *selName = (__bridge id)JSObjectGetPrivate(function);
+    return methodCall(jsCtx, selName, objRef, argumentCount, arguments, exception);
 }
 
 static JSValueRef functionCall(JSContextRef ctxRef, JSObjectRef function, JSObjectRef objRef,
@@ -217,10 +262,10 @@ static void setup() {
 	});
 	
 	JXMethodClass = createClass("JXMethod", ^(JSClassDefinition *def) {
-		def->callAsFunction = methodCall;
+		def->callAsFunction = methodCallViaJSFunction;
 		def->finalize = releasePrivate;
 	});
-	
+
 	JXFunctionClass = createClass("JXFunction", ^(JSClassDefinition *def) {
 		def->callAsFunction = functionCall;
 		def->finalize = releasePrivate;
@@ -230,17 +275,23 @@ static void setup() {
 		def->getProperty = objectGetProperty;
         def->setProperty = objectSetProperty;
 	});
-	
+
 	JXAutoreleasingObjectClass = createClass("JXAutoreleasingObject", ^(JSClassDefinition *def) {
 		def->parentClass = JXObjectClass;
 		def->finalize = releasePrivate;
 	});
+
+    JXValueWrapperClass = createClass("JXValueWrapper", ^(JSClassDefinition *def) {
+        def->parentClass = JXAutoreleasingObjectClass;
+    });
 }
 
 static void configureContext(JSContext *ctx) {
 	ctx.exceptionHandler = ^(JSContext *ctx, JSValue *error) {
 		JXThrow(JXConvertFromError(error));
 	};
+
+    ctx[@"structDefs"] = [JSValue valueWithNewObjectInContext:ctx];
 	
 	// For logging messages
 	ctx[@"NSLog"] = ^(JSValue *msg) {
@@ -288,6 +339,10 @@ static void configureContext(JSContext *ctx) {
 		// Register associated objects
 		JXRegisterAssociatedObjects(associatedObjects, clsName);
 	};
+
+    ctx[@"defineStruct"] = ^(NSString *name, NSString *sig) {
+        [JSContext currentContext][@"structDefs"][name] = sig;
+    };
 	
 	ctx[@"defineBlock"] = ^JSValue *(NSString *sig, JSValue *func) {
 		return JXCreateBlock(sig, func);
@@ -339,13 +394,20 @@ static void configureContext(JSContext *ctx) {
 		return func;
 	};
 
-    ctx[@"Pointer"] = ^JSValue *(NSString *enc) {
-        // equivalent to loadFunc("malloc", "^vQ", false)(loadFunc("JXSizeForEncoding", "Q*", false)(enc)).withType(enc);
-        void *ptr = malloc(JXSizeForEncoding(enc.UTF8String));
+    ctx[@"Pointer"] = ^JSValue *(NSString *enc, JSValue *zeroMemory) {
+        size_t size = JXSizeForEncoding(enc.UTF8String);
+        void *ptr = zeroMemory.toBool ? calloc(1, size) : malloc(size);
         const char *fullType = [@"^" stringByAppendingString:enc].UTF8String;
         return JXConvertToJSValue(&ptr, fullType, [JSContext currentContext], JXInteropOptionRetain | JXInteropOptionAutorelease);
     };
 
+    ctx[@"sizeof"] = ^size_t(NSString *enc) {
+        return JXSizeForEncoding(enc.UTF8String);
+    };
+
+    ctx[@"cast"] = ^JSValue *(NSString *enc, JSValue *val) {
+        return JXCastValue(val, enc.UTF8String);
+    };
 }
 
 // non-static so that it can be tested

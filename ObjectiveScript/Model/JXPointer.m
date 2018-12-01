@@ -65,12 +65,6 @@
             return ((char *)end.val - (char *)self.val) / self.size;
         } inContext:ctx];
 
-    } else if ([key isEqualToString:@"withType"]) {
-
-        return [JSValue valueWithObject:^JSValue *(NSString *type) {
-            return JXObjectToJSValue([JXPointer pointerWithVal:self.val type:type], [JSContext currentContext]);
-        } inContext:ctx];
-
     }
 
     NSInteger num;

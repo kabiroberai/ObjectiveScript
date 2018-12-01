@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface JXStruct : NSObject <JXKVC>
 
 @property (nonatomic, readonly) NSString *name;
+@property (nonatomic, readonly) NSString *rawType;
 @property (nonatomic, readonly) void *val;
 
 // when copy is NO, saves a reference to the passed in `val` rather than copying it
@@ -27,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 // also copies the type of the value at `index` into `type`
 - (nullable void *)getValueWithName:(NSString *)name type:(const char * _Nonnull * _Nonnull)type NS_RETURNS_INNER_POINTER;
 - (NSString *)descriptionWithContext:(JSContext *)ctx;
+
+- (nullable NSString *)extendedTypeInContext:(JSContext *)ctx;
 
 @end
 

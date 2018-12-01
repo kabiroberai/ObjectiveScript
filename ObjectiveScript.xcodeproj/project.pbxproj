@@ -38,6 +38,7 @@
 		567830982010803E00298EDC /* JXStruct.m in Sources */ = {isa = PBXBuildFile; fileRef = 567830972010803E00298EDC /* JXStruct.m */; };
 		56A149C01FE53CA0008B6BED /* ObjectiveScriptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */; };
 		56A149C21FE53CA0008B6BED /* libObjectiveScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */; };
+		56A8175321B2DE210052D0B6 /* JXValueWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A8175221B2DE210052D0B6 /* JXValueWrapper.m */; };
 		56D558E11FE4252A00CF5720 /* ObjectiveScript.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 56D558E01FE4234A00CF5720 /* ObjectiveScript.h */; };
 /* End PBXBuildFile section */
 
@@ -136,6 +137,8 @@
 		56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ObjectiveScriptTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveScriptTests.m; sourceTree = "<group>"; };
 		56A149C11FE53CA0008B6BED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		56A8175121B2DE210052D0B6 /* JXValueWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXValueWrapper.h; sourceTree = "<group>"; };
+		56A8175221B2DE210052D0B6 /* JXValueWrapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXValueWrapper.m; sourceTree = "<group>"; };
 		56AF99842055968200F58032 /* JXTypeComplex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeComplex.h; sourceTree = "<group>"; };
 		56AF99852055968200F58032 /* JXTypeComplex.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeComplex.m; sourceTree = "<group>"; };
 		56AF998720559A6700F58032 /* JXTypeUnion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeUnion.h; sourceTree = "<group>"; };
@@ -192,6 +195,8 @@
 				566F05DD204E99570088199B /* JXPointer.m */,
 				560E02122066DC9000D73F28 /* JXArray.h */,
 				560E02132066DC9000D73F28 /* JXArray.m */,
+				56A8175121B2DE210052D0B6 /* JXValueWrapper.h */,
+				56A8175221B2DE210052D0B6 /* JXValueWrapper.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -489,6 +494,7 @@
 				56515E71210DCEF00092D8BD /* JXType+FFI.m in Sources */,
 				56667B6F2019CB980032DFFF /* JXSymbol.m in Sources */,
 				565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */,
+				56A8175321B2DE210052D0B6 /* JXValueWrapper.m in Sources */,
 				56515E82210DD0950092D8BD /* JXTypeStruct+FFI.m in Sources */,
 				565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */,
 				56515E85210DD0D60092D8BD /* JXTypeArray+FFI.m in Sources */,

@@ -15,6 +15,7 @@
 #import "ObjectiveScript.h"
 #import "JXBlockInterop.h"
 #import "JXPointer.h"
+#import "JXValueWrapper.h"
 #import "JXTypeQualifiers.h"
 #import "JXTypeArray.h"
 #import "JXArray.h"
@@ -22,6 +23,7 @@
 #define isType(primitive) (is(type, primitive))
 
 JSClassRef JXAutoreleasingObjectClass;
+JSClassRef JXValueWrapperClass;
 JSClassRef JXObjectClass;
 
 NSArray<NSString *> *JXKeysOfDict(JSValue *dict) {
@@ -141,10 +143,9 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
         BOOL copyStructs = (options & JXInteropOptionCopyStructs);
         JXStruct *jxStruct = [JXStruct structWithVal:val type:type copy:copyStructs];
 
-        JSValue *extendedMetadata = ctx[jxStruct.name];
-        if (extendedMetadata.isString) {
-            // if the ctx contains extended metadata info for the struct, change the type to the extended one
-            jxStruct = [JXStruct structWithVal:val type:[extendedMetadata toString].UTF8String copy:copyStructs];
+        NSString *extendedType = [jxStruct extendedTypeInContext:ctx];
+        if (extendedType) {
+            jxStruct = [JXStruct structWithVal:val type:extendedType.UTF8String copy:copyStructs];
         }
 
         obj = jxStruct;
@@ -177,7 +178,7 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
 	
 	BOOL retain = (options & JXInteropOptionRetain);
 	BOOL autorelease = (options & JXInteropOptionAutorelease);
-	
+
 	if (retain) CFRetain(bridged);
 	JSObjectRef ref = JSObjectMake(ctx.JSGlobalContextRef, autorelease ? JXAutoreleasingObjectClass : JXObjectClass, bridged);
 	JX_DEBUG(@"<JSObjectRef: %p; memoryMode = %li; private = %p>", ref, (long)memoryMode, obj);
@@ -190,6 +191,18 @@ JSValue *JXObjectToJSValue(id val, JSContext *ctx) {
 
 void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *)) {
 	JXRemoveQualifiers(&type);
+
+    JSContext *ctx = value.context;
+    JSContextRef ctxRef = ctx.JSGlobalContextRef;
+    JSValueRef valRef = value.JSValueRef;
+
+    if (JSValueIsObjectOfClass(ctxRef, valRef, JXValueWrapperClass)) {
+        JSObjectRef ref = JSValueToObject(ctxRef, valRef, nil);
+        id obj = (__bridge id)JSObjectGetPrivate(ref);
+        // if the value is surrounded by a JXValueWrapper, then perform the call on the unwrapped value
+        JXConvertFromJSValue([obj value], type, block);
+        return;
+    }
 
     // all numbers are internally doubles in JS
 #define cmpSet(primitive) else if (isType(primitive)) { \
@@ -204,10 +217,6 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
 	
 	if (*type == _C_ID || isType(Class)) {
 		id obj;
-
-		JSContext *ctx = value.context;
-		JSContextRef ctxRef = ctx.JSGlobalContextRef;
-		JSValueRef valRef = value.JSValueRef;
 
 		if (JSValueIsObjectOfClass(ctxRef, valRef, JXObjectClass)) {
 			// If value is our JXObjectClass type, fetch it accordingly
@@ -287,6 +296,53 @@ id JXObjectFromJSValue(JSValue *value) {
 		obj = *(id __unsafe_unretained *)ptr;
 	});
 	return obj;
+}
+
+JSValue *JXCastValue(JSValue *value, const char *rawType) {
+    JXRemoveQualifiers(&rawType);
+
+    JSContext *ctx = value.context;
+    JSContextRef ctxRef = ctx.JSGlobalContextRef;
+
+    if (*rawType == _C_PTR) {
+        // if the type is a pointer, just return a new JXPointer with the required rawType
+        JXPointer *ptr = JXObjectFromJSValue(value);
+        return JXObjectToJSValue([ptr withType:@(rawType + 1)], ctx);
+    } else if (*rawType == _C_STRUCT_B) {
+        // treat structs in a similar way as well
+        JXStruct *str = JXObjectFromJSValue(value);
+        return JXObjectToJSValue([JXStruct structWithVal:str.val type:rawType copy:NO], ctx);
+    }
+
+    // for everything else, wrap it in a JXValueWrapper
+    JXValueWrapper *valueWrapper = [[JXValueWrapper alloc] initWithTypes:@(rawType) value:value];
+    JSObjectRef ref = JSObjectMake(ctxRef, JXValueWrapperClass, (__bridge_retained void *)valueWrapper);
+    return [JSValue valueWithJSValueRef:ref inContext:ctx];
+}
+
+NSString *JXGuessEncoding(JSValue *value) {
+    if (value.isNumber) {
+        return @(@encode(double));
+    }
+
+    JSContext *ctx = value.context;
+    JSContextRef ctxRef = ctx.JSGlobalContextRef;
+    JSValueRef valRef = value.JSValueRef;
+
+    if (!JSValueIsObjectOfClass(ctxRef, valRef, JXObjectClass)) return @(@encode(id));
+
+    JSObjectRef objRef = JSValueToObject(ctxRef, valRef, nil);
+    __unsafe_unretained id obj = (__bridge id)JSObjectGetPrivate(objRef);
+
+    if ([obj isKindOfClass:JXPointer.class]) {
+        return [obj type];
+    } else if ([obj isKindOfClass:JXStruct.class]) {
+        return [obj extendedTypeInContext:ctx] ?: [obj rawType];
+    } else if ([obj isKindOfClass:JXValueWrapper.class]) {
+        return [obj types];
+    }
+
+    return @(@encode(id));
 }
 
 // Returns a (I think) lossless, native JS representation of `obj` if

@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithVal:(void *)val type:(NSString *)type;
 + (instancetype)pointerWithVal:(void *)val type:(NSString *)type;
 
+- (JXPointer *)withType:(NSString *)type;
+
 @end
 
 NS_ASSUME_NONNULL_END

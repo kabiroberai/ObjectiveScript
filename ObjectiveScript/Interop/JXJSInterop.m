@@ -45,6 +45,12 @@ static NSString *makeExceptionLog(NSException *e) {
         [exceptionLog appendFormat:@", reason: '%@'", e.reason];
     }
 
+    if (userInfo[@"JXLine"] && userInfo[@"JXColumn"]) {
+        NSNumber *line = userInfo[@"JXLine"];
+        NSNumber *column = userInfo[@"JXColumn"];
+        [exceptionLog appendFormat:@"\n\n*** JS exception location: %@:%@", line, column];
+    }
+
     if (userInfo[@"JXStackTrace"]) {
         NSString *jxStackTrace = [[userInfo[@"JXStackTrace"] componentsSeparatedByString:@"\n"] componentsJoinedByString:@"\n\t"];
         [userInfo removeObjectForKey:@"JXStackTrace"];
@@ -108,12 +114,14 @@ NSException *JXConvertFromError(JSValue *error) {
 	NSString *name = [error[@"name"] toString];
 	NSString *reason = [error[@"message"] toString];
     NSString *stack = [error[@"stack"] toString];
+    NSNumber *line = [error[@"line"] toNumber];
+    NSNumber *column = [error[@"column"] toNumber];
 
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     userInfo[@"JXIsJSError"] = @YES;
-    if (stack) {
-        userInfo[@"JXStackTrace"] = stack;
-    }
+    if (stack) userInfo[@"JXStackTrace"] = stack;
+    if (column) userInfo[@"JXColumn"] = column;
+    if (line) userInfo[@"JXLine"] = line;
 
     return [NSException exceptionWithName:name reason:reason userInfo:userInfo];
 }

@@ -48,6 +48,10 @@ static NSString *makeExceptionLog(NSException *e) {
     if (userInfo[@"JXLine"] && userInfo[@"JXColumn"]) {
         NSNumber *line = userInfo[@"JXLine"];
         NSNumber *column = userInfo[@"JXColumn"];
+
+        [userInfo removeObjectForKey:@"JXLine"];
+        [userInfo removeObjectForKey:@"JXColumn"];
+
         [exceptionLog appendFormat:@"\n\n*** JS exception location: %@:%@", line, column];
     }
 
@@ -143,9 +147,18 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
     // *type == _C_ID accounts for objects and blocks, with or without class names
 	if (*type == _C_ID || isType(Class)) obj = as(id __strong);
     else if (*type == _C_PTR) {
+        void *converted = as(void *);
+        if (!converted) return [JSValue valueWithNullInContext:ctx];
         // type+1  removes the initial '^'
-        JXPointer *ptr = [JXPointer pointerWithVal:as(void *) type:@(type+1)];
+        JXPointer *ptr = [JXPointer pointerWithVal:converted type:@(type+1)];
         obj = ptr;
+    }
+    else if (*type == _C_ARY_B) {
+        // we don't do the converted check for arrays because they're always inside a struct, so
+        // val should never be NULL
+        JXTypeArray *arrayType = (JXTypeArray *)JXTypeForEncoding(type);
+        JXArray *arr = [JXArray arrayWithVal:val type:arrayType.type.encoding count:arrayType.count];
+        obj = arr;
     }
     else if (*type == _C_STRUCT_B) {
         BOOL copyStructs = (options & JXInteropOptionCopyStructs);
@@ -158,13 +171,16 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
 
         obj = jxStruct;
     }
-    else if (*type == _C_ARY_B) {
-        JXTypeArray *arrayType = (JXTypeArray *)JXTypeForEncoding(type);
-        JXArray *arr = [JXArray arrayWithVal:val type:arrayType.type.encoding count:arrayType.count];
-        obj = arr;
+    else if (isType(SEL)) {
+        SEL converted = as(SEL);
+        if (!converted) return [JSValue valueWithNullInContext:ctx];
+        ret(NSStringFromSelector(converted))
     }
-	else if (isType(SEL)) ret(NSStringFromSelector(as(SEL)))
-	retIf(char *)
+    else if (isType(char *)) {
+        char *converted = as(char *);
+        if (!converted) return [JSValue valueWithNullInContext:ctx];
+        ret(@(converted))
+    }
 	retIf(float)
 	retIf(double)
 	retIf(bool)
@@ -189,12 +205,12 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
 
 	if (retain) CFRetain(bridged);
 	JSObjectRef ref = JSObjectMake(ctx.JSGlobalContextRef, autorelease ? JXAutoreleasingObjectClass : JXObjectClass, bridged);
-	JX_DEBUG(@"<JSObjectRef: %p; memoryMode = %li; private = %p>", ref, (long)memoryMode, obj);
+    JX_DEBUG(@"<JSObjectRef: %p; retained: %d, autorelease: %d; private = %p>", ref, retain, autorelease, obj);
 	return [JSValue valueWithJSValueRef:ref inContext:ctx];
 }
 
 JSValue *JXObjectToJSValue(id val, JSContext *ctx) {
-	return JXConvertToJSValue(&val, @encode(id), ctx, JXInteropOptionRetain | JXInteropOptionAutorelease);
+	return JXConvertToJSValue(&val, @encode(id), ctx, JXInteropOptionDefault);
 }
 
 void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *)) {

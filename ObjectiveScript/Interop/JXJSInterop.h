@@ -17,6 +17,7 @@ typedef NS_OPTIONS(NSUInteger, JXInteropOptions) {
     JXInteropOptionRetain = 1 << 0,
     JXInteropOptionAutorelease = 1 << 1,
     JXInteropOptionCopyStructs = 1 << 2,
+    JXInteropOptionDefault = JXInteropOptionRetain | JXInteropOptionAutorelease,
 };
 
 NSArray<NSString *> *JXKeysOfDict(JSValue *dict);

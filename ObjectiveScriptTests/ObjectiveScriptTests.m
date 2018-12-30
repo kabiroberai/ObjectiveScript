@@ -60,7 +60,7 @@ JSContext *JXCreateContext(void);
 
 - (void)testJSPerformance {
 	JSContext *ctx = JXCreateContext();
-	[ctx evaluateScript:@"loadFunc('strcmp', 'i**');"];
+	[ctx evaluateScript:@"loadFunc('strcmp', 'i**', true);"];
 	
 	[self measureBlock:^{
 		[ctx evaluateScript:@"for (var i = 0; i < 10000; i++) strcmp('hello', 'henlo');"];

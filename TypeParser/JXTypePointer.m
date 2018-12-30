@@ -7,12 +7,13 @@
 //
 
 #import "JXTypePointer.h"
+#import "JXTypeBasic.h"
 #import <objc/runtime.h>
 
 @implementation JXTypePointer
 
 + (BOOL)supportsEncoding:(char)encoding {
-    return encoding == _C_PTR;
+    return encoding == _C_PTR || encoding == _C_CHARPTR;
 }
 
 - (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
@@ -20,12 +21,17 @@
     if (self) {
         const char *encStart = *enc;
 
-        *enc += 1; // eat '^'
+        if (**enc == _C_CHARPTR) {
+            _type = JXTypeForEncoding(@encode(char));
+            *enc += 1; // eat '*'
+        } else {
+            *enc += 1; // eat '^'
 
-        // ^? represents a function
-        if (**enc == '?') _isFunction = YES;
+            // ^? represents a function
+            if (**enc == '?') _isFunction = YES;
 
-        _type = JXTypeWithEncoding(enc);
+            _type = JXTypeWithEncoding(enc);
+        }
 
         _encoding = [self stringBetweenStart:encStart end:*enc];
     }
@@ -34,6 +40,14 @@
 
 - (instancetype)initWithType:(JXType *)type isFunction:(BOOL)isFunction {
     NSString *encoding = [NSString stringWithFormat:@"^%@%@", isFunction ? @"?" : @"", type.encoding];
+    if ([type isKindOfClass:JXTypeBasic.class]) {
+        JXTypeBasic *basicType = (JXTypeBasic *)type;
+        // `char *` has a special type
+        if (basicType.primitiveType == JXPrimitiveTypeChar) {
+            encoding = [NSString stringWithFormat:@"%c", _C_CHARPTR];
+        }
+    }
+
     const char *enc = encoding.UTF8String;
     self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
     if (self) {

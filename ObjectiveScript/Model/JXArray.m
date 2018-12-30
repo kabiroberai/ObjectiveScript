@@ -29,6 +29,8 @@
         return JXConvertToJSValue(&_count, @encode(NSUInteger), ctx, JXInteropOptionNone);
     }
 
+    // we could add a check here to ensure that the array index is within bounds, but C allows out-of-bounds
+    // access (although it's UB)
     return [super jsPropertyForKey:key ctx:ctx];
 }
 

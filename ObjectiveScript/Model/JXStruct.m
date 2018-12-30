@@ -77,7 +77,7 @@
             NSString *fieldName = _type.fieldNames[i];
             const char *type;
             void *val = [self getValueWithName:fieldName type:&type];
-            JSValue *jsVal = JXConvertToJSValue(val, type, ctx, JXInteropOptionRetain | JXInteropOptionAutorelease);
+            JSValue *jsVal = JXConvertToJSValue(val, type, ctx, JXInteropOptionDefault);
             [fields addObject:[NSString stringWithFormat:@"%@ = %@", fieldName, jsVal]];
         }
         return [NSString stringWithFormat:@"(%@)", [fields componentsJoinedByString:@", "]];
@@ -94,7 +94,7 @@
             return ret;
         } inContext:ctx];
     } else if ([key isEqualToString:@"withType"]) {
-        JXInteropOptions options = JXInteropOptionRetain | JXInteropOptionAutorelease;
+        JXInteropOptions options = JXInteropOptionDefault;
         if (_isCopy) options |= JXInteropOptionCopyStructs;
         return [JSValue valueWithObject:^JSValue *(NSString *type) {
             return JXConvertToJSValue(self.val, type.UTF8String, [JSContext currentContext], options);
@@ -103,7 +103,7 @@
 
     const char *type;
     void *val = [self getValueWithName:key type:&type];
-    return JXConvertToJSValue(val, type, ctx, JXInteropOptionRetain | JXInteropOptionAutorelease);
+    return JXConvertToJSValue(val, type, ctx, JXInteropOptionDefault);
 }
 
 - (void)setJSProperty:(JSValue *)property forKey:(NSString *)key ctx:(JSContext *)ctx {

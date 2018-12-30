@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import <objc/runtime.h>
-#import <dlfcn.h>
 #import "JXRuntimeInterface.h"
 #import "JXStruct.h"
 #import "JXSymbol.h"
@@ -17,6 +16,7 @@
 #import "JXBlockInterop.h"
 #import "JXAssociatedObjects.h"
 #import "JXType+FFI.h"
+#import "JXTypePointer.h"
 #import "JXPointer.h"
 
 @interface NSInvocation (Hax)
@@ -24,6 +24,8 @@
 - (void)invokeUsingIMP:(IMP)imp;
 
 @end
+
+static NSMutableDictionary<NSString *, JXSymbol *> *symbols;
 
 static JSClassRef JXGlobalClass;
 static JSClassRef JXMethodClass;
@@ -109,8 +111,6 @@ static JSValueRef globalGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
 	// self is blacklisted to avoid unwanted recursion due to the currSelfJS statement below
 	NSArray<NSString *> *blacklist = @[@"Object", @"self", @"JXPointer"];
 	if ([blacklist containsObject:propertyName]) return NULL;
-
-	JX_DEBUG(@"Searching for class %@", propertyName);
 	
 	JSContext *ctx = contextFromJSContextRef(ctxRef);
 	JSValue *currSelfJS = ctx[@"self"];
@@ -122,9 +122,19 @@ static JSValueRef globalGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
 	}
 	
 	// Otherwise return the ObjC class named propertyName (if any)
+    JX_DEBUG(@"Searching for class %@", propertyName);
 	Class cls = NSClassFromString(propertyName);
-	if (!cls) return NULL;
-	return JXObjectToJSValue(cls, ctx).JSValueRef;
+    if (cls) {
+        return JXObjectToJSValue(cls, ctx).JSValueRef;
+    }
+
+    // otherwise return symbol if it's been defined (via loadSymbol)
+    JXSymbol *sym = symbols[propertyName];
+    if (sym) {
+        return JXConvertToJSValue(sym.symbol, sym.types.UTF8String, ctx, JXInteropOptionDefault).JSValueRef;
+    }
+
+    return NULL;
 }
 
 static bool globalSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS,
@@ -136,13 +146,27 @@ static bool globalSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
 	if ([blacklist containsObject:propertyName]) return false;
 	
 	JSContext *ctx = contextFromJSContextRef(ctxRef);
+    JSValue *valueJS = [JSValue valueWithJSValueRef:valueRef inContext:ctx];
+
 	JSValue *currSelfJS = ctx[@"self"];
-	if (currSelfJS.isUndefined) return false;
-	JSValue *valueJS = [JSValue valueWithJSValueRef:valueRef inContext:ctx];
-	// otherwise treat propertyName as an ivar on currentSelf
-	id currSelf = JXObjectFromJSValue(currSelfJS);
-	id value = JXObjectFromJSValue(valueJS);
-	return JXSetAssociatedObject(propertyName, currSelf, value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (!currSelfJS.isUndefined) {
+        // otherwise treat propertyName as an ivar on currentSelf
+        id currSelf = JXObjectFromJSValue(currSelfJS);
+        id value = JXObjectFromJSValue(valueJS);
+        bool didSet = JXSetAssociatedObject(propertyName, currSelf, value, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        if (didSet) return true;
+    }
+
+    // otherwise try setting the value of a symbol by that name
+    JXSymbol *sym = symbols[propertyName];
+    if (sym) {
+        JXConvertFromJSValue(valueJS, sym.types.UTF8String, ^(void *val) {
+            memcpy(sym.symbol, val, JXSizeForEncoding(sym.types.UTF8String));
+        });
+        return true;
+    }
+
+    return false;
 }
 
 // Returns a JXMethodClass that holds the selector that was specified as propertyName
@@ -284,6 +308,8 @@ static void setup() {
     JXValueWrapperClass = createClass("JXValueWrapper", ^(JSClassDefinition *def) {
         def->parentClass = JXAutoreleasingObjectClass;
     });
+
+    symbols = [NSMutableDictionary new];
 }
 
 static void configureContext(JSContext *ctx) {
@@ -360,45 +386,47 @@ static void configureContext(JSContext *ctx) {
 		return JXUnboxValue(obj, [JSContext currentContext]);
 	};
 	
-	ctx[@"loadFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL returnOnly, JSValue *library) {
-		JSContext *ctx = [JSContext currentContext];
-		JSContextRef ctxRef = ctx.JSGlobalContextRef;
-		
-#define raiseExceptionIfNULL(val) if (!val) { \
-	NSException *e = JXCreateException(@(dlerror())); \
-	ctx.exception = JXConvertToError(e, ctx); \
-	return [JSValue valueWithUndefinedInContext:ctx]; \
-}
+	ctx[@"loadFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL global, JSValue *library) {
+        JSContext *ctx = [JSContext currentContext];
+        JSContextRef ctxRef = ctx.JSGlobalContextRef;
 
-		void *handle;
-		if (library.isString) {
-			const char *path = [library toString].UTF8String;
-			// only allow the executable to be searched via `handle` (RTLD_LOCAL),
-			// and when searching don't check other images (RTLD_FIRST)
-			handle = dlopen(path, RTLD_LOCAL | RTLD_FIRST);
-			raiseExceptionIfNULL(handle)
-		} else {
-			handle = RTLD_DEFAULT;
-		}
-		
-		void *sym = dlsym(handle, name.UTF8String);
-		raiseExceptionIfNULL(sym)
-		
-#undef raiseExceptionIfNULL
-		
-		JXSymbol *symbol = [[JXSymbol alloc] initWithSymbol:sym types:types];
-		JSObjectRef obj = JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)symbol);
-		
-		JSValue *func = [JSValue valueWithJSValueRef:obj inContext:ctx];
-		if (!returnOnly) ctx[name] = func;
-		return func;
+        void *sym = JXLoadSymbol(name, library);
+        if (!sym) return [JSValue valueWithUndefinedInContext:ctx];
+
+        JXSymbol *jxFunc = [[JXSymbol alloc] initWithSymbol:sym types:types];
+        JSObjectRef obj = JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)jxFunc);
+        JSValue *val = [JSValue valueWithJSValueRef:obj inContext:ctx];
+
+        if (global) ctx[name] = val;
+
+        return val;
 	};
+
+    ctx[@"loadSymbol"] = ^(NSString *name, NSString *types, JSValue *library) {
+        void *sym = JXLoadSymbol(name, library);
+        if (!sym) return;
+        symbols[name] = [[JXSymbol alloc] initWithSymbol:sym types:types];
+    };
+
+    ctx[@"getRef"] = ^JSValue *(NSString *name) {
+        JSContext *ctx = [JSContext currentContext];
+
+        JXSymbol *sym = symbols[name];
+        if (!sym) return [JSValue valueWithUndefinedInContext:ctx];
+
+        // we don't just prepend a ^ because if sym.types is `c` then the ptr should be `*` not `^c`
+        JXTypePointer *type = [[JXTypePointer alloc] initWithType:JXTypeForEncoding(sym.types.UTF8String) isFunction:NO];
+
+        // since we want the pointer to contain `symbol` itself, we pass &symbol to JXConvertToJSValue
+        void *symbol = sym.symbol;
+        return JXConvertToJSValue(&symbol, type.encoding.UTF8String, ctx, JXInteropOptionDefault);
+    };
 
     ctx[@"Pointer"] = ^JSValue *(NSString *enc, JSValue *zeroMemory) {
         size_t size = JXSizeForEncoding(enc.UTF8String);
         void *ptr = zeroMemory.toBool ? calloc(1, size) : malloc(size);
         const char *fullType = [@"^" stringByAppendingString:enc].UTF8String;
-        return JXConvertToJSValue(&ptr, fullType, [JSContext currentContext], JXInteropOptionRetain | JXInteropOptionAutorelease);
+        return JXConvertToJSValue(&ptr, fullType, [JSContext currentContext], JXInteropOptionDefault);
     };
 
     ctx[@"sizeof"] = ^size_t(NSString *enc) {
@@ -430,4 +458,3 @@ void JXRunScript(NSString *script, NSString *resourcesPath) {
 	ctx[@"resourcesPath"] = JXObjectToJSValue(resourcesPath, ctx);
 	[ctx evaluateScript:script];
 }
-

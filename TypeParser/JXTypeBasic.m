@@ -18,6 +18,7 @@
         case _C_STRUCT_B:
         case _C_UNION_B:
         case _C_BFLD:
+        case _C_CHARPTR:
         case _C_PTR: return NO;
         default: return YES;
     }
@@ -36,7 +37,6 @@
 - (instancetype)initWithPrimitiveType:(JXPrimitiveType)primitiveType {
     char type;
     switch (primitiveType) {
-        case JXPrimitiveTypeCharPtr:          type = _C_CHARPTR; break;
         case JXPrimitiveTypeClass:            type = _C_CLASS; break;
         case JXPrimitiveTypeSelector:         type = _C_SEL; break;
         case JXPrimitiveTypeChar:             type = _C_CHR; break;
@@ -65,7 +65,6 @@
 
 - (JXPrimitiveType)primitiveType {
     switch (*self.encoding.UTF8String) {
-        case _C_CHARPTR:  return JXPrimitiveTypeCharPtr;
         case _C_CLASS:    return JXPrimitiveTypeClass;
         case _C_SEL:      return JXPrimitiveTypeSelector;
         case _C_CHR:      return JXPrimitiveTypeChar;
@@ -88,7 +87,6 @@
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     NSString *head;
     switch ([self primitiveType]) {
-        case JXPrimitiveTypeCharPtr:          return [JXTypeDescription descriptionWithHead:@"char *" tail:@""];
         case JXPrimitiveTypeClass:            head = @"Class"; break;
         case JXPrimitiveTypeSelector:         head = @"SEL"; break;
         case JXPrimitiveTypeChar:             head = @"char"; break;

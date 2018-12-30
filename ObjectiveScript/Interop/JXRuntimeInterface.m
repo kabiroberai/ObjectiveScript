@@ -10,6 +10,7 @@
 #import <JavaScriptCore/JavaScriptCore.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
+#import <dlfcn.h>
 #import "JXTrampInfo.h"
 #import "JXJSInterop.h"
 #import "JXRuntimeInterface.h"
@@ -213,7 +214,7 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 
 	ffi_call(&cif, sym, rval, argvals);
 
-	JSValue *retVal = JXConvertToJSValue(rval, ret, ctx, JXInteropOptionRetain | JXInteropOptionAutorelease | JXInteropOptionCopyStructs);
+	JSValue *retVal = JXConvertToJSValue(rval, ret, ctx, JXInteropOptionDefault | JXInteropOptionCopyStructs);
 
 	// cleanup
 	free(rval);
@@ -231,11 +232,23 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
 	NSMethodSignature *sig = info.sig;
 	JSValue *func = info.func;
 	JSContext *ctx = func.context;
-	
+
+    BOOL isBlock = is([sig getArgumentTypeAtIndex:0], Block);
+    // The number of implicit arguments
+    int ignored = isBlock ? 1 : 2;
+
 	// __unsafe_unretained ensures that arc won't try to mess with self during dealloc calls
 	id __unsafe_unretained self = *(id __unsafe_unretained *)args[0];
-	SEL _cmd = *(SEL *)args[1];
-	NSString *sel = NSStringFromSelector(_cmd);
+
+    SEL _cmd;
+    NSString *sel;
+    if (isBlock) {
+        _cmd = NULL;
+        sel = nil;
+    } else {
+        _cmd = *(SEL *)args[1];
+        sel = NSStringFromSelector(_cmd);
+    }
 	
 	id origFunc = nil;
 	
@@ -243,7 +256,7 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
 	// If this is a swizzled method, create a function that JS can call, to call the original method
 	if (orig) {
 		origFunc = ^JSValue *(JSValue *argsJS) {
-            uint32_t argsLen = 2 + [argsJS[@"length"] toUInt32];
+            uint32_t argsLen = ignored + [argsJS[@"length"] toUInt32];
             // we can't use the original args array because if origFunc
             // is captured, it may exist after args is freed
             void **passedArgs = malloc(sizeof(void *) * (argsLen + 1));
@@ -251,8 +264,10 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
             passedArgs[0] = malloc(sizeof(id));
             *(id __unsafe_unretained *)passedArgs[0] = self;
 
-            passedArgs[1] = malloc(sizeof(SEL));
-            *(SEL *)passedArgs[1] = _cmd;
+            if (!isBlock) {
+                passedArgs[1] = malloc(sizeof(SEL));
+                *(SEL *)passedArgs[1] = _cmd;
+            }
 
             passedArgs[argsLen] = NULL;
 
@@ -274,16 +289,12 @@ static void tramp(ffi_cif *cif, void *ret, void **args, void *user_info) {
 				JSContext *ctx = [JSContext currentContext];
 				ctx.exception = JXConvertToError(e, ctx);
 			}
-			JSValue *parsedRet = JXConvertToJSValue(rval, sig.methodReturnType, ctx, JXInteropOptionRetain | JXInteropOptionAutorelease | JXInteropOptionCopyStructs);
+			JSValue *parsedRet = JXConvertToJSValue(rval, sig.methodReturnType, ctx, JXInteropOptionDefault | JXInteropOptionCopyStructs);
 			free(rval);
 			
 			return parsedRet;
 		};
 	}
-	
-	BOOL isBlock = is([info.sig getArgumentTypeAtIndex:0], Block);
-	// The number of args from the start to ignore
-	int ignored = isBlock ? 1 : 2;
 	
 	// Construct an array of JSValue arguments to pass to the JS method,
 	// based on the original arguments passed by the callee
@@ -367,3 +378,30 @@ void JXSwizzle(JSValue *func, Class cls, BOOL isClassMethod, SEL sel, NSString *
 	}
 }
 
+void *JXLoadSymbol(NSString *name, JSValue *library) {
+    JSContext *ctx = library.context;
+
+#define raiseExceptionIfNULL(val) if (!val) { \
+    NSException *e = JXCreateException(@(dlerror())); \
+    ctx.exception = JXConvertToError(e, ctx); \
+    return NULL; \
+}
+
+    void *handle;
+    if (library.isString) {
+        const char *path = [library toString].UTF8String;
+        // only allow the executable to be searched via `handle` (RTLD_LOCAL),
+        // and when searching don't check other images (RTLD_FIRST)
+        handle = dlopen(path, RTLD_LOCAL | RTLD_FIRST);
+        raiseExceptionIfNULL(handle)
+    } else {
+        handle = RTLD_DEFAULT;
+    }
+
+    void *sym = dlsym(handle, name.UTF8String);
+    raiseExceptionIfNULL(sym)
+
+#undef raiseExceptionIfNULL
+
+    return sym;
+}

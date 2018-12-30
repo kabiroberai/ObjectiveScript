@@ -45,7 +45,7 @@
 
     } else if ([key isEqualToString:@"pointee"]) {
 
-        return JXConvertToJSValue(self.val, self.type.UTF8String, ctx, JXInteropOptionRetain | JXInteropOptionAutorelease);
+        return JXConvertToJSValue(self.val, self.type.UTF8String, ctx, JXInteropOptionDefault);
 
     } else if ([key isEqualToString:@"advancedBy"]) {
 

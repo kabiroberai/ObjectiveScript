@@ -10,7 +10,6 @@
 #import "JXType.h"
 
 typedef NS_ENUM(NSUInteger, JXPrimitiveType) {
-    JXPrimitiveTypeCharPtr,
     JXPrimitiveTypeClass,
     JXPrimitiveTypeSelector,
     JXPrimitiveTypeChar,

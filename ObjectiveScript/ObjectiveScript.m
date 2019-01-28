@@ -424,9 +424,12 @@ static void configureContext(JSContext *ctx) {
 
     ctx[@"Pointer"] = ^JSValue *(NSString *enc, JSValue *zeroMemory) {
         size_t size = JXSizeForEncoding(enc.UTF8String);
+
+        // see getRef for the rationale behind this
+        JXTypePointer *type = [[JXTypePointer alloc] initWithType:JXTypeForEncoding(enc.UTF8String) isFunction:NO];
+
         void *ptr = zeroMemory.toBool ? calloc(1, size) : malloc(size);
-        const char *fullType = [@"^" stringByAppendingString:enc].UTF8String;
-        return JXConvertToJSValue(&ptr, fullType, [JSContext currentContext], JXInteropOptionDefault);
+        return JXConvertToJSValue(&ptr, type.encoding.UTF8String, [JSContext currentContext], JXInteropOptionDefault);
     };
 
     ctx[@"sizeof"] = ^size_t(NSString *enc) {

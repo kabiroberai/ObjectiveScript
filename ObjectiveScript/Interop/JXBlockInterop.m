@@ -12,6 +12,8 @@
 #import "JXTrampInfo.h"
 #import "JXRuntimeInterface.h"
 #import "JXJSInterop.h"
+#import "JXType.h"
+#import "JXTypeStruct.h"
 
 // Called when a custom block is copied
 static void copyHelper(struct JXBlockLiteral *dst, const struct JXBlockLiteral *src) {
@@ -28,8 +30,9 @@ JSValue *JXCreateBlock(NSString *sig, JSValue *func) {
 	JXTrampInfo *info = JXCreateTramp(func, sig.UTF8String, nil);
 	
 	int flags = BLOCK_HAS_SIGNATURE | BLOCK_HAS_COPY_DISPOSE;
-	// TODO: check if sig has struct return
-	BOOL hasStret = NO;
+
+    JXType *type = JXTypeForEncoding(info.types);
+	BOOL hasStret = [type isKindOfClass:JXTypeStruct.class];
 	if (hasStret) {
 		flags |= BLOCK_HAS_STRET;
 	}

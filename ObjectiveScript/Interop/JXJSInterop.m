@@ -124,8 +124,8 @@ NSException *JXConvertFromError(JSValue *error) {
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     userInfo[@"JXIsJSError"] = @YES;
     if (stack) userInfo[@"JXStackTrace"] = stack;
-    if (column) userInfo[@"JXColumn"] = column;
-    if (line) userInfo[@"JXLine"] = line;
+    if (column != nil) userInfo[@"JXColumn"] = column;
+    if (line != nil) userInfo[@"JXLine"] = line;
 
     return [NSException exceptionWithName:name reason:reason userInfo:userInfo];
 }

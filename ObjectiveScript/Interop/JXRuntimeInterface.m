@@ -206,7 +206,7 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 		__block void *argval = malloc(argSize);
 		JSValue *jsVal = [JSValue valueWithJSValueRef:jsArgs[i] inContext:ctx];
 		JXConvertFromJSValue(jsVal, [sig getArgumentTypeAtIndex:i], ^(void *val) {
-			// copy val into the _val buffer
+			// copy val into the argval buffer
 			memcpy(argval, val, argSize);
 		});
 		argvals[i] = argval;

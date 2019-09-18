@@ -8,20 +8,32 @@
 
 // https://clang.llvm.org/docs/Block-ABI-Apple.html
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef void (^Block)(void);
+
+struct JXBlockLiteral;
+
+struct JXNoHelpersBlockDescriptor {
+    unsigned long int reserved;
+    unsigned long int size;
+    const char *signature;
+};
+
+struct JXHelpersBlockDescriptor {
+    unsigned long int reserved;
+    unsigned long int size;
+    void (*copyHelper)(struct JXBlockLiteral *dst, const struct JXBlockLiteral *src);
+    void (*disposeHelper)(const struct JXBlockLiteral *src);
+    const char *signature;
+};
 
 struct JXBlockLiteral {
 	void *isa;
 	int flags;
 	int reserved;
 	IMP invoke; // void (*)(struct JXBlockLiteral *, ...);
-	struct JXBlockDescriptor {
-		unsigned long int reserved;
-		unsigned long int size;
-		void (*copyHelper)(struct JXBlockLiteral *dst, const struct JXBlockLiteral *src);
-		void (*disposeHelper)(const struct JXBlockLiteral *src);
-		const char *signature;
-	} *descriptor;
+	void *descriptor;
 	CFTypeRef info;
 };
 
@@ -44,3 +56,6 @@ enum {
 };
 
 JSValue *JXCreateBlock(NSString *sig, JSValue *func);
+_Nullable IMP JXGetBlockIMP(id block, const char * _Nullable * _Nullable signature, BOOL * _Nullable hasStret);
+
+NS_ASSUME_NONNULL_END

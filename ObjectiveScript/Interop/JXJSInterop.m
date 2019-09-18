@@ -19,12 +19,14 @@
 #import "JXTypeQualifiers.h"
 #import "JXTypeArray.h"
 #import "JXArray.h"
+#import "JXSymbol.h"
 
 #define isType(primitive) (is(type, primitive))
 
-JSClassRef JXAutoreleasingObjectClass;
-JSClassRef JXValueWrapperClass;
-JSClassRef JXObjectClass;
+extern JSClassRef JXFunctionClass;
+extern JSClassRef JXObjectClass;
+extern JSClassRef JXValueWrapperClass;
+extern JSClassRef JXAutoreleasingObjectClass;
 
 NSArray<NSString *> *JXKeysOfDict(JSValue *dict) {
 	return [[dict.context[@"Object"][@"keys"] callWithArguments:@[dict]] toArray];
@@ -401,4 +403,14 @@ JSValue *JXUnboxValue(id obj, JSContext *ctx) {
 		// If it can't be losslessly converted, use JXObjectToJSValue as normal
 		return JXObjectToJSValue(obj, ctx);
 	}
+}
+
+JSValue *JXCreateFunctionPointer(NSString *types, void *sym, JSContext *ctx) {
+    JSContextRef ctxRef = ctx.JSGlobalContextRef;
+
+    JXSymbol *jxFunc = [[JXSymbol alloc] initWithSymbol:sym types:types];
+    JSObjectRef obj = JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)jxFunc);
+    JSValue *val = [JSValue valueWithJSValueRef:obj inContext:ctx];
+
+    return val;
 }

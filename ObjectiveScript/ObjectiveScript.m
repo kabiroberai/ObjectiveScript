@@ -29,7 +29,7 @@ static NSMutableDictionary<NSString *, JXSymbol *> *symbols;
 
 static JSClassRef JXGlobalClass;
 static JSClassRef JXMethodClass;
-static JSClassRef JXFunctionClass;
+JSClassRef JXFunctionClass;
 JSClassRef JXObjectClass;
 JSClassRef JXValueWrapperClass;
 JSClassRef JXAutoreleasingObjectClass;
@@ -271,6 +271,34 @@ static JSValueRef functionCall(JSContextRef ctxRef, JSObjectRef function, JSObje
 	return JXCallFunction(private.symbol, private.types, (uint32_t)nargs, arguments, ctx).JSValueRef;
 }
 
+static JSValueRef objectCall(JSContextRef ctxRef, JSObjectRef function, JSObjectRef objRef,
+                             size_t nargs, const JSValueRef arguments[], JSValueRef *exception) {
+    NSString *nonBlockException = @"Tried to call non-block object";
+
+    JSContext *ctx = contextFromJSContextRef(ctxRef);
+    JSValue *objJS = [JSValue valueWithJSValueRef:function inContext:ctx];
+
+    id block = JXObjectFromJSValue(objJS);
+    if (!block) {
+        *exception = JXConvertToError(JXCreateException(nonBlockException), ctx).JSValueRef;
+        return [JSValue valueWithUndefinedInContext:ctx].JSValueRef;
+    }
+
+    const char *signature = NULL;
+    IMP invoke = JXGetBlockIMP(block, &signature, NULL);
+    if (!invoke || !signature) {
+        *exception = JXConvertToError(JXCreateException(nonBlockException), ctx).JSValueRef;
+        return [JSValue valueWithUndefinedInContext:ctx].JSValueRef;
+    }
+
+    // self should be the first argument in a block call
+    JSValueRef allArgs[nargs + 1];
+    allArgs[0] = JXObjectToJSValue(block, ctx).JSValueRef;
+    memcpy(allArgs + 1, arguments, nargs * sizeof(JSValueRef));
+
+    return JXCallFunction((void *)invoke, @(signature), (uint32_t)nargs + 1, allArgs, ctx).JSValueRef;
+}
+
 static JSClassRef createClass(const char *name, void (^configure)(JSClassDefinition *)) {
 	JSClassDefinition def = kJSClassDefinitionEmpty;
 	def.className = name;
@@ -298,6 +326,7 @@ static void setup() {
 	JXObjectClass = createClass("JXObject", ^(JSClassDefinition *def) {
 		def->getProperty = objectGetProperty;
         def->setProperty = objectSetProperty;
+        def->callAsFunction = objectCall;
 	});
 
 	JXAutoreleasingObjectClass = createClass("JXAutoreleasingObject", ^(JSClassDefinition *def) {
@@ -388,14 +417,10 @@ static void configureContext(JSContext *ctx) {
 	
 	ctx[@"loadFunc"] = ^JSValue *(NSString *name, NSString *types, BOOL global, JSValue *library) {
         JSContext *ctx = [JSContext currentContext];
-        JSContextRef ctxRef = ctx.JSGlobalContextRef;
-
         void *sym = JXLoadSymbol(name, library);
         if (!sym) return [JSValue valueWithUndefinedInContext:ctx];
 
-        JXSymbol *jxFunc = [[JXSymbol alloc] initWithSymbol:sym types:types];
-        JSObjectRef obj = JSObjectMake(ctxRef, JXFunctionClass, (__bridge_retained void *)jxFunc);
-        JSValue *val = [JSValue valueWithJSValueRef:obj inContext:ctx];
+        JSValue *val = JXCreateFunctionPointer(types, sym, ctx);
 
         if (global) ctx[name] = val;
 
@@ -406,6 +431,14 @@ static void configureContext(JSContext *ctx) {
         void *sym = JXLoadSymbol(name, library);
         if (!sym) return;
         symbols[name] = [[JXSymbol alloc] initWithSymbol:sym types:types];
+    };
+
+    ctx[@"FunctionPointer"] = ^JSValue *(NSString *types, JSValue *ptr) {
+        __block void *sym = NULL;
+        JXConvertFromJSValue(ptr, @encode(void *), ^(void *val) {
+            sym = *(void **)val;
+        });
+        return JXCreateFunctionPointer(types, sym, ptr.context);
     };
 
     ctx[@"getRef"] = ^JSValue *(NSString *name) {

@@ -37,8 +37,8 @@ JSValue *JXCreateBlock(NSString *sig, JSValue *func) {
 		flags |= BLOCK_HAS_STRET;
 	}
 	
-	struct JXBlockDescriptor *descriptor = malloc(sizeof(struct JXBlockDescriptor));
-	*descriptor = (struct JXBlockDescriptor) {
+	struct JXHelpersBlockDescriptor *descriptor = malloc(sizeof(struct JXHelpersBlockDescriptor));
+	*descriptor = (struct JXHelpersBlockDescriptor) {
 		.size = sizeof(struct JXBlockLiteral),
 		.copyHelper = copyHelper,
 		.disposeHelper = disposeHelper,
@@ -54,4 +54,26 @@ JSValue *JXCreateBlock(NSString *sig, JSValue *func) {
 	};
 	
 	return JXObjectToJSValue((__bridge Block)&block, [JSContext currentContext]);
+}
+
+IMP JXGetBlockIMP(id block, const char **signature, BOOL *hasStret) {
+    struct JXBlockLiteral *blockLiteral = (__bridge struct JXBlockLiteral *)block;
+    if (![NSStringFromClass([block class]) containsString:@"Block"]) {
+        return NULL;
+    }
+    if (hasStret) {
+        *hasStret = (blockLiteral->flags & BLOCK_HAS_STRET) == BLOCK_HAS_STRET;
+    }
+    if (signature) {
+        if ((blockLiteral->flags & BLOCK_HAS_SIGNATURE) == BLOCK_HAS_SIGNATURE) {
+            if ((blockLiteral->flags & BLOCK_HAS_COPY_DISPOSE) == BLOCK_HAS_COPY_DISPOSE) {
+                *signature = ((struct JXHelpersBlockDescriptor *)blockLiteral->descriptor)->signature;
+            } else {
+                *signature = ((struct JXNoHelpersBlockDescriptor *)blockLiteral->descriptor)->signature;
+            }
+        } else {
+            *signature = NULL;
+        }
+    }
+    return blockLiteral->invoke;
 }

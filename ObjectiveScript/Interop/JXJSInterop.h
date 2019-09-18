@@ -41,4 +41,6 @@ NSString * _Nullable JXGuessEncoding(JSValue *value);
 
 JSValue * _Nullable JXUnboxValue(id _Nullable obj, JSContext *ctx);
 
+JSValue *JXCreateFunctionPointer(NSString *types, void *sym, JSContext *ctx);
+
 NS_ASSUME_NONNULL_END

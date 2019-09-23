@@ -361,7 +361,7 @@ NSString *JXGuessEncoding(JSValue *value) {
     __unsafe_unretained id obj = (__bridge id)JSObjectGetPrivate(objRef);
 
     if ([obj isKindOfClass:JXPointer.class]) {
-        return [obj type];
+        return ((JXPointer *)obj).type;
     } else if ([obj isKindOfClass:JXStruct.class]) {
         return [obj extendedTypeInContext:ctx] ?: [obj rawType];
     } else if ([obj isKindOfClass:JXValueWrapper.class]) {

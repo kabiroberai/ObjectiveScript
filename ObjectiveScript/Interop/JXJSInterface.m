@@ -168,6 +168,15 @@ static bool globalSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
     return false;
 }
 
+static BOOL isNumeric(NSString *string) {
+    static NSCharacterSet *nonNumeric = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        nonNumeric = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet];
+    });
+    return [string rangeOfCharacterFromSet:nonNumeric].location == NSNotFound;
+}
+
 // Returns a JXMethodClass that holds the selector that was specified as propertyName
 // When JXMethodClass is called as a function, it passes the selector, `this` (i.e. the JXObjectClass), and arguments to msgSend
 static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS, JSValueRef *exception) {
@@ -190,23 +199,34 @@ static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
         } inContext:ctx].JSValueRef;
     }
 
-    if (![propertyName hasPrefix:@"@"] && ![propertyName hasPrefix:@"^"]) {
-        // check if there's an objc property by this name, which has a custom getter name
-        objc_property_t prop = class_getProperty([private class], propertyName.UTF8String);
-        if (prop) {
-            char *getterName = property_copyAttributeValue(prop, "getter");
-            if (getterName) {
-                // if so, then call that method
-                JSValueRef ret = methodCall(ctxRef, @(getterName), object, 0, NULL, exception);
-                free(getterName);
-                return ret;
-            }
-        }
-        // otherwise just call the method named propertyName
-        return methodCall(ctxRef, propertyName, object, 0, NULL, exception);
+    // explicit method call
+    if ([propertyName hasPrefix:@"@"] || [propertyName hasPrefix:@"^"]) {
+        return JSObjectMake(ctxRef, JXMethodClass, (__bridge_retained void *)propertyName);
     }
 
-    return JSObjectMake(ctxRef, JXMethodClass, (__bridge_retained void *)propertyName);
+    // if the property name is a number, try an indexed subscript
+    // https://releases.llvm.org/3.1/tools/clang/docs/ObjectiveCLiterals.html
+    if (isNumeric(propertyName)) {
+        JSContext *ctx = contextFromJSContextRef(ctxRef);
+        JSValue *idx = [JSValue valueWithDouble:propertyName.doubleValue inContext:ctx];
+        const JSValueRef args[] = { idx.JSValueRef };
+        return methodCall(ctxRef, @"objectAtIndexedSubscript:", object, 1, args, exception);
+    }
+
+    // check if there's an objc property by this name, which has a custom getter name
+    objc_property_t prop = class_getProperty([private class], propertyName.UTF8String);
+    if (prop) {
+        char *getterName = property_copyAttributeValue(prop, "getter");
+        if (getterName) {
+            // if so, then call that method
+            JSValueRef ret = methodCall(ctxRef, @(getterName), object, 0, NULL, exception);
+            free(getterName);
+            return ret;
+        }
+    }
+
+    // otherwise just call the method named propertyName
+    return methodCall(ctxRef, propertyName, object, 0, NULL, exception);
 }
 
 static bool objectSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS,
@@ -219,6 +239,13 @@ static bool objectSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
         JSValue *property = [JSValue valueWithJSValueRef:valueRef inContext:ctx];
         [private setJSProperty:property forKey:propertyName ctx:ctx];
         return true;
+    }
+
+    if (isNumeric(propertyName)) {
+        JSContext *ctx = contextFromJSContextRef(ctxRef);
+        JSValue *idx = [JSValue valueWithDouble:propertyName.doubleValue inContext:ctx];
+        const JSValueRef args[] = { valueRef, idx.JSValueRef };
+        return methodCall(ctxRef, @"setObject:atIndexedSubscript:", object, 2, args, exception);
     }
 
     const JSValueRef args[] = { valueRef };

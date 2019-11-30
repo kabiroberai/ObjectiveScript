@@ -24,18 +24,21 @@
 
 // Push callContext onto ctx like a stack, call `block`, and then pop them
 static void withCallContext(NSDictionary *items, JSContext *ctx, void (^block)(void)) {
-	NSMutableDictionary<NSString *, JSValue *> *oldItems = [NSMutableDictionary dictionaryWithCapacity:items.count];
-	// Push callContext onto stack, saving old values
-	for (NSString *key in items) {
-		oldItems[key] = ctx[key];
-		ctx[key] = items[key];
-	}
-	// Call block
-	block();
-	// Pop newly placed items from stack
-	for (NSString *key in items) {
-		ctx[key] = oldItems[key];
-	}
+    // prevent race conditions with @synchronized
+    @synchronized (ctx) {
+        NSMutableDictionary<NSString *, JSValue *> *oldItems = [NSMutableDictionary dictionaryWithCapacity:items.count];
+        // Push callContext onto stack, saving old values
+        for (NSString *key in items) {
+            oldItems[key] = ctx[key];
+            ctx[key] = items[key];
+        }
+        // Call block
+        block();
+        // Pop newly placed items from stack
+        for (NSString *key in items) {
+            ctx[key] = oldItems[key];
+        }
+    }
 }
 
 static JSValue *callFunc(JSValue *func, id self, Class cls, id orig, NSMutableArray<JSValue *> *methodArgs) {

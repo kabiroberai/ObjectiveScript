@@ -38,7 +38,6 @@ NSString *JXCreateExceptionLog(NSException *e) {
 
     NSString *exceptionType;
     if (userInfo[@"JXIsJSError"]) {
-        [userInfo removeObjectForKey:@"JXIsJSError"];
         exceptionType = @"JS error";
     } else {
         exceptionType = @"exception";
@@ -51,16 +50,11 @@ NSString *JXCreateExceptionLog(NSException *e) {
     if (userInfo[@"JXLine"] && userInfo[@"JXColumn"]) {
         NSNumber *line = userInfo[@"JXLine"];
         NSNumber *column = userInfo[@"JXColumn"];
-
-        [userInfo removeObjectForKey:@"JXLine"];
-        [userInfo removeObjectForKey:@"JXColumn"];
-
         [exceptionLog appendFormat:@"\n\n*** JS exception location: %@:%@", line, column];
     }
 
     if (userInfo[@"JXStackTrace"]) {
         NSString *jxStackTrace = [[userInfo[@"JXStackTrace"] componentsSeparatedByString:@"\n"] componentsJoinedByString:@"\n\t"];
-        [userInfo removeObjectForKey:@"JXStackTrace"];
         [exceptionLog appendFormat:@"\n\n*** JS exception call stack:\n(\n\t%@\n)", jxStackTrace];
     }
     if (e.callStackSymbols) {

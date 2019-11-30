@@ -7,38 +7,41 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <JavaScriptCore/JavaScriptCore.h>
 #import <objc/runtime.h>
+#import "JXContextManager.h"
 #import "JXAssociatedObjects.h"
 
-// [class : [ivar : key]]
-static NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSString *> *> *allAssociatedObjects;
+static JXAssociatedObjectsDict *allAssociatedObjects(JSContext *ctx) {
+    return [JXContextManager.sharedManager JXContextForJSContext:ctx].associatedObjects;
+}
 
-void JXRegisterAssociatedObjects(NSDictionary<NSString *, NSString *> *associatedObjects, NSString *clsName) {
-	if (!allAssociatedObjects) allAssociatedObjects = [NSMutableDictionary new];
+void JXRegisterAssociatedObjects(JSContext *ctx, NSDictionary<NSString *, NSString *> *associatedObjects, NSString *clsName) {
+    JXAssociatedObjectsDict *all = allAssociatedObjects(ctx);
 	// Add associated object keys
 	// Get the existing keys for this class
-	NSMutableDictionary *dict = allAssociatedObjects[clsName];
+	NSMutableDictionary *dict = all[clsName];
 	if (!dict) {
 		dict = [NSMutableDictionary new];
-		allAssociatedObjects[clsName] = dict;
+		all[clsName] = dict;
 	}
 	[dict addEntriesFromDictionary:associatedObjects];
 }
 
-static const void *keyForAssociatedObject(NSString *name, id obj) {
-	NSString *key = allAssociatedObjects[NSStringFromClass([obj class])][name];
+static const void *keyForAssociatedObject(JSContext *ctx, NSString *name, id obj) {
+	NSString *key = allAssociatedObjects(ctx)[NSStringFromClass([obj class])][name];
 	return (__bridge const void *)key;
 }
 
-id JXGetAssociatedObject(NSString *name, id obj) {
-	const void *key = keyForAssociatedObject(name, obj);
+id JXGetAssociatedObject(JSContext *ctx, NSString *name, id obj) {
+	const void *key = keyForAssociatedObject(ctx, name, obj);
 	if (!key) return nil;
 	return objc_getAssociatedObject(obj, key);
 }
 
-bool JXSetAssociatedObject(NSString *name, id obj, id value, objc_AssociationPolicy policy) {
+bool JXSetAssociatedObject(JSContext *ctx, NSString *name, id obj, id value, objc_AssociationPolicy policy) {
 	if (!value) return false;
-	const void *key = keyForAssociatedObject(name, obj);
+	const void *key = keyForAssociatedObject(ctx, name, obj);
 	if (!key) return false;
 	objc_setAssociatedObject(obj, key, value, policy);
 	return true;

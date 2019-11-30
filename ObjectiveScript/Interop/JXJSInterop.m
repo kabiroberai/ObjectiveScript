@@ -20,6 +20,7 @@
 #import "JXTypeArray.h"
 #import "JXArray.h"
 #import "JXSymbol.h"
+#import "JXContextManager.h"
 
 #define isType(primitive) (is(type, primitive))
 
@@ -32,7 +33,7 @@ NSArray<NSString *> *JXKeysOfDict(JSValue *dict) {
 	return [[dict.context[@"Object"][@"keys"] callWithArguments:@[dict]] toArray];
 }
 
-static NSString *makeExceptionLog(NSException *e) {
+NSString *JXCreateExceptionLog(NSException *e) {
     NSMutableDictionary *userInfo = [e.userInfo mutableCopy] ?: [NSMutableDictionary dictionary];
 
     NSString *exceptionType;
@@ -72,24 +73,6 @@ static NSString *makeExceptionLog(NSException *e) {
     }
 
     return [exceptionLog copy];
-}
-
-void JXThrow(NSException *e) {
-    NSURL *libraryURL = [NSFileManager.defaultManager URLForDirectory:NSLibraryDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:nil];
-    if (libraryURL) {
-        NSURL *logDir = [libraryURL URLByAppendingPathComponent:@"SuperchargeLogs"];
-        [NSFileManager.defaultManager createDirectoryAtURL:logDir withIntermediateDirectories:YES attributes:nil error:nil];
-
-        NSDateFormatter *formatter = [NSDateFormatter new];
-        [formatter setDateFormat:@"yyyy-MM-dd-HHmmss"];
-        NSString *filename = [formatter stringFromDate:[NSDate date]];
-        NSURL *logURL = [[logDir URLByAppendingPathComponent:filename] URLByAppendingPathExtension:@"crash"];
-
-        NSString *exceptionLog = makeExceptionLog(e);
-        [exceptionLog writeToURL:logURL atomically:YES encoding:NSUTF8StringEncoding error:nil];
-        JX_DEBUG(@"Wrote exception log to %@", logURL);
-    }
-    @throw e;
 }
 
 NSException *JXCreateException(NSString *reason) {
@@ -289,7 +272,7 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
         block(obj.val);
     } else if (*type == _C_ARY_B) {
         JXType *jxType = JXTypeForEncoding(type);
-        JXThrow(JXCreateExceptionFormat(@"Array type '%@' is not assignable", jxType));
+        @throw JXCreateExceptionFormat(@"Array type '%@' is not assignable", jxType);
     } else if (isType(SEL)) {
 		SEL sel = NSSelectorFromString([value toString]);
 		block(&sel);

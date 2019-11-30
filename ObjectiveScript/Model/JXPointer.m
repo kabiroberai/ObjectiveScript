@@ -60,7 +60,7 @@
         return [JSValue valueWithObject:^ptrdiff_t (JSValue *endJS) {
             JXPointer *end = JXObjectFromJSValue(endJS);
             if (![end.type isEqualToString:self.type]) {
-                JXThrow(JXCreateExceptionFormat(@"End type (\"%@\") not equal to callee type (\"%@\")", end.type, self.type));
+                @throw JXCreateExceptionFormat(@"End type (\"%@\") not equal to callee type (\"%@\")", end.type, self.type);
             }
             return ((char *)end.val - (char *)self.val) / self.size;
         } inContext:ctx];

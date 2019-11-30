@@ -8,9 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
+#import "JXConfiguration.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-void JXRunScript(NSString *script, NSString * _Nullable resourcesPath);
+void JXRunScript(NSString *script, JXConfiguration *configuration);
 
 NS_ASSUME_NONNULL_END

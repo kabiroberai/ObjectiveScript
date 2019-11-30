@@ -25,8 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 // eg. in ptr.pointee.width = 5 we would not want `pointee` to be copied
 - (instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy;
 + (instancetype)structWithVal:(void *)val type:(const char *)type copy:(BOOL)copy;
-// also copies the type of the value at `index` into `type`
-- (nullable void *)getValueWithName:(NSString *)name type:(const char * _Nonnull * _Nonnull)type NS_RETURNS_INNER_POINTER;
 - (NSString *)descriptionWithContext:(JSContext *)ctx;
 
 - (nullable NSString *)extendedTypeInContext:(JSContext *)ctx;

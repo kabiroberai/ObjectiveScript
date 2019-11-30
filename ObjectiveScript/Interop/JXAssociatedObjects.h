@@ -8,8 +8,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-void JXRegisterAssociatedObjects(NSDictionary<NSString *, NSString *> *associatedObjects, NSString *clsName);
-id _Nullable JXGetAssociatedObject(NSString *name, id obj);
-bool JXSetAssociatedObject(NSString *name, id obj, id value, objc_AssociationPolicy policy);
+void JXRegisterAssociatedObjects(JSContext *ctx, NSDictionary<NSString *, NSString *> *associatedObjects, NSString *clsName);
+id _Nullable JXGetAssociatedObject(JSContext *ctx, NSString *name, id obj);
+bool JXSetAssociatedObject(JSContext *ctx, NSString *name, id obj, id value, objc_AssociationPolicy policy);
 
 NS_ASSUME_NONNULL_END

@@ -10,6 +10,7 @@
 #import "JXJSInterop.h"
 #import "JXStruct.h"
 #import "JXTypeStruct+FFI.h"
+#import "JXContextManager.h"
 
 @implementation JXStruct {
 	size_t *_offsets;
@@ -49,7 +50,7 @@
 	return [[JXStruct alloc] initWithVal:val type:type copy:copy];
 }
 
-- (void *)getValueWithName:(NSString *)name type:(const char **)type {
+- (nullable void *)getValueWithName:(NSString *)name type:(const char **)type context:(JSContext *)ctx {
     size_t idx;
 
     // name is either a number or a field name
@@ -61,7 +62,8 @@
     }
 
     if (idx >= _type.types.count) {
-        JXThrow(JXCreateExceptionFormat(@"Index %lu out of bounds of struct %@", (unsigned long)idx, _type.name));
+        ctx.exception = JXConvertToError(JXCreateExceptionFormat(@"Index %lu out of bounds of struct %@", (unsigned long)idx, _type.name), ctx);
+        return NULL;
     }
 
     *type = _type.types[idx].encoding.UTF8String;
@@ -76,7 +78,7 @@
         for (NSUInteger i = 0; i < _type.types.count; i++) {
             NSString *fieldName = _type.fieldNames[i];
             const char *type;
-            void *val = [self getValueWithName:fieldName type:&type];
+            void *val = [self getValueWithName:fieldName type:&type context:ctx];
             JSValue *jsVal = JXConvertToJSValue(val, type, ctx, JXInteropOptionDefault);
             [fields addObject:[NSString stringWithFormat:@"%@ = %@", fieldName, jsVal]];
         }
@@ -102,13 +104,14 @@
     }
 
     const char *type;
-    void *val = [self getValueWithName:key type:&type];
+    void *val = [self getValueWithName:key type:&type context:ctx];
     return JXConvertToJSValue(val, type, ctx, JXInteropOptionDefault);
 }
 
 - (void)setJSProperty:(JSValue *)property forKey:(NSString *)key ctx:(JSContext *)ctx {
     const char *type;
-    void *addr = [self getValueWithName:key type:&type];
+    void *addr = [self getValueWithName:key type:&type context:ctx];
+    if (!addr) return;
 
     JXConvertFromJSValue(property, type, ^(void *newVal) {
         memcpy(addr, newVal, JXSizeForEncoding(type));
@@ -116,12 +119,7 @@
 }
 
 - (NSString *)extendedTypeInContext:(JSContext *)ctx {
-    JSValue *type = ctx[@"structDefs"][self.name];
-    if (type.isString) {
-        return type.toString;
-    } else {
-        return nil;
-    }
+    return [JXContextManager.sharedManager JXContextForJSContext:ctx].structDefs[self.name];
 }
 
 - (void)dealloc {

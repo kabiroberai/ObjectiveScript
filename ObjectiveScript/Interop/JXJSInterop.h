@@ -22,7 +22,7 @@ typedef NS_OPTIONS(NSUInteger, JXInteropOptions) {
 
 NSArray<NSString *> *JXKeysOfDict(JSValue *dict);
 
-void JXThrow(NSException *e);
+NSString *JXCreateExceptionLog(NSException *e);
 
 NSException *JXCreateException(NSString *reason);
 NSException *JXCreateExceptionFormat(NSString *format, ...) NS_FORMAT_FUNCTION(1,2);

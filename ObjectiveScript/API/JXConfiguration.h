@@ -12,6 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface JXConfiguration : NSObject
 
+/// Creates a new configuration object.
+/// @param externalVariables A list of variables to include in the global environment
+/// @param exceptionHandler A block that is called when an uncaught exception occurs. This block should be used to perform cleanup, save the exception log, or the like. It does @b not enable recovery from the exception.
 - (instancetype)initWithExternalVariables:(NSDictionary<NSString *, id> *)externalVariables
                          exceptionHandler:(nullable void (^)(NSString *log))exceptionHandler;
 

@@ -12,6 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Runs the provided ObjectiveScript code
+/// @param script The transpiled (pure JavaScript) code to execute
+/// @param configuration The configuration used when creating the environment
 void JXRunScript(NSString *script, JXConfiguration *configuration);
 
 NS_ASSUME_NONNULL_END

@@ -7,6 +7,7 @@
 //
 
 #import <ffi.h>
+#import "NSString+IsNumeric.h"
 #import "JXJSInterop.h"
 #import "JXStruct.h"
 #import "JXTypeStruct+FFI.h"
@@ -18,7 +19,7 @@
     BOOL _isCopy;
 }
 
-- (instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy {
+- (instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy context:(JSContext *)ctx {
 	self = [super init];
 	if (self) {
         _rawType = @(type);
@@ -26,6 +27,11 @@
 		_type = (JXTypeStruct *)JXTypeForEncoding(type);
 
         _name = _type.name;
+
+        if (!_type.types) {
+            ctx.exception = JXConvertToError(JXCreateException(@"Could not initialize struct: type metadata not found"), ctx);
+            return nil;
+        }
 
         ffi_type *ffiType = [_type ffiType];
         size_t nelements = _type.types.count;
@@ -46,23 +52,27 @@
 	return self;
 }
 
-+ (instancetype)structWithVal:(void *)val type:(const char *)type copy:(BOOL)copy {
-	return [[JXStruct alloc] initWithVal:val type:type copy:copy];
++ (instancetype)structWithVal:(void *)val type:(const char *)type copy:(BOOL)copy context:(JSContext *)ctx {
+	return [[JXStruct alloc] initWithVal:val type:type copy:copy context:ctx];
 }
 
 - (nullable void *)getValueWithName:(NSString *)name type:(const char **)type context:(JSContext *)ctx {
     size_t idx;
 
     // name is either a number or a field name
-    if (_type.fieldNames) {
+    if (name.isNumeric) {
+        idx = name.intValue;
+    } else if (_type.fieldNames) {
         // return the value at the index corresponding to the field name
         idx = [_type.fieldNames indexOfObject:name];
     } else {
-        idx = name.intValue;
+        // not a number and there are no field names, oops
+        ctx.exception = JXConvertToError(JXCreateExceptionFormat(@"Could not access field %@ in struct %@: field name metadata not found", name, _type.name), ctx);
+        return NULL;
     }
 
     if (idx >= _type.types.count) {
-        ctx.exception = JXConvertToError(JXCreateExceptionFormat(@"Index %lu out of bounds of struct %@", (unsigned long)idx, _type.name), ctx);
+        ctx.exception = JXConvertToError(JXCreateExceptionFormat(@"Could not access field %@ in struct %@: index %lu out of bounds", name, _type.name, (unsigned long)idx), ctx);
         return NULL;
     }
 
@@ -95,12 +105,6 @@
         return [JSValue valueWithObject:^NSString *{
             return ret;
         } inContext:ctx];
-    } else if ([key isEqualToString:@"withType"]) {
-        JXInteropOptions options = JXInteropOptionDefault;
-        if (_isCopy) options |= JXInteropOptionCopyStructs;
-        return [JSValue valueWithObject:^JSValue *(NSString *type) {
-            return JXConvertToJSValue(self.val, type.UTF8String, [JSContext currentContext], options);
-        } inContext:ctx];
     }
 
     const char *type;
@@ -120,6 +124,10 @@
 
 - (NSString *)extendedTypeInContext:(JSContext *)ctx {
     return [JXContextManager.sharedManager JXContextForJSContext:ctx].structDefs[self.name];
+}
+
+- (nullable JXStruct *)withType:(const char *)newType context:(JSContext *)ctx {
+    return [JXStruct structWithVal:self.val type:newType copy:YES context:ctx];
 }
 
 - (void)dealloc {

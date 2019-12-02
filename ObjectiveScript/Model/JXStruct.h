@@ -23,11 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 // when copy is NO, saves a reference to the passed in `val` rather than copying it
 // this is useful when the struct is part of an L-value
 // eg. in ptr.pointee.width = 5 we would not want `pointee` to be copied
-- (instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy;
-+ (instancetype)structWithVal:(void *)val type:(const char *)type copy:(BOOL)copy;
+- (nullable instancetype)initWithVal:(void *)val type:(const char *)type copy:(BOOL)copy context:(JSContext *)ctx;
++ (nullable instancetype)structWithVal:(void *)val type:(const char *)type copy:(BOOL)copy context:(JSContext *)ctx;
 - (NSString *)descriptionWithContext:(JSContext *)ctx;
 
 - (nullable NSString *)extendedTypeInContext:(JSContext *)ctx;
+- (nullable JXStruct *)withType:(const char *)newType context:(JSContext *)ctx;
 
 @end
 

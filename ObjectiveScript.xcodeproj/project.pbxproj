@@ -38,6 +38,7 @@
 		566BCEFB210DD80C00A272C6 /* JXTypeBasic+FFI.m in Sources */ = {isa = PBXBuildFile; fileRef = 56515E73210DCF690092D8BD /* JXTypeBasic+FFI.m */; };
 		566F05DE204E99570088199B /* JXPointer.m in Sources */ = {isa = PBXBuildFile; fileRef = 566F05DD204E99570088199B /* JXPointer.m */; };
 		567830982010803E00298EDC /* JXStruct.m in Sources */ = {isa = PBXBuildFile; fileRef = 567830972010803E00298EDC /* JXStruct.m */; };
+		567C594123948C7D0041C3F9 /* NSString+IsNumeric.m in Sources */ = {isa = PBXBuildFile; fileRef = 567C594023948C7D0041C3F9 /* NSString+IsNumeric.m */; };
 		56A149C01FE53CA0008B6BED /* ObjectiveScriptTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */; };
 		56A149C21FE53CA0008B6BED /* libObjectiveScript.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */; };
 		56A8175321B2DE210052D0B6 /* JXValueWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 56A8175221B2DE210052D0B6 /* JXValueWrapper.m */; };
@@ -144,6 +145,8 @@
 		5677DF5420550B8900891379 /* JXTypeID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeID.m; sourceTree = "<group>"; };
 		567830962010803E00298EDC /* JXStruct.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXStruct.h; sourceTree = "<group>"; };
 		567830972010803E00298EDC /* JXStruct.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXStruct.m; sourceTree = "<group>"; };
+		567C593F23948C7D0041C3F9 /* NSString+IsNumeric.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+IsNumeric.h"; sourceTree = "<group>"; };
+		567C594023948C7D0041C3F9 /* NSString+IsNumeric.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+IsNumeric.m"; sourceTree = "<group>"; };
 		56A149BD1FE53CA0008B6BED /* ObjectiveScriptTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ObjectiveScriptTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A149BF1FE53CA0008B6BED /* ObjectiveScriptTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjectiveScriptTests.m; sourceTree = "<group>"; };
 		56A149C11FE53CA0008B6BED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -370,6 +373,7 @@
 		565B35DA1FE41EF500A9EEA8 /* ObjectiveScript */ = {
 			isa = PBXGroup;
 			children = (
+				567C593B23948C4B0041C3F9 /* Helpers */,
 				56515E6B210DCEA80092D8BD /* Type Parsing + FFI */,
 				56002CEF2019FDBD00AFEA2C /* Model */,
 				56002CF02019FDD400AFEA2C /* Interop */,
@@ -377,6 +381,15 @@
 				564A5ED2200238640089C69C /* PrefixHeader.pch */,
 			);
 			path = ObjectiveScript;
+			sourceTree = "<group>";
+		};
+		567C593B23948C4B0041C3F9 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				567C593F23948C7D0041C3F9 /* NSString+IsNumeric.h */,
+				567C594023948C7D0041C3F9 /* NSString+IsNumeric.m */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		56A149BE1FE53CA0008B6BED /* ObjectiveScriptTests */ = {
@@ -524,6 +537,7 @@
 				566BCEFB210DD80C00A272C6 /* JXTypeBasic+FFI.m in Sources */,
 				56515E71210DCEF00092D8BD /* JXType+FFI.m in Sources */,
 				56667B6F2019CB980032DFFF /* JXSymbol.m in Sources */,
+				567C594123948C7D0041C3F9 /* NSString+IsNumeric.m in Sources */,
 				565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */,
 				56A8175321B2DE210052D0B6 /* JXValueWrapper.m in Sources */,
 				56515E82210DD0950092D8BD /* JXTypeStruct+FFI.m in Sources */,

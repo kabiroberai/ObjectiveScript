@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import <objc/runtime.h>
+#import "NSString+IsNumeric.h"
 #import "JXRuntimeInterface.h"
 #import "JXStruct.h"
 #import "JXSymbol.h"
@@ -168,15 +169,6 @@ static bool globalSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
     return false;
 }
 
-static BOOL isNumeric(NSString *string) {
-    static NSCharacterSet *nonNumeric = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        nonNumeric = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet];
-    });
-    return [string rangeOfCharacterFromSet:nonNumeric].location == NSNotFound;
-}
-
 // Returns a JXMethodClass that holds the selector that was specified as propertyName
 // When JXMethodClass is called as a function, it passes the selector, `this` (i.e. the JXObjectClass), and arguments to msgSend
 static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringRef propertyNameJS, JSValueRef *exception) {
@@ -206,7 +198,7 @@ static JSValueRef objectGetProperty(JSContextRef ctxRef, JSObjectRef object, JSS
 
     // if the property name is a number, try an indexed subscript
     // https://releases.llvm.org/3.1/tools/clang/docs/ObjectiveCLiterals.html
-    if (isNumeric(propertyName)) {
+    if (propertyName.isNumeric) {
         JSContext *ctx = contextFromJSContextRef(ctxRef);
         JSValue *idx = [JSValue valueWithDouble:propertyName.doubleValue inContext:ctx];
         const JSValueRef args[] = { idx.JSValueRef };
@@ -241,7 +233,7 @@ static bool objectSetProperty(JSContextRef ctxRef, JSObjectRef object, JSStringR
         return true;
     }
 
-    if (isNumeric(propertyName)) {
+    if (propertyName.isNumeric) {
         JSContext *ctx = contextFromJSContextRef(ctxRef);
         JSValue *idx = [JSValue valueWithDouble:propertyName.doubleValue inContext:ctx];
         const JSValueRef args[] = { valueRef, idx.JSValueRef };

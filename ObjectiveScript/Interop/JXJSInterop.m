@@ -141,11 +141,13 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
     }
     else if (*type == _C_STRUCT_B) {
         BOOL copyStructs = (options & JXInteropOptionCopyStructs);
-        JXStruct *jxStruct = [JXStruct structWithVal:val type:type copy:copyStructs];
+        JXStruct *jxStruct = [JXStruct structWithVal:val type:type copy:copyStructs context:ctx];
+        if (!jxStruct) return nil;
 
         NSString *extendedType = [jxStruct extendedTypeInContext:ctx];
         if (extendedType) {
-            jxStruct = [JXStruct structWithVal:val type:extendedType.UTF8String copy:copyStructs];
+            jxStruct = [JXStruct structWithVal:val type:extendedType.UTF8String copy:copyStructs context:ctx];
+            if (!jxStruct) return nil;
         }
 
         obj = jxStruct;
@@ -314,7 +316,12 @@ JSValue *JXCastValue(JSValue *value, const char *rawType) {
     } else if (*rawType == _C_STRUCT_B) {
         // treat structs in a similar way as well
         JXStruct *str = JXObjectFromJSValue(value);
-        return JXObjectToJSValue([JXStruct structWithVal:str.val type:rawType copy:NO], ctx);
+        JXStruct *converted = [str withType:rawType context:ctx];
+        if (converted) {
+            return JXObjectToJSValue(converted, ctx);
+        } else {
+            return [JSValue valueWithNullInContext:ctx];
+        }
     }
 
     // for everything else, wrap it in a JXValueWrapper

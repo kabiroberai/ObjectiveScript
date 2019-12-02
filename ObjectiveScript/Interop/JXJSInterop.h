@@ -16,7 +16,7 @@ typedef NS_OPTIONS(NSUInteger, JXInteropOptions) {
     JXInteropOptionNone = 0,
     JXInteropOptionRetain = 1 << 0,
     JXInteropOptionAutorelease = 1 << 1,
-    JXInteropOptionCopyStructs = 1 << 2,
+    JXInteropOptionCopyStructs = 1 << 2, // should not be used when, e.g., dereferencing a pointer
     JXInteropOptionDefault = JXInteropOptionRetain | JXInteropOptionAutorelease,
 };
 

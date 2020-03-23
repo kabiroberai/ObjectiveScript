@@ -54,7 +54,7 @@ NSString *JXCreateExceptionLog(NSException *e) {
     }
 
     if (userInfo[@"JXStackTrace"]) {
-        NSString *jxStackTrace = [[userInfo[@"JXStackTrace"] componentsSeparatedByString:@"\n"] componentsJoinedByString:@"\n\t"];
+        NSString *jxStackTrace = [userInfo[@"JXStackTrace"] componentsJoinedByString:@"\n\t"];
         [exceptionLog appendFormat:@"\n\n*** JS exception call stack:\n(\n\t%@\n)", jxStackTrace];
     }
     if (e.callStackSymbols) {
@@ -102,9 +102,16 @@ NSException *JXConvertFromError(JSValue *error) {
 
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     userInfo[@"JXIsJSError"] = @YES;
-    if (stack) userInfo[@"JXStackTrace"] = stack;
     if (column != nil) userInfo[@"JXColumn"] = column;
     if (line != nil) userInfo[@"JXLine"] = line;
+
+    if (stack) {
+        NSMutableArray<NSString *> *methods = [[stack componentsSeparatedByString:@"\n"] mutableCopy];
+        for (int i = 0; i < methods.count; i++) {
+            if (methods[i].length == 0) methods[i] = @"(anonymous function)";
+        }
+        userInfo[@"JXStackTrace"] = [methods copy];
+    }
 
     return [NSException exceptionWithName:name reason:reason userInfo:userInfo];
 }

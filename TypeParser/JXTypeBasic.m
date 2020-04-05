@@ -86,7 +86,7 @@
 
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
     NSString *head;
-    switch ([self primitiveType]) {
+    switch (self.primitiveType) {
         case JXPrimitiveTypeClass:            head = @"Class"; break;
         case JXPrimitiveTypeSelector:         head = @"SEL"; break;
         case JXPrimitiveTypeChar:             head = @"char"; break;

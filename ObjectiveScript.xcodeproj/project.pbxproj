@@ -116,11 +116,9 @@
 		56515E8A210DD2080092D8BD /* libTypeParser.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTypeParser.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		56574EBD2158F36D00174CA9 /* ffitarget_arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_arm64.h; sourceTree = "<group>"; };
 		56574EBE2158F36D00174CA9 /* ffitarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
-		56574EBF2158F36D00174CA9 /* ffi_i386.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_i386.h; sourceTree = "<group>"; };
 		56574EC02158F36D00174CA9 /* ffitarget_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
 		56574EC12158F36D00174CA9 /* ffitarget_armv7.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_armv7.h; sourceTree = "<group>"; };
 		56574EC22158F36D00174CA9 /* ffi_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_x86_64.h; sourceTree = "<group>"; };
-		56574EC32158F36D00174CA9 /* ffitarget_i386.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_i386.h; sourceTree = "<group>"; };
 		56574EC42158F36D00174CA9 /* ffi_armv7.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_armv7.h; sourceTree = "<group>"; };
 		56574EC52158F36D00174CA9 /* ffi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
 		56574EC62158F36D00174CA9 /* ffi_arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_arm64.h; sourceTree = "<group>"; };
@@ -336,11 +334,9 @@
 			children = (
 				56574EBD2158F36D00174CA9 /* ffitarget_arm64.h */,
 				56574EBE2158F36D00174CA9 /* ffitarget.h */,
-				56574EBF2158F36D00174CA9 /* ffi_i386.h */,
 				56574EC02158F36D00174CA9 /* ffitarget_x86_64.h */,
 				56574EC12158F36D00174CA9 /* ffitarget_armv7.h */,
 				56574EC22158F36D00174CA9 /* ffi_x86_64.h */,
-				56574EC32158F36D00174CA9 /* ffitarget_i386.h */,
 				56574EC42158F36D00174CA9 /* ffi_armv7.h */,
 				56574EC52158F36D00174CA9 /* ffi.h */,
 				56574EC62158F36D00174CA9 /* ffi_arm64.h */,
@@ -579,15 +575,10 @@
 		56515E91210DD2080092D8BD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD)",
-					arm64e,
-				);
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -598,10 +589,6 @@
 		56515E93210DD2080092D8BD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD)",
-					arm64e,
-				);
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
@@ -616,6 +603,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				"ARCHS[sdk=iphoneos*]" = (
+					"$(ARCHS_STANDARD)",
+					arm64e,
+				);
+				"ARCHS[sdk=iphonesimulator*]" = x86_64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -665,7 +657,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -674,6 +665,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				"ARCHS[sdk=iphoneos*]" = (
+					"$(ARCHS_STANDARD)",
+					arm64e,
+				);
+				"ARCHS[sdk=iphonesimulator*]" = x86_64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -725,10 +721,6 @@
 		565B35E21FE41EF500A9EEA8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD)",
-					arm64e,
-				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/vendored/**";
@@ -737,7 +729,6 @@
 					"$(PROJECT_DIR)/ObjectiveScript",
 					"$(PROJECT_DIR)/vendored/libffi",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -748,10 +739,6 @@
 		565B35E31FE41EF500A9EEA8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					"$(ARCHS_STANDARD)",
-					arm64e,
-				);
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/vendored/**";

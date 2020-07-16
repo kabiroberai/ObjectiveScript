@@ -22,6 +22,19 @@
 		565B35EE1FE4203800A9EEA8 /* JXRuntimeInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */; };
 		565B35EF1FE4203800A9EEA8 /* ObjectiveScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E71FE4203700A9EEA8 /* ObjectiveScript.m */; };
 		565B35F01FE4203800A9EEA8 /* JXJSInterop.m in Sources */ = {isa = PBXBuildFile; fileRef = 565B35E91FE4203800A9EEA8 /* JXJSInterop.m */; };
+		565EB940247DD3BB00E98732 /* JXType.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 561BCE382053E6B5002165F4 /* JXType.h */; };
+		565EB941247DD3BB00E98732 /* JXTypeBasic.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 560C069A20541E1000CE992C /* JXTypeBasic.h */; };
+		565EB942247DD3BB00E98732 /* JXTypeID.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5677DF5320550B8900891379 /* JXTypeID.h */; };
+		565EB943247DD3BB00E98732 /* JXTypeBitField.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 565D299720568225003D7E83 /* JXTypeBitField.h */; };
+		565EB944247DD3BB00E98732 /* JXTypePointer.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56B35797205445EB00B73EBA /* JXTypePointer.h */; };
+		565EB945247DD3BB00E98732 /* JXTypeComplex.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56AF99842055968200F58032 /* JXTypeComplex.h */; };
+		565EB946247DD3BB00E98732 /* JXTypeStruct.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56B357912054399A00B73EBA /* JXTypeStruct.h */; };
+		565EB947247DD3BB00E98732 /* JXTypeUnion.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56AF998720559A6700F58032 /* JXTypeUnion.h */; };
+		565EB948247DD3BB00E98732 /* JXTypeArray.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56B35794205441C700B73EBA /* JXTypeArray.h */; };
+		565EB949247DD3BB00E98732 /* JXTypeDescription.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56374B04205D07000068FDAB /* JXTypeDescription.h */; };
+		565EB94A247DD3BB00E98732 /* JXTypeQualifiers.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 565D299A20568DCC003D7E83 /* JXTypeQualifiers.h */; };
+		565EB94B247DD3BB00E98732 /* TypeParser.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56629163210DD2A5007CF1DC /* TypeParser.h */; };
+		565EB94D247DD58A00E98732 /* module.modulemap in CopyFiles */ = {isa = PBXBuildFile; fileRef = 565EB93F247DD36000E98732 /* module.modulemap */; };
 		56629170210DD343007CF1DC /* JXType.m in Sources */ = {isa = PBXBuildFile; fileRef = 561BCE392053E6B5002165F4 /* JXType.m */; };
 		56629171210DD343007CF1DC /* JXTypeBasic.m in Sources */ = {isa = PBXBuildFile; fileRef = 560C069B20541E1000CE992C /* JXTypeBasic.m */; };
 		56629172210DD343007CF1DC /* JXTypeID.m in Sources */ = {isa = PBXBuildFile; fileRef = 5677DF5420550B8900891379 /* JXTypeID.m */; };
@@ -65,6 +78,19 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				565EB94D247DD58A00E98732 /* module.modulemap in CopyFiles */,
+				565EB940247DD3BB00E98732 /* JXType.h in CopyFiles */,
+				565EB941247DD3BB00E98732 /* JXTypeBasic.h in CopyFiles */,
+				565EB942247DD3BB00E98732 /* JXTypeID.h in CopyFiles */,
+				565EB943247DD3BB00E98732 /* JXTypeBitField.h in CopyFiles */,
+				565EB944247DD3BB00E98732 /* JXTypePointer.h in CopyFiles */,
+				565EB945247DD3BB00E98732 /* JXTypeComplex.h in CopyFiles */,
+				565EB946247DD3BB00E98732 /* JXTypeStruct.h in CopyFiles */,
+				565EB947247DD3BB00E98732 /* JXTypeUnion.h in CopyFiles */,
+				565EB948247DD3BB00E98732 /* JXTypeArray.h in CopyFiles */,
+				565EB949247DD3BB00E98732 /* JXTypeDescription.h in CopyFiles */,
+				565EB94A247DD3BB00E98732 /* JXTypeQualifiers.h in CopyFiles */,
+				565EB94B247DD3BB00E98732 /* TypeParser.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,8 +159,9 @@
 		565D299720568225003D7E83 /* JXTypeBitField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeBitField.h; sourceTree = "<group>"; };
 		565D299820568225003D7E83 /* JXTypeBitField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeBitField.m; sourceTree = "<group>"; };
 		565D299A20568DCC003D7E83 /* JXTypeQualifiers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeQualifiers.h; sourceTree = "<group>"; };
+		565EB93F247DD36000E98732 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		56629161210DD243007CF1DC /* JXTypeQualifiers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JXTypeQualifiers.m; sourceTree = "<group>"; };
-		56629163210DD2A5007CF1DC /* libTypeParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libTypeParser.h; sourceTree = "<group>"; };
+		56629163210DD2A5007CF1DC /* TypeParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TypeParser.h; sourceTree = "<group>"; };
 		56667B6D2019CB980032DFFF /* JXSymbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXSymbol.h; sourceTree = "<group>"; };
 		56667B6E2019CB980032DFFF /* JXSymbol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXSymbol.m; sourceTree = "<group>"; };
 		566F05DC204E99570088199B /* JXPointer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXPointer.h; sourceTree = "<group>"; };
@@ -294,29 +321,9 @@
 		56515E8B210DD2080092D8BD /* TypeParser */ = {
 			isa = PBXGroup;
 			children = (
-				561BCE382053E6B5002165F4 /* JXType.h */,
-				561BCE392053E6B5002165F4 /* JXType.m */,
-				560C069A20541E1000CE992C /* JXTypeBasic.h */,
-				560C069B20541E1000CE992C /* JXTypeBasic.m */,
-				5677DF5320550B8900891379 /* JXTypeID.h */,
-				5677DF5420550B8900891379 /* JXTypeID.m */,
-				565D299720568225003D7E83 /* JXTypeBitField.h */,
-				565D299820568225003D7E83 /* JXTypeBitField.m */,
-				56B35797205445EB00B73EBA /* JXTypePointer.h */,
-				56B35798205445EB00B73EBA /* JXTypePointer.m */,
-				56AF99842055968200F58032 /* JXTypeComplex.h */,
-				56AF99852055968200F58032 /* JXTypeComplex.m */,
-				56B357912054399A00B73EBA /* JXTypeStruct.h */,
-				56B357922054399A00B73EBA /* JXTypeStruct.m */,
-				56AF998720559A6700F58032 /* JXTypeUnion.h */,
-				56AF998820559A6700F58032 /* JXTypeUnion.m */,
-				56B35794205441C700B73EBA /* JXTypeArray.h */,
-				56B35795205441C700B73EBA /* JXTypeArray.m */,
-				56374B04205D07000068FDAB /* JXTypeDescription.h */,
-				56374B05205D07000068FDAB /* JXTypeDescription.m */,
-				565D299A20568DCC003D7E83 /* JXTypeQualifiers.h */,
-				56629161210DD243007CF1DC /* JXTypeQualifiers.m */,
-				56629163210DD2A5007CF1DC /* libTypeParser.h */,
+				565EB950247DD6A100E98732 /* src */,
+				565EB94E247DD68D00E98732 /* include */,
+				565EB93F247DD36000E98732 /* module.modulemap */,
 			);
 			path = TypeParser;
 			sourceTree = "<group>";
@@ -379,6 +386,51 @@
 			path = ObjectiveScript;
 			sourceTree = "<group>";
 		};
+		565EB94E247DD68D00E98732 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				565EB94F247DD69100E98732 /* TypeParser */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		565EB94F247DD69100E98732 /* TypeParser */ = {
+			isa = PBXGroup;
+			children = (
+				561BCE382053E6B5002165F4 /* JXType.h */,
+				560C069A20541E1000CE992C /* JXTypeBasic.h */,
+				5677DF5320550B8900891379 /* JXTypeID.h */,
+				565D299720568225003D7E83 /* JXTypeBitField.h */,
+				56B35797205445EB00B73EBA /* JXTypePointer.h */,
+				56AF99842055968200F58032 /* JXTypeComplex.h */,
+				56B357912054399A00B73EBA /* JXTypeStruct.h */,
+				56AF998720559A6700F58032 /* JXTypeUnion.h */,
+				56B35794205441C700B73EBA /* JXTypeArray.h */,
+				56374B04205D07000068FDAB /* JXTypeDescription.h */,
+				565D299A20568DCC003D7E83 /* JXTypeQualifiers.h */,
+				56629163210DD2A5007CF1DC /* TypeParser.h */,
+			);
+			path = TypeParser;
+			sourceTree = "<group>";
+		};
+		565EB950247DD6A100E98732 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				561BCE392053E6B5002165F4 /* JXType.m */,
+				560C069B20541E1000CE992C /* JXTypeBasic.m */,
+				5677DF5420550B8900891379 /* JXTypeID.m */,
+				565D299820568225003D7E83 /* JXTypeBitField.m */,
+				56B35798205445EB00B73EBA /* JXTypePointer.m */,
+				56AF99852055968200F58032 /* JXTypeComplex.m */,
+				56B357922054399A00B73EBA /* JXTypeStruct.m */,
+				56AF998820559A6700F58032 /* JXTypeUnion.m */,
+				56B35795205441C700B73EBA /* JXTypeArray.m */,
+				56374B05205D07000068FDAB /* JXTypeDescription.m */,
+				56629161210DD243007CF1DC /* JXTypeQualifiers.m */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		567C593B23948C4B0041C3F9 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -404,9 +456,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 56515E90210DD2080092D8BD /* Build configuration list for PBXNativeTarget "TypeParser" */;
 			buildPhases = (
+				56515E88210DD2080092D8BD /* CopyFiles */,
 				56515E86210DD2080092D8BD /* Sources */,
 				56515E87210DD2080092D8BD /* Frameworks */,
-				56515E88210DD2080092D8BD /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -578,6 +630,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/TypeParser/include";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -592,6 +645,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/TypeParser/include";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

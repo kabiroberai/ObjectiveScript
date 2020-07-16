@@ -1,0 +1,4 @@
+module TypeParser {
+    umbrella header "TypeParser.h"
+    export *
+}

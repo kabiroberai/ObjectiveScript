@@ -1,13 +1,13 @@
 //
-//  libTypeParser.h
+//  TypeParser.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 29/07/18.
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#ifndef libTypeParser_h
-#define libTypeParser_h
+#ifndef TypeParser_h
+#define TypeParser_h
 
 #import "JXType.h"
 #import "JXTypeBasic.h"
@@ -21,4 +21,4 @@
 #import "JXTypeDescription.h"
 #import "JXTypeQualifiers.h"
 
-#endif /* libTypeParser_h */
+#endif /* TypeParser_h */

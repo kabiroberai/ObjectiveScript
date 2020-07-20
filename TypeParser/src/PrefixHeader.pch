@@ -1,0 +1,14 @@
+//
+//  PrefixHeader.pch
+//  ObjectiveScript
+//
+//  Created by Kabir Oberai on 20/07/20.
+//  Copyright © 2020 Kabir Oberai. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+#import "JXType+Private.h"
+
+#endif /* PrefixHeader_pch */

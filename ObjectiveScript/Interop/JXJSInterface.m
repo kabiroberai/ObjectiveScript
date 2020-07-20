@@ -467,7 +467,8 @@ static void configureContext(JSContext *ctx) {
         if (!sym) return [JSValue valueWithUndefinedInContext:ctx];
 
         // we don't just prepend a ^ because if sym.types is `c` then the ptr should be `*` not `^c`
-        JXTypePointer *type = [[JXTypePointer alloc] initWithType:JXTypeForEncoding(sym.types) isFunction:NO];
+        JXTypePointer *type = [[JXTypePointer alloc] initWithType:[JXType typeForEncoding:sym.types]
+                                                       isFunction:NO];
 
         // since we want the pointer to contain `symbol` itself, we pass &symbol to JXConvertToJSValue
         void *symbol = sym.symbol;
@@ -478,7 +479,8 @@ static void configureContext(JSContext *ctx) {
         size_t size = JXSizeForEncoding(enc.UTF8String);
 
         // see getRef for the rationale behind this
-        JXTypePointer *type = [[JXTypePointer alloc] initWithType:JXTypeForEncoding(enc) isFunction:NO];
+        JXTypePointer *type = [[JXTypePointer alloc] initWithType:[JXType typeForEncoding:enc]
+                                                       isFunction:NO];
 
         void *ptr = zeroMemory.toBool ? calloc(1, size) : malloc(size);
         return JXConvertToJSValue(&ptr, type.encoding.UTF8String, [JSContext currentContext], JXInteropOptionDefault);

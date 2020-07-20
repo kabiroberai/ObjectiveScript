@@ -8,7 +8,8 @@
 
 #import <objc/runtime.h>
 #import "JXTypeBasic.h"
-#import "JXType+Private.h"
+
+@interface JXTypeBasic () <JXConcreteType> @end
 
 @implementation JXTypeBasic
 
@@ -112,7 +113,7 @@
     return self;
 }
 
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     NSString *head;
     switch (self.primitiveType) {
         case JXPrimitiveTypeClass:            head = @"Class"; break;

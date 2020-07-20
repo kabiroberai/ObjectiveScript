@@ -31,7 +31,7 @@ JSValue *JXCreateBlock(NSString *sig, JSValue *func) {
 	
 	int flags = BLOCK_HAS_SIGNATURE | BLOCK_HAS_COPY_DISPOSE;
 
-    JXType *type = JXTypeForEncodingC(info.types);
+    JXType *type = [JXType typeForEncodingC:info.types];
 	BOOL hasStret = [type isKindOfClass:JXTypeStruct.class];
 	if (hasStret) {
 		flags |= BLOCK_HAS_STRET;

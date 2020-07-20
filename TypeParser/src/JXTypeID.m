@@ -8,10 +8,11 @@
 
 #import <objc/runtime.h>
 #import "JXTypeID.h"
-#import "JXType+Private.h"
 
 BOOL JXTypeIDIgnoreName = NO;
 NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
+
+@interface JXTypeID () <JXConcreteType> @end
 
 @implementation JXTypeID
 
@@ -89,7 +90,7 @@ NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
     return self;
 }
 
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     // if there are any protocols, add them to the description
     NSString *protoList;
 

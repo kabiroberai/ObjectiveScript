@@ -14,14 +14,12 @@
 #import "JXTypeStruct.h"
 #import "JXTypeUnion.h"
 #import "JXTypeArray.h"
-#import "JXType+Private.h"
 #import "JXTypeQualifiers+Private.h"
+// we don't actually need this import but at least one non-pch import is
+// required to get autocomplete working
+#import "JXType+Private.h"
 
 @implementation JXType
-
-+ (BOOL)supportsEncoding:(char)encoding {
-    return NO;
-}
 
 - (instancetype)init {
     self = [super init];
@@ -41,34 +39,7 @@
     return self;
 }
 
-- (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers {
-    return [self initWithQualifiers:qualifiers];
-}
-
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
-    // head comes before the field name, tail comes after
-    return [JXTypeDescription descriptionWithHead:@"" tail:@""];
-}
-
-- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding {
-    NSString *qualifiers = JXStringForTypeQualifiers(_qualifiers);
-    if (qualifiers) qualifiers = [qualifiers stringByAppendingString:@" "];
-    else qualifiers = @"";
-
-    JXTypeDescription *type = [self _descriptionWithPadding:padding];
-    return [JXTypeDescription
-            descriptionWithHead:[qualifiers stringByAppendingString:type.head]
-            tail:type.tail];
-}
-
-- (NSString *)description {
-    JXTypeDescription *desc = [self descriptionWithPadding:NO];
-    return [desc.head stringByAppendingString:desc.tail];
-}
-
-@end
-
-JXType *JXTypeWithScanner(NSScanner *scanner) {
++ (instancetype)typeWithScanner:(NSScanner *)scanner {
     static NSArray<Class> *allTypes;
 
     static dispatch_once_t onceToken;
@@ -84,32 +55,58 @@ JXType *JXTypeWithScanner(NSScanner *scanner) {
         ];
     });
 
+    NSUInteger startLoc = scanner.scanLocation;
     JXTypeQualifiers qualifiers = JXRemoveQualifiersWithScanner(scanner);
 
-    for (Class type in allTypes) {
-        if ([type supportsEncoding:scanner.currentCharacter]) {
-            NSUInteger loc = scanner.scanLocation;
-            JXType *instance = [[type alloc] initWithScanner:scanner qualifiers:qualifiers];
-            if (!instance) {
-                scanner.scanLocation = loc;
-                return nil;
-            }
-            instance->_encoding = [scanner.string substringWithRange:NSMakeRange(loc, scanner.scanLocation - loc)];
-            return instance;
+    // only search subclasses if this was directly called on JXType.class. Else just use that class itself
+    NSArray<Class> *searchTypes = ([self class] == [JXType class]) ? allTypes : @[[self class]];
+    for (Class type in searchTypes) {
+        if (![type supportsEncoding:scanner.currentCharacter]) continue;
+        NSUInteger loc = scanner.scanLocation;
+        JXType *instance = [[type alloc] initWithScanner:scanner qualifiers:qualifiers];
+        if (!instance) {
+            scanner.scanLocation = startLoc;
+            return nil;
         }
+        instance->_encoding = [scanner.string substringWithRange:NSMakeRange(loc, scanner.scanLocation - loc)];
+        return instance;
     }
+
     return nil;
 }
 
-JXType *JXTypeForEncoding(NSString *encoding) {
++ (instancetype)typeForEncoding:(NSString *)encoding {
     NSScanner *scanner = [NSScanner scannerWithString:encoding];
     scanner.charactersToBeSkipped = [NSCharacterSet new];
-    return JXTypeWithScanner(scanner);
+    return [self typeWithScanner:scanner];
 }
 
-JXType *JXTypeForEncodingC(const char *encoding) {
-    return JXTypeForEncoding(@(encoding));
++ (instancetype)typeForEncodingC:(const char *)encoding {
+    return [self typeForEncoding:@(encoding)];
 }
+
+- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding {
+    if (![self conformsToProtocol:@protocol(JXConcreteType)]) {
+        [self doesNotRecognizeSelector:_cmd];
+        return nil;
+    }
+
+    NSString *qualifiers = JXStringForTypeQualifiers(_qualifiers);
+    if (qualifiers) qualifiers = [qualifiers stringByAppendingString:@" "];
+    else qualifiers = @"";
+
+    JXTypeDescription *type = [(id<JXConcreteType>)self baseDescriptionWithPadding:padding];
+    return [JXTypeDescription
+            descriptionWithHead:[qualifiers stringByAppendingString:type.head]
+            tail:type.tail];
+}
+
+- (NSString *)description {
+    JXTypeDescription *desc = [self descriptionWithPadding:NO];
+    return [desc.head stringByAppendingString:desc.tail];
+}
+
+@end
 
 __attribute__((used)) static void registerCategories() {
     __attribute__((unused)) void *ignore = NSScannerUtilsDummy;

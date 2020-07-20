@@ -8,7 +8,8 @@
 
 #import <objc/runtime.h>
 #import "JXTypeBitField.h"
-#import "JXType+Private.h"
+
+@interface JXTypeBitField () <JXConcreteType> @end
 
 @implementation JXTypeBitField
 
@@ -39,7 +40,7 @@
     return self;
 }
 
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     return [JXTypeDescription
             descriptionWithHead:[@"unsigned int" stringByAppendingString: padding ? @" " : @""]
             tail:[NSString stringWithFormat:@":%lu", (long)self.bits]];

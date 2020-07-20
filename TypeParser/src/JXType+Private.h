@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "JXType.h"
 #import "NSScanner+Utils.h"
+#import "JXConcreteType.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,18 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithQualifiers:(JXTypeQualifiers)qualifiers;
 
-// `scanner` is moved forward to the start of the next type.
-- (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers;
-
-// returns whether the encoding is supported based on its first char
-+ (BOOL)supportsEncoding:(char)encoding;
-
-// without qualifiers (overriden by subclasses)
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding;
+// scans encoding from `scanner`, moving `scanner` forward if the scan succeeded
++ (nullable instancetype)typeWithScanner:(NSScanner *)scanner;
 
 @end
-
-// scans encoding from `scanner`, moving `scanner` forward if the scan succeeded
-JXType * _Nullable JXTypeWithScanner(NSScanner *scanner);
 
 NS_ASSUME_NONNULL_END

@@ -169,7 +169,7 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 	// `numberOfArguments` will be num of fixed args here because `types` only contains fixed arg types even if variadic
 	uint32_t nfixedargs = (uint32_t)sig.numberOfArguments;
     uint32_t nvarargs = nargs - nfixedargs;
-	ffi_type *rtype = [JXTypeForEncodingC(ret) ffiType];
+    ffi_type *rtype = [[JXType typeForEncodingC:ret] ffiType];
 
 	// if variadic, append the rest of the types to `sig`
 	if (isVariadic) {
@@ -187,7 +187,7 @@ JSValue *JXCallFunction(void *sym, NSString *types, uint32_t nargs, const JSValu
 
     ffi_type *args[nargs];
     for (uint32_t i = 0; i < nargs; i++) {
-        args[i] = [JXTypeForEncodingC([sig getArgumentTypeAtIndex:i]) ffiType];
+        args[i] = [[JXType typeForEncodingC:[sig getArgumentTypeAtIndex:i]] ffiType];
     }
 
     // prepare cif
@@ -349,11 +349,11 @@ JXTrampInfo *JXCreateTramp(JSValue *func, const char *types, Class cls) {
 	NSMethodSignature *sig = info.sig;
 	
 	unsigned int nargs = (unsigned int)sig.numberOfArguments;
-	ffi_type *ret = [JXTypeForEncodingC(sig.methodReturnType) ffiType];
+	ffi_type *ret = [[JXType typeForEncodingC:sig.methodReturnType] ffiType];
 	
 	ffi_type **args = malloc(sig.numberOfArguments * sizeof(ffi_type *));
 	for (NSUInteger i = 0; i < sig.numberOfArguments; i++) {
-		args[i] = [JXTypeForEncodingC([sig getArgumentTypeAtIndex:i]) ffiType];
+		args[i] = [[JXType typeForEncodingC:[sig getArgumentTypeAtIndex:i]] ffiType];
 	}
 	
 	createTrampWithFFITypes(ret, nargs, args, info);

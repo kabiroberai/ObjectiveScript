@@ -88,7 +88,7 @@ const char *_protocol_getMethodTypeEncoding(Protocol *, SEL, BOOL isRequiredMeth
 //    const char *enc = "{Foo=\"bar\"@\"baz\"i}";
 //    const char *enc = "{CGRect=\"origin\"{CGPoint=\"x\"d\"y\"d}\"size\"{CGSize=\"width\"d\"height\"d}}";
 //    const char *enc = "^{}";
-    JXType *parsed = JXTypeForEncodingC(enc);
+    JXType *parsed = [JXType typeForEncodingC:enc];
     // struct { id *bar; void (*foo[5])(void); SEL abc; Class cls; int baz; NSString *str; id<NSCopying, NSCoding> proto; NSDictionary<NSCopying, NSCoding> *another; }
     NSLog(@"\n%@", parsed);
 }

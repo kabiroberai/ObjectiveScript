@@ -142,7 +142,7 @@ JSValue *JXConvertToJSValue(void *val, const char *type, JSContext *ctx, JXInter
     else if (*type == _C_ARY_B) {
         // we don't do the converted check for arrays because they're always inside a struct, so
         // val should never be NULL
-        JXTypeArray *arrayType = (JXTypeArray *)JXTypeForEncodingC(type);
+        JXTypeArray *arrayType = [JXTypeArray typeForEncodingC:type];
         JXArray *arr = [JXArray arrayWithVal:val type:arrayType.type.encoding count:arrayType.count];
         obj = arr;
     }
@@ -274,7 +274,7 @@ void JXConvertFromJSValue(JSValue *value, const char *type, void (^block)(void *
         // already a void *, don't pass memory address
         block(obj.val);
     } else if (*type == _C_ARY_B) {
-        JXType *jxType = JXTypeForEncodingC(type);
+        JXType *jxType = [JXTypeArray typeForEncodingC:type];
         @throw JXCreateExceptionFormat(@"Array type '%@' is not assignable", jxType);
     } else if (isType(SEL)) {
 		SEL sel = NSSelectorFromString([value toString]);

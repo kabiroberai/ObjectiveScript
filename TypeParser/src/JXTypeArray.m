@@ -9,7 +9,8 @@
 #import <objc/runtime.h>
 #import "JXTypeArray.h"
 #import "JXTypePointer.h"
-#import "JXType+Private.h"
+
+@interface JXTypeArray () <JXConcreteType> @end
 
 @implementation JXTypeArray
 
@@ -27,7 +28,7 @@
     if (![scanner scanUnsignedLongLong:&count]) return nil;
     _count = count;
 
-    _type = JXTypeWithScanner(scanner);
+    _type = [JXType typeWithScanner:scanner];
 
     // eat ']'
     if (![scanner scanString:@"]" intoString:nil]) return nil;
@@ -46,7 +47,7 @@
     return self;
 }
 
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     JXTypeDescription *subDescription = [self.type descriptionWithPadding:padding];
     return [JXTypeDescription
             descriptionWithHead:subDescription.head

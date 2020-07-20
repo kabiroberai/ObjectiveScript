@@ -24,7 +24,11 @@
 	if (self) {
         _rawType = @(type);
 
-		_type = (JXTypeStruct *)JXTypeForEncodingC(type);
+		_type = [JXTypeStruct typeForEncodingC:type];
+        if (!_type) {
+            ctx.exception = JXConvertToError(JXCreateException(@"Could not initialize struct: invalid type"), ctx);
+            return nil;
+        }
 
         _name = _type.name;
 

@@ -13,7 +13,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface JXType : NSObject {
-@package
     NSString *_encoding;
 }
 
@@ -27,9 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 // name, such as in `JXTypePointer`.
 - (JXTypeDescription *)descriptionWithPadding:(BOOL)padding;
 
-@end
+// If the receiver is the JXType base class, this will try to return a suitable subclass.
+// If the receiver is a subclass, this will try to construct the receiver with encoding,
+// or else return nil.
++ (nullable instancetype)typeForEncoding:(NSString *)encoding NS_SWIFT_NAME(init(encoding:));
 
-JXType * _Nullable JXTypeForEncoding(NSString *encoding);
-JXType * _Nullable JXTypeForEncodingC(const char *encoding);
++ (nullable instancetype)typeForEncodingC:(const char *)encoding NS_SWIFT_NAME(init(encodingC:));
+
+@end
 
 NS_ASSUME_NONNULL_END

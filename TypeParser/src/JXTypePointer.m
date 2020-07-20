@@ -8,8 +8,9 @@
 
 #import "JXTypePointer.h"
 #import "JXTypeBasic.h"
-#import "JXType+Private.h"
 #import <objc/runtime.h>
+
+@interface JXTypePointer () <JXConcreteType> @end
 
 @implementation JXTypePointer
 
@@ -28,7 +29,7 @@
     } else {
         scanner.scanLocation += 1; // eat '^'
         if (scanner.currentCharacter == '?') _isFunction = YES;
-        _type = JXTypeWithScanner(scanner);
+        _type = [JXType typeWithScanner:scanner];
     }
 
     return self;
@@ -53,7 +54,7 @@
     return self;
 }
 
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     if (self.isFunction) {
         return [JXTypeDescription descriptionWithHead:@"void (*" tail:@")(void)"];
     }

@@ -8,7 +8,8 @@
 
 #import "JXTypeCompound.h"
 #import "JXTypeID.h"
-#import "JXType+Private.h"
+
+@interface JXTypeCompound () <JXConcreteType> @end
 
 @implementation JXTypeCompound
 
@@ -67,7 +68,7 @@
 
                     @synchronized (JXTypeIDIgnoreNameLock) {
                         JXTypeIDIgnoreName = YES;
-                        [types addObject:JXTypeWithScanner(scanner)];
+                        [types addObject:[JXType typeWithScanner:scanner]];
                         JXTypeIDIgnoreName = NO;
                     }
 
@@ -87,7 +88,7 @@
                 lastLocation = scanner.scanLocation;
             }
 
-            JXType *type = JXTypeWithScanner(scanner);
+            JXType *type = [JXType typeWithScanner:scanner];
             if (!type)
                 return nil;
             [types addObject:type];
@@ -129,7 +130,7 @@
     return self;
 }
 
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     // if the type metadata is present, add it to the description
     NSMutableString *typesStr = [NSMutableString string];
     if (self.types && self.types.count > 0) {

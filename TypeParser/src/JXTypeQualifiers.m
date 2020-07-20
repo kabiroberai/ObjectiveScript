@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import "JXTypeQualifiers.h"
-#import "JXType+Private.h"
 #import "JXTypeQualifiers+Private.h"
 
 JXTypeQualifiers JXTypeQualifierForEncoding(char enc) {

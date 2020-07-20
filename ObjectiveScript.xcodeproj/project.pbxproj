@@ -161,6 +161,8 @@
 		565D299820568225003D7E83 /* JXTypeBitField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeBitField.m; sourceTree = "<group>"; };
 		565D299A20568DCC003D7E83 /* JXTypeQualifiers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeQualifiers.h; sourceTree = "<group>"; };
 		565EB93F247DD36000E98732 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		565F1CD124C5F88C00CE8719 /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
+		565F1CD224C5F95500CE8719 /* JXConcreteType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXConcreteType.h; sourceTree = "<group>"; };
 		56629161210DD243007CF1DC /* JXTypeQualifiers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JXTypeQualifiers.m; sourceTree = "<group>"; };
 		56629163210DD2A5007CF1DC /* TypeParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TypeParser.h; sourceTree = "<group>"; };
 		56667B6D2019CB980032DFFF /* JXSymbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXSymbol.h; sourceTree = "<group>"; };
@@ -424,6 +426,7 @@
 				56F359E824C4F783007FB727 /* NSScanner+Utils.h */,
 				56F359E924C4F783007FB727 /* NSScanner+Utils.m */,
 				56F359EB24C4FD18007FB727 /* JXType+Private.h */,
+				565F1CD224C5F95500CE8719 /* JXConcreteType.h */,
 				561BCE392053E6B5002165F4 /* JXType.m */,
 				560C069B20541E1000CE992C /* JXTypeBasic.m */,
 				5677DF5420550B8900891379 /* JXTypeID.m */,
@@ -436,6 +439,7 @@
 				56374B05205D07000068FDAB /* JXTypeDescription.m */,
 				56F359EC24C51D47007FB727 /* JXTypeQualifiers+Private.h */,
 				56629161210DD243007CF1DC /* JXTypeQualifiers.m */,
+				565F1CD124C5F88C00CE8719 /* PrefixHeader.pch */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -640,6 +644,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				GCC_PREFIX_HEADER = TypeParser/src/PrefixHeader.pch;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/TypeParser/include";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				OTHER_LDFLAGS = "-ObjC";
@@ -655,6 +660,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4AXYTEF44D;
+				GCC_PREFIX_HEADER = TypeParser/src/PrefixHeader.pch;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/TypeParser/include";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

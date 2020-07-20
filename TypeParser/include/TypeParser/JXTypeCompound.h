@@ -1,5 +1,5 @@
 //
-//  JXTypeComplex.h
+//  JXTypeCompound.h
 //  ObjectiveScript
 //
 //  Created by Kabir Oberai on 11/03/18.
@@ -10,11 +10,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface JXTypeComplex : JXType
+@interface JXTypeCompound : JXType
 
-+ (char)startDelim;
-+ (char)endDelim;
-+ (NSString *)typeName;
+@property (class, readonly) char startDelim;
+@property (class, readonly) char endDelim;
+@property (class, readonly) NSString *typeName;
 
 // nil if no name
 @property (nonatomic, readonly, nullable) NSString *name;

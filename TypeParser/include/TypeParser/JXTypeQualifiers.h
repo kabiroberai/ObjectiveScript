@@ -23,7 +23,7 @@ typedef NS_OPTIONS(NSUInteger, JXTypeQualifiers) {
 };
 
 JXTypeQualifiers JXTypeQualifierForEncoding(char enc);
-JXTypeQualifiers JXRemoveQualifiers(const char * _Nonnull * _Nonnull type);
+JXTypeQualifiers JXRemoveQualifiers(const char * _Nonnull * _Nonnull encoding);
 NSString * _Nullable JXStringForTypeQualifiers(JXTypeQualifiers qualifiers);
 
 NS_ASSUME_NONNULL_END

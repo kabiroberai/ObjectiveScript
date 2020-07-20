@@ -6,7 +6,7 @@
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#import "JXTypeComplex.h"
+#import "JXTypeCompound.h"
 
-@interface JXTypeUnion : JXTypeComplex
+@interface JXTypeUnion : JXTypeCompound
 @end

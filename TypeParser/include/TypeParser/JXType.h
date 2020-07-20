@@ -13,7 +13,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface JXType : NSObject {
-    // declare this explicitly so that subclasses can access it
+@package
     NSString *_encoding;
 }
 
@@ -23,27 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *encoding;
 @property (nonatomic, readonly) JXTypeQualifiers qualifiers;
 
-// `enc` is moved forward to the start of the next type.
-- (instancetype)initWithEncoding:(const char * _Nonnull * _Nonnull)enc qualifiers:(JXTypeQualifiers)qualifiers;
-
-// returns whether the encoding is supported based on its first char
-+ (BOOL)supportsEncoding:(char)encoding;
-
-// without qualifiers (overriden by subclasses)
-- (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding;
-// with qualifiers
+// This isn't `descriptionWithName:` because we may want padding without the
+// name, such as in `JXTypePointer`.
 - (JXTypeDescription *)descriptionWithPadding:(BOOL)padding;
-
-// helper methods
-- (NSString *)stringBetweenStart:(const char *)start end:(const char *)end;
-- (NSUInteger)numberFromEncoding:(const char * _Nonnull * _Nonnull)enc;
 
 @end
 
-JXType *JXTypeVoid(void);
-// returns a parsed JXType given an encoding. Use this as an entry point for parsing encodings.
-JXType * _Nullable JXTypeForEncoding(const char *enc);
-// same as above but moves enc forward by the length of the encoding
-JXType * _Nullable JXTypeWithEncoding(const char * _Nonnull * _Nonnull enc);
+JXType * _Nullable JXTypeForEncoding(NSString *encoding);
+JXType * _Nullable JXTypeForEncodingC(const char *encoding);
 
 NS_ASSUME_NONNULL_END

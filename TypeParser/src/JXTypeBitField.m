@@ -8,6 +8,7 @@
 
 #import <objc/runtime.h>
 #import "JXTypeBitField.h"
+#import "JXType+Private.h"
 
 @implementation JXTypeBitField
 
@@ -15,28 +16,26 @@
     return encoding == _C_BFLD;
 }
 
-- (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
-    self = [super initWithEncoding:enc qualifiers:qualifiers];
-    if (self) {
-        const char *encStart = *enc;
+- (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers {
+    self = [super initWithQualifiers:qualifiers];
+    if (!self) return nil;
 
-        *enc += 1; // eat 'b'
+    scanner.scanLocation += 1; // eat 'b'
 
-        _bits = [self numberFromEncoding:enc];
+    unsigned long long bits;
+    if (![scanner scanUnsignedLongLong:&bits]) return nil;
+    _bits = (NSUInteger)bits;
 
-        _encoding = [self stringBetweenStart:encStart end:*enc];
-    }
     return self;
 }
 
 - (instancetype)initWithBits:(NSUInteger)bits {
-    NSString *str = [NSString stringWithFormat:@"%c%lu", _C_BFLD, (long)bits];
-    const char *enc = str.UTF8String;
-    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
-    if (self) {
-        _encoding = str;
-        _bits = bits;
-    }
+    self = [super init];
+    if (!self) return nil;
+
+    _encoding = [NSString stringWithFormat:@"%c%lu", _C_BFLD, (long)bits];
+    _bits = bits;
+
     return self;
 }
 

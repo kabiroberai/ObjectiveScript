@@ -8,6 +8,7 @@
 
 #import <objc/runtime.h>
 #import "JXTypeBasic.h"
+#import "JXType+Private.h"
 
 @implementation JXTypeBasic
 
@@ -24,17 +25,69 @@
     }
 }
 
-- (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
-    self = [super initWithEncoding:enc qualifiers:qualifiers];
-    if (self) {
-        const char *start = *enc; // get first char and advance string
-        *enc += 1;
-        _encoding = [self stringBetweenStart:start end:*enc];
+- (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers {
+    self = [super initWithQualifiers:qualifiers];
+    if (!self) return nil;
+
+    char encoding = scanner.currentCharacter;
+    scanner.scanLocation += 1;
+    switch (encoding) {
+        case _C_CLASS:
+            _primitiveType = JXPrimitiveTypeClass;
+            break;
+        case _C_SEL:
+            _primitiveType = JXPrimitiveTypeSelector;
+            break;
+        case _C_CHR:
+            _primitiveType = JXPrimitiveTypeChar;
+            break;
+        case _C_UCHR:
+            _primitiveType = JXPrimitiveTypeUnsignedChar;
+            break;
+        case _C_SHT:
+            _primitiveType = JXPrimitiveTypeShort;
+            break;
+        case _C_USHT:
+            _primitiveType = JXPrimitiveTypeUnsignedShort;
+            break;
+        case _C_INT:
+            _primitiveType = JXPrimitiveTypeInt;
+            break;
+        case _C_UINT:
+            _primitiveType = JXPrimitiveTypeUnsignedInt;
+            break;
+        case _C_LNG:
+            _primitiveType = JXPrimitiveTypeLong;
+            break;
+        case _C_ULNG:
+            _primitiveType = JXPrimitiveTypeUnsignedLong;
+            break;
+        case _C_LNG_LNG:
+            _primitiveType = JXPrimitiveTypeLongLong;
+            break;
+        case _C_ULNG_LNG:
+            _primitiveType = JXPrimitiveTypeUnsignedLongLong;
+            break;
+        case _C_FLT:
+            _primitiveType = JXPrimitiveTypeFloat;
+            break;
+        case _C_DBL:
+            _primitiveType = JXPrimitiveTypeDouble;
+            break;
+        case _C_BOOL:
+            _primitiveType = JXPrimitiveTypeBOOL;
+            break;
+        default:
+            _primitiveType = JXPrimitiveTypeVoid;
     }
+
     return self;
 }
 
 - (instancetype)initWithPrimitiveType:(JXPrimitiveType)primitiveType {
+    self = [super init];
+    if (!self) return nil;
+
     char type;
     switch (primitiveType) {
         case JXPrimitiveTypeClass:            type = _C_CLASS; break;
@@ -52,36 +105,11 @@
         case JXPrimitiveTypeFloat:            type = _C_FLT; break;
         case JXPrimitiveTypeDouble:           type = _C_DBL; break;
         case JXPrimitiveTypeBOOL:             type = _C_BOOL; break;
-        case JXPrimitiveTypeVoid:             type = '\0'; break;
+        case JXPrimitiveTypeVoid:             type = _C_VOID; break;
     }
-    NSString *encoding = [NSString stringWithFormat:@"%c", type];
-    const char *enc = encoding.UTF8String;
-    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
-    if (self) {
-        _encoding = encoding;
-    }
-    return self;
-}
+    _encoding = [NSString stringWithFormat:@"%c", type];
 
-- (JXPrimitiveType)primitiveType {
-    switch (*self.encoding.UTF8String) {
-        case _C_CLASS:    return JXPrimitiveTypeClass;
-        case _C_SEL:      return JXPrimitiveTypeSelector;
-        case _C_CHR:      return JXPrimitiveTypeChar;
-        case _C_UCHR:     return JXPrimitiveTypeUnsignedChar;
-        case _C_SHT:      return JXPrimitiveTypeShort;
-        case _C_USHT:     return JXPrimitiveTypeUnsignedShort;
-        case _C_INT:      return JXPrimitiveTypeInt;
-        case _C_UINT:     return JXPrimitiveTypeUnsignedInt;
-        case _C_LNG:      return JXPrimitiveTypeLong;
-        case _C_ULNG:     return JXPrimitiveTypeUnsignedLong;
-        case _C_LNG_LNG:  return JXPrimitiveTypeLongLong;
-        case _C_ULNG_LNG: return JXPrimitiveTypeUnsignedLongLong;
-        case _C_FLT:      return JXPrimitiveTypeFloat;
-        case _C_DBL:      return JXPrimitiveTypeDouble;
-        case _C_BOOL:     return JXPrimitiveTypeBOOL;
-        default:          return JXPrimitiveTypeVoid;
-    }
+    return self;
 }
 
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {

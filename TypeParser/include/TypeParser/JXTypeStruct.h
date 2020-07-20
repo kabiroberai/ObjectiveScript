@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "JXTypeComplex.h"
+#import "JXTypeCompound.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface JXTypeStruct : JXTypeComplex
+@interface JXTypeStruct : JXTypeCompound
 @end
 
 NS_ASSUME_NONNULL_END

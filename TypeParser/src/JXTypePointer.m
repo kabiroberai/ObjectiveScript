@@ -8,6 +8,7 @@
 
 #import "JXTypePointer.h"
 #import "JXTypeBasic.h"
+#import "JXType+Private.h"
 #import <objc/runtime.h>
 
 @implementation JXTypePointer
@@ -16,29 +17,27 @@
     return encoding == _C_PTR || encoding == _C_CHARPTR;
 }
 
-- (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
-    self = [super initWithEncoding:enc qualifiers:qualifiers];
-    if (self) {
-        const char *encStart = *enc;
+- (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers {
+    self = [super initWithQualifiers:qualifiers];
+    if (!self) return nil;
 
-        if (**enc == _C_CHARPTR) {
-            _type = JXTypeForEncoding(@encode(char));
-            *enc += 1; // eat '*'
-        } else {
-            *enc += 1; // eat '^'
-
-            // ^? represents a function
-            if (**enc == '?') _isFunction = YES;
-
-            _type = JXTypeWithEncoding(enc);
-        }
-
-        _encoding = [self stringBetweenStart:encStart end:*enc];
+    char start = scanner.currentCharacter;
+    if (start == _C_CHARPTR) {
+        _type = [[JXTypeBasic alloc] initWithPrimitiveType:JXPrimitiveTypeChar];
+        scanner.scanLocation += 1; // eat '*'
+    } else {
+        scanner.scanLocation += 1; // eat '^'
+        if (scanner.currentCharacter == '?') _isFunction = YES;
+        _type = JXTypeWithScanner(scanner);
     }
+
     return self;
 }
 
 - (instancetype)initWithType:(JXType *)type isFunction:(BOOL)isFunction {
+    self = [super init];
+    if (!self) return nil;
+
     NSString *encoding = [NSString stringWithFormat:@"^%@%@", isFunction ? @"?" : @"", type.encoding];
     if ([type isKindOfClass:JXTypeBasic.class]) {
         JXTypeBasic *basicType = (JXTypeBasic *)type;
@@ -47,14 +46,10 @@
             encoding = [NSString stringWithFormat:@"%c", _C_CHARPTR];
         }
     }
+    _encoding = encoding;
+    _type = type;
+    _isFunction = isFunction;
 
-    const char *enc = encoding.UTF8String;
-    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
-    if (self) {
-        _encoding = encoding;
-        _type = type;
-        _isFunction = isFunction;
-    }
     return self;
 }
 

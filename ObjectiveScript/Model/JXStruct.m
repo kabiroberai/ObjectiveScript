@@ -24,7 +24,7 @@
 	if (self) {
         _rawType = @(type);
 
-		_type = (JXTypeStruct *)JXTypeForEncoding(type);
+		_type = (JXTypeStruct *)JXTypeForEncodingC(type);
 
         _name = _type.name;
 

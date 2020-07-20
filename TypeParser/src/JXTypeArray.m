@@ -9,6 +9,7 @@
 #import <objc/runtime.h>
 #import "JXTypeArray.h"
 #import "JXTypePointer.h"
+#import "JXType+Private.h"
 
 @implementation JXTypeArray
 
@@ -16,35 +17,32 @@
     return encoding == _C_ARY_B;
 }
 
-- (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
-    self = [super initWithEncoding:enc qualifiers:qualifiers];
-    if (self) {
-        const char *encStart = *enc;
+- (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers {
+    self = [super initWithQualifiers:qualifiers];
+    if (!self) return nil;
 
-        // eat '['
-        *enc += 1;
+    scanner.scanLocation += 1; // eat '['
 
-        _count = [self numberFromEncoding:enc];
+    unsigned long long count;
+    if (![scanner scanUnsignedLongLong:&count]) return nil;
+    _count = count;
 
-        _type = JXTypeWithEncoding(enc);
+    _type = JXTypeWithScanner(scanner);
 
-        // eat ']'
-        *enc += 1;
+    // eat ']'
+    if (![scanner scanString:@"]" intoString:nil]) return nil;
 
-        _encoding = [self stringBetweenStart:encStart end:*enc];
-    }
     return self;
 }
 
 - (instancetype)initWithCount:(NSUInteger)count type:(JXType *)type {
-    NSString *encoding = [NSString stringWithFormat:@"[%lu%@]", (long)count, type.encoding];
-    const char *enc = encoding.UTF8String;
-    self = [super initWithEncoding:&enc qualifiers:JXTypeQualifierNone];
-    if (self) {
-        _encoding = encoding;
-        _count = count;
-        _type = type;
-    }
+    self = [super init];
+    if (!self) return nil;
+
+    _encoding = [NSString stringWithFormat:@"[%lu%@]", (long)count, type.encoding];
+    _count = count;
+    _type = type;
+
     return self;
 }
 

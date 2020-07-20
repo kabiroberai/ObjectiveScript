@@ -21,7 +21,7 @@
 @end
 
 size_t JXSizeForEncoding(const char *enc) {
-    JXType *type = JXTypeForEncoding(enc);
+    JXType *type = JXTypeForEncodingC(enc);
     ffi_type *ffiType = [type ffiType];
 
     size_t size;

@@ -27,7 +27,7 @@
 		565EB942247DD3BB00E98732 /* JXTypeID.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5677DF5320550B8900891379 /* JXTypeID.h */; };
 		565EB943247DD3BB00E98732 /* JXTypeBitField.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 565D299720568225003D7E83 /* JXTypeBitField.h */; };
 		565EB944247DD3BB00E98732 /* JXTypePointer.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56B35797205445EB00B73EBA /* JXTypePointer.h */; };
-		565EB945247DD3BB00E98732 /* JXTypeComplex.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56AF99842055968200F58032 /* JXTypeComplex.h */; };
+		565EB945247DD3BB00E98732 /* JXTypeCompound.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56AF99842055968200F58032 /* JXTypeCompound.h */; };
 		565EB946247DD3BB00E98732 /* JXTypeStruct.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56B357912054399A00B73EBA /* JXTypeStruct.h */; };
 		565EB947247DD3BB00E98732 /* JXTypeUnion.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56AF998720559A6700F58032 /* JXTypeUnion.h */; };
 		565EB948247DD3BB00E98732 /* JXTypeArray.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 56B35794205441C700B73EBA /* JXTypeArray.h */; };
@@ -40,7 +40,7 @@
 		56629172210DD343007CF1DC /* JXTypeID.m in Sources */ = {isa = PBXBuildFile; fileRef = 5677DF5420550B8900891379 /* JXTypeID.m */; };
 		56629173210DD343007CF1DC /* JXTypeBitField.m in Sources */ = {isa = PBXBuildFile; fileRef = 565D299820568225003D7E83 /* JXTypeBitField.m */; };
 		56629174210DD343007CF1DC /* JXTypePointer.m in Sources */ = {isa = PBXBuildFile; fileRef = 56B35798205445EB00B73EBA /* JXTypePointer.m */; };
-		56629175210DD343007CF1DC /* JXTypeComplex.m in Sources */ = {isa = PBXBuildFile; fileRef = 56AF99852055968200F58032 /* JXTypeComplex.m */; };
+		56629175210DD343007CF1DC /* JXTypeCompound.m in Sources */ = {isa = PBXBuildFile; fileRef = 56AF99852055968200F58032 /* JXTypeCompound.m */; };
 		56629176210DD343007CF1DC /* JXTypeStruct.m in Sources */ = {isa = PBXBuildFile; fileRef = 56B357922054399A00B73EBA /* JXTypeStruct.m */; };
 		56629177210DD343007CF1DC /* JXTypeUnion.m in Sources */ = {isa = PBXBuildFile; fileRef = 56AF998820559A6700F58032 /* JXTypeUnion.m */; };
 		56629178210DD343007CF1DC /* JXTypeArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 56B35795205441C700B73EBA /* JXTypeArray.m */; };
@@ -59,6 +59,7 @@
 		56CBD3842391E8CA00BA176E /* JXContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 56CBD3832391E8CA00BA176E /* JXContext.m */; };
 		56CBD3872391E9C100BA176E /* JXContextManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 56CBD3862391E9C100BA176E /* JXContextManager.m */; };
 		56D558E11FE4252A00CF5720 /* ObjectiveScript.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 56D558E01FE4234A00CF5720 /* ObjectiveScript.h */; };
+		56F359EA24C4F783007FB727 /* NSScanner+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 56F359E924C4F783007FB727 /* NSScanner+Utils.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,7 +85,7 @@
 				565EB942247DD3BB00E98732 /* JXTypeID.h in CopyFiles */,
 				565EB943247DD3BB00E98732 /* JXTypeBitField.h in CopyFiles */,
 				565EB944247DD3BB00E98732 /* JXTypePointer.h in CopyFiles */,
-				565EB945247DD3BB00E98732 /* JXTypeComplex.h in CopyFiles */,
+				565EB945247DD3BB00E98732 /* JXTypeCompound.h in CopyFiles */,
 				565EB946247DD3BB00E98732 /* JXTypeStruct.h in CopyFiles */,
 				565EB947247DD3BB00E98732 /* JXTypeUnion.h in CopyFiles */,
 				565EB948247DD3BB00E98732 /* JXTypeArray.h in CopyFiles */,
@@ -177,8 +178,8 @@
 		56A149C11FE53CA0008B6BED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		56A8175121B2DE210052D0B6 /* JXValueWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXValueWrapper.h; sourceTree = "<group>"; };
 		56A8175221B2DE210052D0B6 /* JXValueWrapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXValueWrapper.m; sourceTree = "<group>"; };
-		56AF99842055968200F58032 /* JXTypeComplex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeComplex.h; sourceTree = "<group>"; };
-		56AF99852055968200F58032 /* JXTypeComplex.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeComplex.m; sourceTree = "<group>"; };
+		56AF99842055968200F58032 /* JXTypeCompound.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeCompound.h; sourceTree = "<group>"; };
+		56AF99852055968200F58032 /* JXTypeCompound.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeCompound.m; sourceTree = "<group>"; };
 		56AF998720559A6700F58032 /* JXTypeUnion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeUnion.h; sourceTree = "<group>"; };
 		56AF998820559A6700F58032 /* JXTypeUnion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeUnion.m; sourceTree = "<group>"; };
 		56B357912054399A00B73EBA /* JXTypeStruct.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXTypeStruct.h; sourceTree = "<group>"; };
@@ -193,6 +194,10 @@
 		56CBD3862391E9C100BA176E /* JXContextManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXContextManager.m; sourceTree = "<group>"; };
 		56D558E01FE4234A00CF5720 /* ObjectiveScript.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjectiveScript.h; sourceTree = "<group>"; };
 		56F2C3A62062720C00ED4712 /* JXKVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXKVC.h; sourceTree = "<group>"; };
+		56F359E824C4F783007FB727 /* NSScanner+Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSScanner+Utils.h"; sourceTree = "<group>"; };
+		56F359E924C4F783007FB727 /* NSScanner+Utils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSScanner+Utils.m"; sourceTree = "<group>"; };
+		56F359EB24C4FD18007FB727 /* JXType+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JXType+Private.h"; sourceTree = "<group>"; };
+		56F359EC24C51D47007FB727 /* JXTypeQualifiers+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JXTypeQualifiers+Private.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -402,7 +407,7 @@
 				5677DF5320550B8900891379 /* JXTypeID.h */,
 				565D299720568225003D7E83 /* JXTypeBitField.h */,
 				56B35797205445EB00B73EBA /* JXTypePointer.h */,
-				56AF99842055968200F58032 /* JXTypeComplex.h */,
+				56AF99842055968200F58032 /* JXTypeCompound.h */,
 				56B357912054399A00B73EBA /* JXTypeStruct.h */,
 				56AF998720559A6700F58032 /* JXTypeUnion.h */,
 				56B35794205441C700B73EBA /* JXTypeArray.h */,
@@ -416,16 +421,20 @@
 		565EB950247DD6A100E98732 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				56F359E824C4F783007FB727 /* NSScanner+Utils.h */,
+				56F359E924C4F783007FB727 /* NSScanner+Utils.m */,
+				56F359EB24C4FD18007FB727 /* JXType+Private.h */,
 				561BCE392053E6B5002165F4 /* JXType.m */,
 				560C069B20541E1000CE992C /* JXTypeBasic.m */,
 				5677DF5420550B8900891379 /* JXTypeID.m */,
 				565D299820568225003D7E83 /* JXTypeBitField.m */,
 				56B35798205445EB00B73EBA /* JXTypePointer.m */,
-				56AF99852055968200F58032 /* JXTypeComplex.m */,
+				56AF99852055968200F58032 /* JXTypeCompound.m */,
 				56B357922054399A00B73EBA /* JXTypeStruct.m */,
 				56AF998820559A6700F58032 /* JXTypeUnion.m */,
 				56B35795205441C700B73EBA /* JXTypeArray.m */,
 				56374B05205D07000068FDAB /* JXTypeDescription.m */,
+				56F359EC24C51D47007FB727 /* JXTypeQualifiers+Private.h */,
 				56629161210DD243007CF1DC /* JXTypeQualifiers.m */,
 			);
 			path = src;
@@ -562,9 +571,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				56629175210DD343007CF1DC /* JXTypeComplex.m in Sources */,
+				56629175210DD343007CF1DC /* JXTypeCompound.m in Sources */,
 				56629174210DD343007CF1DC /* JXTypePointer.m in Sources */,
 				56629172210DD343007CF1DC /* JXTypeID.m in Sources */,
+				56F359EA24C4F783007FB727 /* NSScanner+Utils.m in Sources */,
 				56629176210DD343007CF1DC /* JXTypeStruct.m in Sources */,
 				56629178210DD343007CF1DC /* JXTypeArray.m in Sources */,
 				56629171210DD343007CF1DC /* JXTypeBasic.m in Sources */,

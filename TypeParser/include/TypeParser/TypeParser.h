@@ -14,7 +14,7 @@
 #import "JXTypeID.h"
 #import "JXTypeBitField.h"
 #import "JXTypePointer.h"
-#import "JXTypeComplex.h"
+#import "JXTypeCompound.h"
 #import "JXTypeStruct.h"
 #import "JXTypeUnion.h"
 #import "JXTypeArray.h"

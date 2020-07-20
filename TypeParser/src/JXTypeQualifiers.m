@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "JXTypeQualifiers.h"
+#import "JXType+Private.h"
+#import "JXTypeQualifiers+Private.h"
 
 JXTypeQualifiers JXTypeQualifierForEncoding(char enc) {
     switch (enc) {
@@ -25,14 +27,35 @@ JXTypeQualifiers JXTypeQualifierForEncoding(char enc) {
 }
 
 // Strip and return any qualifiers from `type` (const, inout, etc)
-JXTypeQualifiers JXRemoveQualifiers(const char **enc) {
-    JXTypeQualifiers qualifier = JXTypeQualifierForEncoding(**enc);
-    if (qualifier == JXTypeQualifierNone) return qualifier;
+JXTypeQualifiers JXRemoveQualifiersWithScanner(NSScanner *scanner) {
+    static NSCharacterSet *qualifierSet;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        qualifierSet = [NSCharacterSet characterSetWithCharactersInString:@"jrnNoORVA"];
+    });
 
-    *enc += 1;
+    JXTypeQualifiers qualifiers = JXTypeQualifierNone;
 
-    // Remove any more qualifiers, and return this qualifier + any further ones
-    return qualifier | JXRemoveQualifiers(enc);
+    NSString *qualifierString = nil;
+    if ([scanner scanCharactersFromSet:qualifierSet intoString:&qualifierString]) {
+        // only do this if we actually scanned something
+        for (NSUInteger i = 0; i < qualifierString.length; i++) {
+            qualifiers |= JXTypeQualifierForEncoding([qualifierString characterAtIndex:i]);
+        }
+    }
+
+    return qualifiers;
+}
+
+JXTypeQualifiers JXRemoveQualifiers(const char **encoding) {
+    NSScanner *scanner = [NSScanner scannerWithString:@(*encoding)];
+    JXTypeQualifiers qualifiers = JXRemoveQualifiersWithScanner(scanner);
+    if (strlen(*encoding) > scanner.scanLocation) {
+        // this should be correct since encodings are ASCII. It's also safe due to the
+        // strlen check.
+        encoding += scanner.scanLocation;
+    }
+    return qualifiers;
 }
 
 NSString *JXStringForTypeQualifiers(JXTypeQualifiers qualifiers) {

@@ -14,6 +14,8 @@
 #import "JXTypeStruct.h"
 #import "JXTypeUnion.h"
 #import "JXTypeArray.h"
+#import "JXType+Private.h"
+#import "JXTypeQualifiers+Private.h"
 
 @implementation JXType
 
@@ -21,12 +23,26 @@
     return NO;
 }
 
-- (instancetype)initWithEncoding:(const char **)enc qualifiers:(JXTypeQualifiers)qualifiers {
+- (instancetype)init {
     self = [super init];
-    if (self) {
-        _qualifiers = qualifiers;
-    }
+    if (!self) return nil;
+
+    _qualifiers = JXTypeQualifierNone;
+
     return self;
+}
+
+- (instancetype)initWithQualifiers:(JXTypeQualifiers)qualifiers {
+    self = [super init];
+    if (!self) return nil;
+
+    _qualifiers = qualifiers;
+
+    return self;
+}
+
+- (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers {
+    return [self initWithQualifiers:qualifiers];
 }
 
 - (JXTypeDescription *)_descriptionWithPadding:(BOOL)padding {
@@ -50,36 +66,9 @@
     return [desc.head stringByAppendingString:desc.tail];
 }
 
-- (NSString *)stringBetweenStart:(const char *)start end:(const char *)end {
-    long len = end - start;
-    char str[len + 1];
-    strncpy(str, start, len);
-    str[len] = 0;
-    return @(str);
-}
-
-// scan the next number in enc and move enc forward
-- (NSUInteger)numberFromEncoding:(const char **)enc {
-    NSUInteger num = 0;
-    while (isdigit(**enc)) {
-        char digit = **enc - '0';
-        num = (num * 10) + digit;
-        *enc += 1;
-    }
-    return num;
-}
-
 @end
 
-JXType *JXTypeVoid() {
-    return JXTypeForEncoding(@encode(void));
-}
-
-JXType *JXTypeForEncoding(const char *enc) {
-    return JXTypeWithEncoding(&enc);
-}
-
-JXType *JXTypeWithEncoding(const char **enc) {
+JXType *JXTypeWithScanner(NSScanner *scanner) {
     static NSArray<Class> *allTypes;
 
     static dispatch_once_t onceToken;
@@ -95,12 +84,33 @@ JXType *JXTypeWithEncoding(const char **enc) {
         ];
     });
 
-    JXTypeQualifiers qualifiers = JXRemoveQualifiers(enc);
+    JXTypeQualifiers qualifiers = JXRemoveQualifiersWithScanner(scanner);
 
     for (Class type in allTypes) {
-        if ([type supportsEncoding:**enc]) {
-            return [[type alloc] initWithEncoding:enc qualifiers:qualifiers];
+        if ([type supportsEncoding:scanner.currentCharacter]) {
+            NSUInteger loc = scanner.scanLocation;
+            JXType *instance = [[type alloc] initWithScanner:scanner qualifiers:qualifiers];
+            if (!instance) {
+                scanner.scanLocation = loc;
+                return nil;
+            }
+            instance->_encoding = [scanner.string substringWithRange:NSMakeRange(loc, scanner.scanLocation - loc)];
+            return instance;
         }
     }
     return nil;
+}
+
+JXType *JXTypeForEncoding(NSString *encoding) {
+    NSScanner *scanner = [NSScanner scannerWithString:encoding];
+    scanner.charactersToBeSkipped = [NSCharacterSet new];
+    return JXTypeWithScanner(scanner);
+}
+
+JXType *JXTypeForEncodingC(const char *encoding) {
+    return JXTypeForEncoding(@(encoding));
+}
+
+__attribute__((used)) static void registerCategories() {
+    __attribute__((unused)) void *ignore = NSScannerUtilsDummy;
 }

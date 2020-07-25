@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import <ffi.h>
+#import "JXMethodSignature.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,16 +19,17 @@ NS_ASSUME_NONNULL_BEGIN
 @interface JXTrampInfo : NSObject
 
 @property (nonatomic, readonly) JSValue *func;
-@property (nonatomic, readonly) char *types;
 @property (nonatomic, readonly) Class cls;
-@property (nonatomic, readonly) NSMethodSignature *sig;
+@property (nonatomic, readonly) JXMethodSignature *sig;
 
-@property (nonatomic) ffi_closure *closure;
-@property (nonatomic) IMP tramp;
-@property (nonatomic, nullable) IMP orig; // only for hooks
+@property (nonatomic) ffi_closure *closure NS_RETURNS_INNER_POINTER;
+@property (nonatomic) IMP tramp NS_RETURNS_INNER_POINTER;
+@property (nonatomic, nullable) IMP orig NS_RETURNS_INNER_POINTER; // only for hooks
 
-- (instancetype)initWithFunc:(JSValue *)func types:(const char *)types cls:(Class)cls;
-- (void)retainForever;
+- (instancetype)initWithFunc:(JSValue *)func types:(NSString *)types cls:(Class)cls;
+
+/// Intentionally sets up a strong reference cycle. Returns `self` as a convenience.
+- (instancetype)retainForever;
 
 @end
 

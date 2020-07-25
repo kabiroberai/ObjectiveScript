@@ -27,12 +27,11 @@ static void disposeHelper(const struct JXBlockLiteral *src) {
 }
 
 JSValue *JXCreateBlock(NSString *sig, JSValue *func) {
-	JXTrampInfo *info = JXCreateTramp(func, sig.UTF8String, nil);
+	JXTrampInfo *info = JXCreateTramp(func, sig, nil);
 	
 	int flags = BLOCK_HAS_SIGNATURE | BLOCK_HAS_COPY_DISPOSE;
 
-    JXType *type = [JXType typeForEncodingC:info.types];
-	BOOL hasStret = [type isKindOfClass:JXTypeStruct.class];
+	BOOL hasStret = [info.sig.returnType isKindOfClass:JXTypeStruct.class];
 	if (hasStret) {
 		flags |= BLOCK_HAS_STRET;
 	}
@@ -42,7 +41,7 @@ JSValue *JXCreateBlock(NSString *sig, JSValue *func) {
 		.size = sizeof(struct JXBlockLiteral),
 		.copyHelper = copyHelper,
 		.disposeHelper = disposeHelper,
-		.signature = info.types
+		.signature = info.sig.types.UTF8String
 	};
 	
 	struct JXBlockLiteral block = {

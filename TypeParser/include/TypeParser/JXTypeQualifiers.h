@@ -22,8 +22,8 @@ typedef NS_OPTIONS(NSUInteger, JXTypeQualifiers) {
     JXTypeQualifierAtomic = 1 << 8,
 };
 
-JXTypeQualifiers JXTypeQualifierForEncoding(char enc);
-JXTypeQualifiers JXRemoveQualifiers(const char * _Nonnull * _Nonnull encoding);
-NSString * _Nullable JXStringForTypeQualifiers(JXTypeQualifiers qualifiers);
+JXTypeQualifiers JXTypeQualifierForEncoding(char enc) NS_SWIFT_NAME(JXTypeQualifiers.init(encoding:));
+JXTypeQualifiers JXRemoveQualifiers(const char * _Nonnull * _Nonnull encoding) NS_SWIFT_NAME(JXTypeQualifiers.init(removingQualifiersFromEncoding:));
+NSArray<NSString *> *JXStringsForTypeQualifiers(JXTypeQualifiers qualifiers) NS_SWIFT_NAME(getter:JXTypeQualifiers.strings(self:));
 
 NS_ASSUME_NONNULL_END

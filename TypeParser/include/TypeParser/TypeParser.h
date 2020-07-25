@@ -20,5 +20,6 @@
 #import "JXTypeArray.h"
 #import "JXTypeDescription.h"
 #import "JXTypeQualifiers.h"
+#import "JXMethodSignature.h"
 
 #endif /* TypeParser_h */

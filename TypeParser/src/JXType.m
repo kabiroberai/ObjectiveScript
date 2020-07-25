@@ -91,14 +91,18 @@
         return nil;
     }
 
-    NSString *qualifiers = JXStringForTypeQualifiers(_qualifiers);
-    if (qualifiers) qualifiers = [qualifiers stringByAppendingString:@" "];
-    else qualifiers = @"";
+    NSArray<NSString *> *qualifiers = JXStringsForTypeQualifiers(_qualifiers);
+    if (qualifiers.count == 0) {
+        return [(id<JXConcreteType>)self baseDescriptionWithPadding:padding];
+    }
 
-    JXTypeDescription *type = [(id<JXConcreteType>)self baseDescriptionWithPadding:padding];
-    return [JXTypeDescription
-            descriptionWithHead:[qualifiers stringByAppendingString:type.head]
-            tail:type.tail];
+    // we need padding so that we can append qualifiersString after it
+    JXTypeDescription *type = [(id<JXConcreteType>)self baseDescriptionWithPadding:YES];
+    NSString *qualifiersString = [qualifiers componentsJoinedByString:@" "];
+    // NOTE: We don't put the qualifiers before the head because in stuff like pointers (and maybe blocks, functions?),
+    // we have to put it after. So to keep it uniform, we do that everywhere
+    NSString *head = [NSString stringWithFormat:@"%@%@%@", type.head, qualifiersString, padding ? @" " : @""];
+    return [JXTypeDescription descriptionWithHead:head tail:type.tail];
 }
 
 - (NSString *)description {

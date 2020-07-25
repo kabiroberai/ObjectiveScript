@@ -401,10 +401,8 @@ static void configureContext(JSContext *ctx) {
 
         // Add methods
         iterateMethods(methods, ^(JSValue *func, BOOL isClassMethod, SEL sel, NSString *sig) {
-            const char *types = sig.UTF8String;
-            JXTrampInfo *info = JXCreateTramp(func, types, cls);
-            [info retainForever];
-            class_addMethod(cls, sel, info.tramp, types);
+            JXTrampInfo *info = [JXCreateTramp(func, sig, cls) retainForever];
+            class_addMethod(cls, sel, info.tramp, sig.UTF8String);
         });
 
         // Register class

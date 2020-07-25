@@ -78,8 +78,14 @@
         case _C_BOOL:
             _primitiveType = JXPrimitiveTypeBOOL;
             break;
-        default:
+        case _C_VOID:
+        case _C_UNDEF:
             _primitiveType = JXPrimitiveTypeVoid;
+            break;
+        default:
+            // we can't return non-nil because otherwise this would become a catch-all,
+            // and thus JXMethodSignature's sentinel parsing wouldn't work
+            return nil;
     }
 
     return self;
@@ -88,6 +94,8 @@
 - (instancetype)initWithPrimitiveType:(JXPrimitiveType)primitiveType {
     self = [super init];
     if (!self) return nil;
+
+    _primitiveType = primitiveType;
 
     char type;
     switch (primitiveType) {

@@ -69,9 +69,9 @@
     } else if (_type.fieldNames) {
         // return the value at the index corresponding to the field name
         idx = [_type.fieldNames indexOfObject:name];
+        if (idx == NSNotFound) return NULL;
     } else {
         // not a number and there are no field names, oops
-        ctx.exception = JXConvertToError(JXCreateExceptionFormat(@"Could not access field %@ in struct %@: field name metadata not found", name, _type.name), ctx);
         return NULL;
     }
 
@@ -93,6 +93,7 @@
             NSString *fieldName = _type.fieldNames[i];
             const char *type;
             void *val = [self getValueWithName:fieldName type:&type context:ctx];
+            if (!val) return [NSString stringWithFormat:@"%p", self];
             JSValue *jsVal = JXConvertToJSValue(val, type, ctx, JXInteropOptionDefault);
             [fields addObject:[NSString stringWithFormat:@"%@ = %@", fieldName, jsVal]];
         }
@@ -113,6 +114,7 @@
 
     const char *type;
     void *val = [self getValueWithName:key type:&type context:ctx];
+    if (!val) return [JSValue valueWithUndefinedInContext:ctx];
     return JXConvertToJSValue(val, type, ctx, JXInteropOptionDefault);
 }
 

@@ -8,6 +8,7 @@
 
 #import <objc/runtime.h>
 #import "JXTypeID.h"
+#import "JXMethodSignature+Private.h"
 
 BOOL JXTypeIDIgnoreName = NO;
 NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
@@ -59,33 +60,58 @@ NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
         } else if ([scanner scanString:@"?" intoString:nil]) {
             // represents a block
             _isBlock = YES;
+            // a block may have a signature. The entire encoding will then be in the
+            // format @?<signature> where signature is the block's JXMethodSignature
+            if ([scanner scanString:@"<" intoString:nil]) {
+                _blockSignature = [[JXMethodSignature alloc] initWithScanner:scanner];
+                if (!_blockSignature
+                    // ensure that the block has `id self` as the first arg
+                    || [[_blockSignature.argumentTypes firstObject] class] != [JXTypeID class]
+                    // eat closing delimiter
+                    || ![scanner scanString:@">" intoString:nil]) {
+                    return nil;
+                }
+            }
         }
     }
 
     return self;
 }
 
-- (instancetype)initWithName:(NSString *)name protocols:(NSArray<NSString *> *)protocols isBlock:(BOOL)isBlock {
+- (instancetype)initWithClassName:(NSString *)name protocols:(NSArray<NSString *> *)protocols {
     self = [super init];
     if (!self) return nil;
 
     NSMutableString *curr = [NSMutableString stringWithFormat:@"%c", _C_ID];
-    if (isBlock) {
-        [curr appendString:@"?"];
-    } else {
-        if (name || protocols) [curr appendString:@"\""];
-        if (name) [curr appendString:name];
-        if (protocols) {
-            for (NSString *proto in protocols) {
-                [curr appendFormat:@"<%@>", proto];
-            }
+    if (name || protocols) [curr appendString:@"\""];
+    if (name) [curr appendString:name];
+    if (protocols) {
+        for (NSString *proto in protocols) {
+            [curr appendFormat:@"<%@>", proto];
         }
-        if (name || protocols) [curr appendString:@"\""];
     }
+    if (name || protocols) [curr appendString:@"\""];
     _encoding = [curr copy];
     _name = name;
     _protocols = protocols;
-    _isBlock = isBlock;
+    _isBlock = NO;
+
+    return self;
+}
+
+- (instancetype)initWithBlockSignature:(JXMethodSignature *)blockSignature {
+    self = [super init];
+    if (!self) return nil;
+
+    _encoding = [NSString stringWithFormat:@"%c?%@%@%@",
+                 _C_ID,
+                 blockSignature ? @"<" : @"",
+                 blockSignature ? blockSignature.types : @"",
+                 blockSignature ? @">" : @""];
+    _name = nil;
+    _protocols = nil;
+    _isBlock = YES;
+    _blockSignature = blockSignature;
 
     return self;
 }
@@ -100,7 +126,21 @@ NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
         protoList = @"";
     }
 
-    if (_isBlock) {
+    if (_isBlock && _blockSignature) {
+        JXTypeDescription *retDescription = [_blockSignature.returnType descriptionWithPadding:YES];
+        NSMutableArray<NSString *> *argDescriptions = [NSMutableArray new];
+        for (JXType *argDescription in _blockSignature.argumentTypes) {
+            [argDescriptions addObject:argDescription.description];
+        }
+        [argDescriptions removeObjectAtIndex:0]; // remove `id self`
+        NSString *argDescriptionsString = argDescriptions.count == 0 ? @"void" : [argDescriptions componentsJoinedByString:@", "];
+        // this "sandwiching" of our description might look incorrect at first, but in fact that's
+        // how it's supposed to be (afaict). For example, the signature of a block returning a block
+        // would be `void (^(^myBlock)(void))(void)` and not `void(^)(void) (^myBlock)(void)`
+        return [JXTypeDescription
+                descriptionWithHead:[NSString stringWithFormat:@"%@(^", retDescription.head]
+                tail:[NSString stringWithFormat:@")(%@)%@", argDescriptionsString, retDescription.tail]];
+    } else if (_isBlock) {
         return [JXTypeDescription descriptionWithHead:@"void (^" tail:@")(void)"];
     } else if (self.name) {
         return [JXTypeDescription

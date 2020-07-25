@@ -49,30 +49,31 @@ JXTypeQualifiers JXRemoveQualifiersWithScanner(NSScanner *scanner) {
 JXTypeQualifiers JXRemoveQualifiers(const char **encoding) {
     NSScanner *scanner = [NSScanner scannerWithString:@(*encoding)];
     JXTypeQualifiers qualifiers = JXRemoveQualifiersWithScanner(scanner);
-    if (strlen(*encoding) > scanner.scanLocation) {
+    if (strlen(*encoding) >= scanner.scanLocation) {
         // this should be correct since encodings are ASCII. It's also safe due to the
-        // strlen check.
-        encoding += scanner.scanLocation;
+        // strlen check. Even if strlen == location, we'll end up on the NUL byte
+        *encoding += scanner.scanLocation;
     }
     return qualifiers;
 }
 
-NSString *JXStringForTypeQualifiers(JXTypeQualifiers qualifiers) {
-    if (qualifiers == JXTypeQualifierNone) return nil;
+NSArray<NSString *> *JXStringsForTypeQualifiers(JXTypeQualifiers qualifiers) {
+    if (qualifiers == JXTypeQualifierNone) return @[];
     
     NSMutableArray<NSString *> *qualifierNames = [NSMutableArray array];
 
 #define addTerm(Type, type) if (qualifiers & JXTypeQualifier##Type) [qualifierNames addObject:@#type];
 
-    addTerm(Volatile, volatile)
+    // sorted alphabetically
+    addTerm(Atomic, _Atomic);
+    addTerm(Bycopy, bycopy);
+    addTerm(Byref, byref);
     addTerm(Const, const);
     addTerm(In, in);
     addTerm(Inout, inout);
-    addTerm(Out, out);
-    addTerm(Bycopy, bycopy);
-    addTerm(Byref, byref);
     addTerm(Oneway, oneway);
-    addTerm(Atomic, _Atomic);
+    addTerm(Out, out);
+    addTerm(Volatile, volatile)
 
-    return [qualifierNames componentsJoinedByString:@" "];
+    return [qualifierNames copy];
 }

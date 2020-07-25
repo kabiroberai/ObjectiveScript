@@ -8,6 +8,7 @@
 
 #import "JXTypePointer.h"
 #import "JXTypeBasic.h"
+#import "JXTypeArray.h"
 #import <objc/runtime.h>
 
 @interface JXTypePointer () <JXConcreteType> @end
@@ -60,9 +61,24 @@
     }
     // we want padding before the pointer if possible
     JXTypeDescription *subDescription = [self.type descriptionWithPadding:YES];
-    return [JXTypeDescription
-            descriptionWithHead:[subDescription.head stringByAppendingString:@"*"]
-            tail:subDescription.tail];
+
+    // Let's consider two types:
+    // A: pointer to array of int
+    // B: array of pointer to int
+    // Naively, we would end up representing them as follows:
+    // int *A[5]
+    // int *B[5]
+    // Because the heads and tails would combine identically in both.
+    // The solution to this is putting parens in case A, as follows:
+    // int (*A)[5]
+    // Effectively, we give higher "precedence" to [] than to *, and so
+    // we must parenthesize the pointer to consider it first.
+    // http://unixwiz.net/techtips/reading-cdecl.html
+
+    BOOL pointsToArray = [self.type class] == [JXTypeArray class];
+    NSString *head = [NSString stringWithFormat:@"%@%@*", subDescription.head, pointsToArray ? @"(" : @""];
+    NSString *tail = [NSString stringWithFormat:@"%@%@", pointsToArray ? @")" : @"", subDescription.tail];
+    return [JXTypeDescription descriptionWithHead:head tail:tail];
 }
 
 @end

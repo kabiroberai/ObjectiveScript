@@ -13,6 +13,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern BOOL JXTypeIDIgnoreName;
+extern NSString *JXTypeIDIgnoreNameLock;
+
 @interface JXType (Private)
 
 - (instancetype)initWithQualifiers:(JXTypeQualifiers)qualifiers;

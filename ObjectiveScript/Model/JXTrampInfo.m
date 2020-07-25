@@ -14,26 +14,22 @@
 	JXTrampInfo *_retained;
 }
 
-- (instancetype)initWithFunc:(JSValue *)func types:(const char *)types cls:(Class)cls {
+- (instancetype)initWithFunc:(JSValue *)func types:(NSString *)types cls:(Class)cls {
 	self = [super init];
 	if (self) {
 		_func = func;
-		_types = malloc(sizeof(char) * strlen(types));
-		strcpy(_types, types);
-        _sig = [NSMethodSignature signatureWithObjCTypes:_types];
+        _sig = [JXMethodSignature signatureWithObjCTypes:types];
 		_cls = cls;
 	}
 	return self;
 }
 
-- (void)retainForever {
-	// sets up a strong reference cycle on purpose
+- (instancetype)retainForever {
 	_retained = self;
+    return self;
 }
 
 - (void)dealloc {
-	free(_types);
-
     // free _closure
     ffi_cif *cif = _closure->cif;
     for (size_t i = 0; i < cif->nargs; i++) {

@@ -9,14 +9,6 @@
 #ifndef PrefixHeader_pch
 #define PrefixHeader_pch
 
-//// JX_STATIC un-static-ifies functions when testing
-//
-//#ifdef TEST
-//#define JX_STATIC
-//#else
-//#define JX_STATIC static
-//#endif
-
 //#define JX_VERBOSE
 
 #ifdef JX_VERBOSE

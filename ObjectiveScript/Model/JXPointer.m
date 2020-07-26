@@ -62,7 +62,9 @@
             if (![end.type isEqualToString:self.type]) {
                 @throw JXCreateExceptionFormat(@"End type (\"%@\") not equal to callee type (\"%@\")", end.type, self.type);
             }
-            return ((char *)end.val - (char *)self.val) / self.size;
+            // we need to cast size to a signed value, otherwise everything will be promoted to unsigned types
+            // and this will overflow if self > end
+            return ((char *)end.val - (char *)self.val) / (ssize_t)self.size;
         } inContext:ctx];
 
     }

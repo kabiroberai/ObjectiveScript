@@ -31,10 +31,16 @@ JSValue *JXCreateBlock(NSString *sig, JSValue *func) {
 	
 	int flags = BLOCK_HAS_SIGNATURE | BLOCK_HAS_COPY_DISPOSE;
 
-	BOOL hasStret = [info.sig.returnType isKindOfClass:JXTypeStruct.class];
+    // Clang defines `doesReturnSlotInterfereWithArgs` to be false only on arm64
+#ifndef __aarch64__
+    // TODO: Make sure we're setting this correctly.
+    // Clang computes it in this method:
+    // https://github.com/llvm/llvm-project/blob/ed6b578040a85977026c93bf4188f996148f3218/clang/lib/CodeGen/CGCall.cpp#L1514
+    BOOL hasStret = [info.sig.returnType isKindOfClass:[JXTypeStruct class]];
 	if (hasStret) {
 		flags |= BLOCK_HAS_STRET;
 	}
+#endif
 	
 	struct JXHelpersBlockDescriptor *descriptor = malloc(sizeof(struct JXHelpersBlockDescriptor));
 	*descriptor = (struct JXHelpersBlockDescriptor) {

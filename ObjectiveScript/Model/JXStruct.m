@@ -129,6 +129,7 @@
 }
 
 - (NSString *)extendedTypeInContext:(JSContext *)ctx {
+    if (!self.name) return nil;
     return [JXContextManager.sharedManager JXContextForJSContext:ctx].structDefs[self.name];
 }
 

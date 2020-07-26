@@ -116,6 +116,8 @@ NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
     return self;
 }
 
+- (BOOL)orderQualifiersBeforeDescription { return !self.isBlock; }
+
 - (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     // if there are any protocols, add them to the description
     NSString *protoList;

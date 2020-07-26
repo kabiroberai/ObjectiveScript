@@ -55,6 +55,11 @@
     return self;
 }
 
+- (BOOL)orderQualifiersBeforeDescription {
+    // https://github.com/llvm/llvm-project/blob/1d9b860fb6a85df33fd52fcacc6a5efb421621bd/clang/lib/AST/ASTContext.cpp#L7224
+    return !self.isFunction;
+}
+
 - (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
     if (self.isFunction) {
         return [JXTypeDescription descriptionWithHead:@"void (*" tail:@")(void)"];

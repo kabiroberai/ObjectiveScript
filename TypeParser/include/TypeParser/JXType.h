@@ -12,6 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// https://github.com/llvm/llvm-project/blob/1d9b860fb6a85df33fd52fcacc6a5efb421621bd/clang/lib/AST/ASTContext.cpp#L7177
+// https://github.com/llvm/llvm-project/blob/06412dae82376c12bc64b944e6d21141313b5cf1/lldb/source/Plugins/LanguageRuntime/ObjC/AppleObjCRuntime/AppleObjCTypeEncodingParser.cpp
+
 @interface JXType : NSObject {
     NSString *_encoding;
 }

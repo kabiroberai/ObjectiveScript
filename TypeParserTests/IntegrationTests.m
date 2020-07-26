@@ -54,4 +54,15 @@
     XCTAssertEqualObjects(parsed.description, @"struct CGRect { struct CGPoint { double x; double y; } origin; struct CGSize { double width; double height; } size; }");
 }
 
+- (void)testConstEncodings {
+    XCTAssertEqualObjects([JXType typeForEncoding:@"r*"].description, @"const char *");
+    // this *should* be `int *const` (and conversely, `const int *` should be ^ri), but
+    // for compatibility reasons, Clang emits the qualifier of the pointee before the ^
+    // instead of right after it.
+    XCTAssertEqualObjects([JXType typeForEncoding:@"r^i"].description, @"const int *");
+    // this encoding should never actually be emitted (see above), but we test it just
+    // in case
+    XCTAssertEqualObjects([JXType typeForEncoding:@"^ri"].description, @"const int *");
+}
+
 @end

@@ -23,6 +23,9 @@ extern NSString *JXTypeIDIgnoreNameLock;
 // scans encoding from `scanner`, moving `scanner` forward if the scan succeeded
 + (nullable instancetype)typeWithScanner:(NSScanner *)scanner;
 
+// defaults to YES
+- (BOOL)orderQualifiersBeforeDescription;
+
 @end
 
 NS_ASSUME_NONNULL_END

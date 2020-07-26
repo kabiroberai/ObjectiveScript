@@ -64,11 +64,11 @@
     XCTAssertNotNil(type);
 
     JXTypeDescription *descNoPadding = [type descriptionWithPadding:NO];
-    XCTAssertEqualObjects(descNoPadding.head, @"int _Atomic const");
+    XCTAssertEqualObjects(descNoPadding.head, @"_Atomic const int");
     XCTAssertEqualObjects(descNoPadding.tail, @"");
 
     JXTypeDescription *descWithPadding = [type descriptionWithPadding:YES];
-    XCTAssertEqualObjects(descWithPadding.head, @"int _Atomic const ");
+    XCTAssertEqualObjects(descWithPadding.head, @"_Atomic const int ");
     XCTAssertEqualObjects(descWithPadding.tail, @"");
 }
 

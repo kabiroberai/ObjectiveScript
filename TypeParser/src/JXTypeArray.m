@@ -26,7 +26,7 @@
 
     unsigned long long count;
     if (![scanner scanUnsignedLongLong:&count]) return nil;
-    _count = count;
+    _count = (NSUInteger)count;
 
     _type = [JXType typeWithScanner:scanner];
 

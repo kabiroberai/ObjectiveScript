@@ -121,7 +121,7 @@
     return self;
 }
 
-- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithOptions:(JXTypeDescriptionOptions *)options {
     NSString *head;
     switch (self.primitiveType) {
         case JXPrimitiveTypeClass:            head = @"Class"; break;
@@ -142,9 +142,7 @@
         case JXPrimitiveTypeVoid:             head = @"void"; break;
     }
 
-    if (padding) head = [head stringByAppendingString:@" "];
-
-    return [JXTypeDescription descriptionWithHead:head tail:@""];
+    return [JXTypeDescription descriptionWithHead:[head stringByAppendingString:options.padding]];
 }
 
 @end

@@ -19,7 +19,7 @@
 - (void)testFormatting {
     // based on http://unixwiz.net/techtips/reading-cdecl.html
     JXType *t = [[JXTypeArray alloc] initWithCount:1 type:[[JXTypeArray alloc] initWithCount:8 type:[[JXTypePointer alloc] initWithType:[[JXTypeID alloc] initWithBlockSignature:[JXMethodSignature signatureWithReturnType:[[JXTypePointer alloc] initWithType:[[JXTypeArray alloc] initWithCount:1 type:[[JXTypePointer alloc] initWithType:[[JXTypeBasic alloc] initWithPrimitiveType:JXPrimitiveTypeChar] isFunction:NO]] isFunction:NO] argumentTypes:@[[[JXTypeID alloc] initWithBlockSignature:nil]]]] isFunction:NO]]];
-    JXTypeDescription *desc = [t descriptionWithPadding:YES];
+    JXTypeDescription *desc = [t descriptionWithOptions:[JXTypeDescriptionOptions.defaultOptions withPadding:YES]];
     NSString *formattedDesc = [NSString stringWithFormat:@"%@foo%@", desc.head, desc.tail];
     XCTAssertEqualObjects(formattedDesc, @"char *(*(^*foo[1][8])(void))[1]");
 }
@@ -43,15 +43,40 @@
 }
 
 - (void)testAnotherStruct {
-    NSString *encoding = @"{CGRect={CGPoint=@\"NSString\"[15d]}{CGSize=d^d}}";
+    NSString *encoding = @"{Foo={Bar=@\"NSString\"[15d]}{Baz=d^d}}";
     JXType *parsed = [JXType typeForEncoding:encoding];
-    XCTAssertEqualObjects(parsed.description, @"struct CGRect { struct CGPoint { NSString *field1; double field2[15]; } field1; struct CGSize { double field1; double *field2; } field2; }");
+    XCTAssertEqualObjects(parsed.description, @"struct Foo { struct Bar { NSString *field1; double field2[15]; } field1; struct Baz { double field1; double *field2; } field2; }");
 }
 
-- (void)testCGRect {
+- (void)testCGRectWithoutTypedef {
     NSString *encoding = @"{CGRect=\"origin\"{CGPoint=\"x\"d\"y\"d}\"size\"{CGSize=\"width\"d\"height\"d}}";
     JXType *parsed = [JXType typeForEncoding:encoding];
-    XCTAssertEqualObjects(parsed.description, @"struct CGRect { struct CGPoint { double x; double y; } origin; struct CGSize { double width; double height; } size; }");
+    NSString *description = [parsed descriptionWithOptions:[JXTypeDescriptionOptions new]].description;
+    XCTAssertEqualObjects(description, @"struct CGRect { struct CGPoint { double x; double y; } origin; struct CGSize { double width; double height; } size; }");
+}
+
+- (void)testCGRectWithTypedef {
+    NSString *encoding = @"{CGRect=\"origin\"{CGPoint=\"x\"d\"y\"d}\"size\"{CGSize=\"width\"d\"height\"d}}";
+    JXType *parsed = [JXType typeForEncoding:encoding];
+    XCTAssertEqualObjects(parsed.description, @"CGRect");
+}
+
+- (void)testDemangler {
+    JXTypeDescriptionOptions *mockDemanglerOptions =
+    [JXTypeDescriptionOptions.defaultOptions withDemangleTypeNameBlock:^NSString *(NSString *mangled) {
+        // Wannabe Swift Demangler v1.0
+        return [mangled hasPrefix:@"$s"] ? [mangled substringFromIndex:2] : nil;
+    }];
+
+    JXType *mangledType = [JXType typeForEncoding:@"@\"$sMangled\""];
+    NSString *mangledDescription = [mangledType descriptionWithOptions:mockDemanglerOptions].description;
+    XCTAssertEqualObjects(mangledType.description, @"$sMangled *", @"There should be no demangling unless we've set a demangler");
+    XCTAssertEqualObjects(mangledDescription, @"Mangled *", @"The demangler should work on mangled types");
+
+    JXType *unmangledType = [JXType typeForEncoding:@"@\"Unmangled\""];
+    NSString *unmangledDescription = [unmangledType descriptionWithOptions:mockDemanglerOptions].description;
+    XCTAssertEqualObjects(unmangledType.description, @"Unmangled *", @"There should be no demangling unless we've set a demangler");
+    XCTAssertEqualObjects(unmangledDescription, @"Unmangled *", @"The demangler shouldn't touch unmangled types");
 }
 
 - (void)testConstEncodings {

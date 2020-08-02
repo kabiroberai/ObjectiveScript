@@ -87,7 +87,7 @@
 
 - (BOOL)orderQualifiersBeforeDescription { return YES; }
 
-- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)descriptionWithOptions:(JXTypeDescriptionOptions *)options {
     if (![self conformsToProtocol:@protocol(JXConcreteType)]) {
         [self doesNotRecognizeSelector:_cmd];
         return nil;
@@ -95,13 +95,14 @@
 
     NSArray<NSString *> *qualifiers = JXStringsForTypeQualifiers(_qualifiers);
     if (qualifiers.count == 0) {
-        return [(id<JXConcreteType>)self baseDescriptionWithPadding:padding];
+        return [(id<JXConcreteType>)self baseDescriptionWithOptions:options];
     }
 
     BOOL qualifiersGoBefore = [self orderQualifiersBeforeDescription];
 
     // we need padding if we need to append qualifiersString after it
-    JXTypeDescription *type = [(id<JXConcreteType>)self baseDescriptionWithPadding:!qualifiersGoBefore];
+    JXTypeDescription *type = [(id<JXConcreteType>)self
+                               baseDescriptionWithOptions:[options withPadding:!qualifiersGoBefore]];
     NSString *qualifiersString = [qualifiers componentsJoinedByString:@" "];
     // NOTE: We don't put the qualifiers before the head because in stuff like pointers (and maybe blocks, functions?),
     // we have to put it after. So to keep it uniform, we do that everywhere
@@ -109,12 +110,12 @@
                       qualifiersGoBefore ? qualifiersString : type.head,
                       qualifiersGoBefore ? @" " : @"",
                       qualifiersGoBefore ? type.head : qualifiersString,
-                      padding ? @" " : @""];
+                      options.usePadding ? @" " : @""];
     return [JXTypeDescription descriptionWithHead:head tail:type.tail];
 }
 
 - (NSString *)description {
-    JXTypeDescription *desc = [self descriptionWithPadding:NO];
+    JXTypeDescription *desc = [self descriptionWithOptions:JXTypeDescriptionOptions.defaultOptions];
     return [desc.head stringByAppendingString:desc.tail];
 }
 

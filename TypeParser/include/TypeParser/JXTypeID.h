@@ -13,8 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface JXTypeID : JXType
 
-@property (nonatomic, nullable) NSString *name;
-@property (nonatomic, nullable) NSArray<NSString *> *protocols;
+@property (nonatomic, readonly, nullable) NSString *name;
+@property (nonatomic, readonly, nullable) NSArray<NSString *> *protocols;
 
 @property (nonatomic, readonly) BOOL isBlock;
 // may be present if isBlock is YES

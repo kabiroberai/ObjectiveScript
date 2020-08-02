@@ -130,14 +130,14 @@
     return self;
 }
 
-- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithOptions:(JXTypeDescriptionOptions *)options {
     // if the type metadata is present, add it to the description
     NSMutableString *typesStr = [NSMutableString string];
     if (self.types && self.types.count > 0) {
         [typesStr appendString:@" { "];
         for (NSUInteger i = 0; i < self.types.count; i++) {
             NSString *subfieldName = self.fieldNames[i] ? : [NSString stringWithFormat:@"field%lu", (long)(i+1)];
-            JXTypeDescription *description = [self.types[i] descriptionWithPadding:YES];
+            JXTypeDescription *description = [self.types[i] descriptionWithOptions:[options withPadding:YES]];
             [typesStr appendFormat:@"%@%@%@; ", description.head, subfieldName, description.tail];
         }
         [typesStr appendString:@"}"];
@@ -149,9 +149,7 @@
                       self.name ? [@" " stringByAppendingString:self.name] : @"",
                       typesStr];
 
-    return [JXTypeDescription
-            descriptionWithHead:[type stringByAppendingString:padding ? @" " : @""]
-            tail:@""];
+    return [JXTypeDescription descriptionWithHead:[type stringByAppendingString:options.padding]];
 }
 
 @end

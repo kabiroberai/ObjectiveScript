@@ -40,9 +40,9 @@
     return self;
 }
 
-- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithOptions:(JXTypeDescriptionOptions *)options {
     return [JXTypeDescription
-            descriptionWithHead:[@"unsigned int" stringByAppendingString: padding ? @" " : @""]
+            descriptionWithHead:[@"unsigned int" stringByAppendingString:options.padding]
             tail:[NSString stringWithFormat:@":%lu", (long)self.bits]];
 }
 

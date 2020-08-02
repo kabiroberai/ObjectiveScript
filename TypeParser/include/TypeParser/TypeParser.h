@@ -19,6 +19,7 @@
 #import "JXTypeUnion.h"
 #import "JXTypeArray.h"
 #import "JXTypeDescription.h"
+#import "JXTypeDescriptionOptions.h"
 #import "JXTypeQualifiers.h"
 #import "JXMethodSignature.h"
 

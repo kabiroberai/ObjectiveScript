@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers;
 
 // without qualifiers (overriden by subclasses)
-- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding;
+- (JXTypeDescription *)baseDescriptionWithOptions:(JXTypeDescriptionOptions *)options;
 
 @end
 

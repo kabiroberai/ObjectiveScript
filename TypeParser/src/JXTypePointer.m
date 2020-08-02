@@ -60,12 +60,12 @@
     return !self.isFunction;
 }
 
-- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithOptions:(JXTypeDescriptionOptions *)options {
     if (self.isFunction) {
         return [JXTypeDescription descriptionWithHead:@"void (*" tail:@")(void)"];
     }
     // we want padding before the pointer if possible
-    JXTypeDescription *subDescription = [self.type descriptionWithPadding:YES];
+    JXTypeDescription *subDescription = [self.type descriptionWithOptions:[options withPadding:YES]];
 
     // Let's consider two types:
     // A: pointer to array of int
@@ -81,9 +81,9 @@
     // http://unixwiz.net/techtips/reading-cdecl.html
 
     BOOL pointsToArray = [self.type class] == [JXTypeArray class];
-    NSString *head = [NSString stringWithFormat:@"%@%@*", subDescription.head, pointsToArray ? @"(" : @""];
-    NSString *tail = [NSString stringWithFormat:@"%@%@", pointsToArray ? @")" : @"", subDescription.tail];
-    return [JXTypeDescription descriptionWithHead:head tail:tail];
+    return [subDescription sandwiching:
+            [JXTypeDescription descriptionWithHead:pointsToArray ? @"(*" : @"*"
+                                              tail:pointsToArray ? @")" : @""]];
 }
 
 @end

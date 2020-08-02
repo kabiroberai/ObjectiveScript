@@ -118,7 +118,7 @@ NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
 
 - (BOOL)orderQualifiersBeforeDescription { return !self.isBlock; }
 
-- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
+- (JXTypeDescription *)baseDescriptionWithOptions:(JXTypeDescriptionOptions *)options {
     // if there are any protocols, add them to the description
     NSString *protoList;
 
@@ -129,29 +129,26 @@ NSString *JXTypeIDIgnoreNameLock = @"JXTypeIDIgnoreNameLock";
     }
 
     if (_isBlock && _blockSignature) {
-        JXTypeDescription *retDescription = [_blockSignature.returnType descriptionWithPadding:YES];
+        JXTypeDescription *retDescription = [_blockSignature.returnType
+                                             descriptionWithOptions:[options withPadding:YES]];
         NSMutableArray<NSString *> *argDescriptions = [NSMutableArray new];
         for (JXType *argDescription in _blockSignature.argumentTypes) {
             [argDescriptions addObject:argDescription.description];
         }
         [argDescriptions removeObjectAtIndex:0]; // remove `id self`
         NSString *argDescriptionsString = argDescriptions.count == 0 ? @"void" : [argDescriptions componentsJoinedByString:@", "];
+        NSString *tail = [NSString stringWithFormat:@")(%@)", argDescriptionsString];
         // this "sandwiching" of our description might look incorrect at first, but in fact that's
         // how it's supposed to be (afaict). For example, the signature of a block returning a block
         // would be `void (^(^myBlock)(void))(void)` and not `void(^)(void) (^myBlock)(void)`
-        return [JXTypeDescription
-                descriptionWithHead:[NSString stringWithFormat:@"%@(^", retDescription.head]
-                tail:[NSString stringWithFormat:@")(%@)%@", argDescriptionsString, retDescription.tail]];
+        return [retDescription sandwiching:[JXTypeDescription descriptionWithHead:@"(^" tail:tail]];
     } else if (_isBlock) {
         return [JXTypeDescription descriptionWithHead:@"void (^" tail:@")(void)"];
     } else if (self.name) {
-        return [JXTypeDescription
-                descriptionWithHead:[NSString stringWithFormat:@"%@%@ *", self.name, protoList]
-                tail:@""];
+        NSString *demangled = [options demangleTypeName:self.name] ?: self.name;
+        return [JXTypeDescription descriptionWithHead:[NSString stringWithFormat:@"%@%@ *", demangled, protoList]];
     } else {
-        return [JXTypeDescription
-                descriptionWithHead:[NSString stringWithFormat:@"id%@%@", protoList, padding ? @" " : @""]
-                tail:@""];
+        return [JXTypeDescription descriptionWithHead:[NSString stringWithFormat:@"id%@%@", protoList, options.padding]];
     }
 }
 

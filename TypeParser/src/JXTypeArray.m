@@ -47,11 +47,10 @@
     return self;
 }
 
-- (JXTypeDescription *)baseDescriptionWithPadding:(BOOL)padding {
-    JXTypeDescription *subDescription = [self.type descriptionWithPadding:padding];
-    return [JXTypeDescription
-            descriptionWithHead:subDescription.head
-            tail:[NSString stringWithFormat:@"[%lu]%@", (long)self.count, subDescription.tail]];
+- (JXTypeDescription *)baseDescriptionWithOptions:(JXTypeDescriptionOptions *)options {
+    NSString *tail = [NSString stringWithFormat:@"[%lu]", (long)self.count];
+    return [[self.type descriptionWithOptions:options]
+            sandwiching:[JXTypeDescription descriptionWithTail:tail]];
 }
 
 @end

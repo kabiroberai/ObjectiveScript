@@ -50,11 +50,12 @@
     JXTypeBasic *type = [[JXTypeBasic alloc] initWithPrimitiveType:JXPrimitiveTypeInt];
     XCTAssertNotNil(type);
 
-    JXTypeDescription *descNoPadding = [type descriptionWithPadding:NO];
+    JXTypeDescription *descNoPadding = [type descriptionWithOptions:JXTypeDescriptionOptions.defaultOptions];
     XCTAssertEqualObjects(descNoPadding.head, @"int");
     XCTAssertEqualObjects(descNoPadding.tail, @"");
 
-    JXTypeDescription *descWithPadding = [type descriptionWithPadding:YES];
+    JXTypeDescription *descWithPadding = [type descriptionWithOptions:[JXTypeDescriptionOptions.defaultOptions
+                                                                       withPadding:YES]];
     XCTAssertEqualObjects(descWithPadding.head, @"int ");
     XCTAssertEqualObjects(descWithPadding.tail, @"");
 }
@@ -63,11 +64,12 @@
     JXTypeBasic *type = [JXTypeBasic typeForEncoding:@"rAi"];
     XCTAssertNotNil(type);
 
-    JXTypeDescription *descNoPadding = [type descriptionWithPadding:NO];
+    JXTypeDescription *descNoPadding = [type descriptionWithOptions:JXTypeDescriptionOptions.defaultOptions];
     XCTAssertEqualObjects(descNoPadding.head, @"_Atomic const int");
     XCTAssertEqualObjects(descNoPadding.tail, @"");
 
-    JXTypeDescription *descWithPadding = [type descriptionWithPadding:YES];
+    JXTypeDescription *descWithPadding = [type descriptionWithOptions:[JXTypeDescriptionOptions.defaultOptions
+                                                                       withPadding:YES]];
     XCTAssertEqualObjects(descWithPadding.head, @"_Atomic const int ");
     XCTAssertEqualObjects(descWithPadding.tail, @"");
 }

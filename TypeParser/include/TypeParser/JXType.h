@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "JXTypeQualifiers.h"
 #import "JXTypeDescription.h"
+#import "JXTypeDescriptionOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // This isn't `descriptionWithName:` because we may want padding without the
 // name, such as in `JXTypePointer`.
-- (JXTypeDescription *)descriptionWithPadding:(BOOL)padding;
+- (JXTypeDescription *)descriptionWithOptions:(JXTypeDescriptionOptions *)options;
 
 // If the receiver is the JXType base class, this will try to return a suitable subclass.
 // If the receiver is a subclass, this will try to construct the receiver with encoding,

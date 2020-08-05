@@ -31,6 +31,7 @@
         scanner.scanLocation += 1; // eat '^'
         if (scanner.currentCharacter == '?') _isFunction = YES;
         _type = [JXType typeWithScanner:scanner];
+        if (!_type) return nil;
     }
 
     return self;

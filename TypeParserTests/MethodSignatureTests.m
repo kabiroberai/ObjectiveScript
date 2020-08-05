@@ -102,4 +102,14 @@
     XCTAssertEqual([[(JXTypeArray *)signature.argumentTypes[2] type] class], [JXTypeID class]);
 }
 
+- (void)testBadSignatures {
+    // These are from UIFoundation`_UIPointVector
+    JXMethodSignature *sig = [JXMethodSignature signatureWithObjCTypes:@"16@0:8"];
+    XCTAssertNil(sig);
+    JXMethodSignature *sig2 = [JXMethodSignature signatureWithObjCTypes:@"v24@0:8^16"];
+    XCTAssertNil(sig2);
+    JXMethodSignature *sig3 = [JXMethodSignature signatureWithObjCTypes:@"^16@0:8"];
+    XCTAssertNil(sig3);
+}
+
 @end

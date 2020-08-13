@@ -45,7 +45,7 @@
 - (void)testAnotherStruct {
     NSString *encoding = @"{Foo={Bar=@\"NSString\"[15d]}{Baz=d^d}}";
     JXType *parsed = [JXType typeForEncoding:encoding];
-    XCTAssertEqualObjects(parsed.description, @"struct Foo { struct Bar { NSString *field1; double field2[15]; } field1; struct Baz { double field1; double *field2; } field2; }");
+    XCTAssertEqualObjects(parsed.description, @"struct Foo { struct Bar { NSString *x1; double x2[15]; } x1; struct Baz { double x1; double *x2; } x2; }");
 }
 
 - (void)testCGRectWithoutTypedef {

@@ -23,6 +23,10 @@
     return encoding == [self class].startDelim;
 }
 
+- (NSString *)unknownFieldNameAtIndex:(NSUInteger)index {
+    return [NSString stringWithFormat:@"x%lu", (long)index];
+}
+
 - (instancetype)initWithScanner:(NSScanner *)scanner qualifiers:(JXTypeQualifiers)qualifiers {
     self = [super initWithQualifiers:qualifiers];
     if (!self) return nil;
@@ -77,10 +81,10 @@
 
                 // note: we've now eaten the opening "
 
-                NSString *fieldEnd;
-                if (![scanner scanUpToString:@"\"" intoString:&fieldEnd] && scanner.isAtEnd) return nil;
-                if (fieldEnd.length == 0) fieldEnd = [NSString stringWithFormat:@"field%lu", (long)fieldNames.count];
-                [fieldNames addObject:fieldEnd];
+                NSString *fieldName;
+                if (![scanner scanUpToString:@"\"" intoString:&fieldName] && scanner.isAtEnd) return nil;
+                if (fieldName.length == 0) fieldName = [self unknownFieldNameAtIndex:fieldNames.count];
+                [fieldNames addObject:fieldName];
 
                 scanner.scanLocation += 1; // eat closing "
 
@@ -136,7 +140,7 @@
     if (self.types && self.types.count > 0) {
         [typesStr appendString:@" { "];
         for (NSUInteger i = 0; i < self.types.count; i++) {
-            NSString *subfieldName = self.fieldNames[i] ? : [NSString stringWithFormat:@"field%lu", (long)(i+1)];
+            NSString *subfieldName = self.fieldNames[i] ?: [self unknownFieldNameAtIndex:(i + 1)];
             JXTypeDescription *description = [self.types[i] descriptionWithOptions:[options withPadding:YES]];
             [typesStr appendFormat:@"%@%@%@; ", description.head, subfieldName, description.tail];
         }

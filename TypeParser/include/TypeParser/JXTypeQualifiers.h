@@ -10,8 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_OPTIONS(NSUInteger, JXTypeQualifiers) {
     JXTypeQualifierNone = 0,
-    // TODO: Check if volatile is correct for 'j'
-    JXTypeQualifierVolatile = 1 << 0,
+    JXTypeQualifierComplex = 1 << 0,
     JXTypeQualifierConst = 1 << 1,
     JXTypeQualifierIn = 1 << 2,
     JXTypeQualifierInout = 1 << 3,

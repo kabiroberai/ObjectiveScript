@@ -16,7 +16,7 @@
 @implementation QualifierTests
 
 - (void)testQualifierParsing {
-    XCTAssertEqual(JXTypeQualifierForEncoding('j'), JXTypeQualifierVolatile);
+    XCTAssertEqual(JXTypeQualifierForEncoding('j'), JXTypeQualifierComplex);
     XCTAssertEqual(JXTypeQualifierForEncoding('r'), JXTypeQualifierConst);
     XCTAssertEqual(JXTypeQualifierForEncoding('n'), JXTypeQualifierIn);
     XCTAssertEqual(JXTypeQualifierForEncoding('N'), JXTypeQualifierInout);
@@ -57,7 +57,7 @@
 }
 
 - (void)testSingleQualifierString {
-    XCTAssertEqualObjects(JXStringsForTypeQualifiers(JXTypeQualifierVolatile), @[@"volatile"]);
+    XCTAssertEqualObjects(JXStringsForTypeQualifiers(JXTypeQualifierComplex), @[@"_Complex"]);
     XCTAssertEqualObjects(JXStringsForTypeQualifiers(JXTypeQualifierConst), @[@"const"]);
     XCTAssertEqualObjects(JXStringsForTypeQualifiers(JXTypeQualifierIn), @[@"in"]);
     XCTAssertEqualObjects(JXStringsForTypeQualifiers(JXTypeQualifierInout), @[@"inout"]);
@@ -69,8 +69,8 @@
 }
 
 - (void)testMultipleQualifierString {
-    NSArray *expected = @[@"_Atomic", @"volatile"];
-    XCTAssertEqualObjects(JXStringsForTypeQualifiers(JXTypeQualifierVolatile | JXTypeQualifierAtomic), expected);
+    NSArray *expected = @[@"_Atomic", @"_Complex"];
+    XCTAssertEqualObjects(JXStringsForTypeQualifiers(JXTypeQualifierComplex | JXTypeQualifierAtomic), expected);
 }
 
 @end

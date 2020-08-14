@@ -12,7 +12,7 @@
 
 JXTypeQualifiers JXTypeQualifierForEncoding(char enc) {
     switch (enc) {
-        case 'j': return JXTypeQualifierVolatile;
+        case 'j': return JXTypeQualifierComplex;
         case 'r': return JXTypeQualifierConst;
         case 'n': return JXTypeQualifierIn;
         case 'N': return JXTypeQualifierInout;
@@ -66,6 +66,7 @@ NSArray<NSString *> *JXStringsForTypeQualifiers(JXTypeQualifiers qualifiers) {
 
     // sorted alphabetically
     addTerm(Atomic, _Atomic);
+    addTerm(Complex, _Complex)
     addTerm(Bycopy, bycopy);
     addTerm(Byref, byref);
     addTerm(Const, const);
@@ -73,7 +74,6 @@ NSArray<NSString *> *JXStringsForTypeQualifiers(JXTypeQualifiers qualifiers) {
     addTerm(Inout, inout);
     addTerm(Oneway, oneway);
     addTerm(Out, out);
-    addTerm(Volatile, volatile)
 
     return [qualifierNames copy];
 }

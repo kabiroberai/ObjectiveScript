@@ -41,16 +41,19 @@
     static JXTypeDescriptionOptions *defaultOptions;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+#define KEY_AND_VALUE(obj) (obj): (obj)
         NSDictionary *defaultTypedefs = @{
             @"_NSZone": @"NSZone",
             @"_NSRange": @"NSRange",
-            @"CGSize": @"CGSize",
-            @"CGPoint": @"CGPoint",
-            @"CGRect": @"CGRect",
-            @"CGAffineTransform": @"CGAffineTransform",
-            @"CATransform3D": @"CATransform3D",
-            @"UIEdgeInsets": @"UIEdgeInsets"
+            KEY_AND_VALUE(@"NSDirectionalEdgeInsets"),
+            KEY_AND_VALUE(@"CGSize"),
+            KEY_AND_VALUE(@"CGPoint"),
+            KEY_AND_VALUE(@"CGRect"),
+            KEY_AND_VALUE(@"CGAffineTransform"),
+            KEY_AND_VALUE(@"CATransform3D"),
+            KEY_AND_VALUE(@"UIEdgeInsets")
         };
+#undef KEY_AND_VALUE
         defaultOptions = [JXTypeDescriptionOptions optionsWithUsePadding:NO
                                                           structTypedefs:defaultTypedefs
                                                    demangleTypeNameBlock:nil];

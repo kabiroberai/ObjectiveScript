@@ -1,7 +1,5 @@
-#ifdef __arm__
-
 /* -----------------------------------------------------------------*-C-*-
-   libffi 3.3 - Copyright (c) 2011, 2014, 2019 Anthony Green
+   libffi 3.3-rc0 - Copyright (c) 2011, 2014 Anthony Green
                     - Copyright (c) 1996-2003, 2007, 2008 Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person
@@ -50,14 +48,22 @@
 extern "C" {
 #endif
 
-/* Specify which architecture libffi is configured for. */
-#ifndef ARM
-#define ARM
+#include <os/availability.h>
+
+/* TODO: Add arm64_32 and armv7k support to support watchOS unconditionally */
+#ifdef __LP64__
+#define FFI_AVAILABLE_APPLE      API_AVAILABLE(macos(10.0), macCatalyst(13.0)) SPI_AVAILABLE(ios(13.0), tvos(13.0), watchos(6.0))
+#define FFI_AVAILABLE_APPLE_2019 API_AVAILABLE(macos(10.15), macCatalyst(13.0)) SPI_AVAILABLE(ios(13.0), tvos(13.0), watchos(6.0))
+#define FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 API_DEPRECATED("Deprecated", macos(10.15, 10.16), macCatalyst(13.0, 14.0)) SPI_DEPRECATED("Deprecated", ios(13.0, 14.0), tvos(13.0, 14.0), watchos(6.0, 7.0))
+#else
+#define FFI_AVAILABLE_APPLE      API_AVAILABLE(macos(10.0), macCatalyst(13.0)) SPI_AVAILABLE(ios(13.0), tvos(13.0)) API_UNAVAILABLE(watchos)
+#define FFI_AVAILABLE_APPLE_2019 API_AVAILABLE(macos(10.15), macCatalyst(13.0)) SPI_AVAILABLE(ios(13.0), tvos(13.0)) API_UNAVAILABLE(watchos)
+#define FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 API_DEPRECATED("Deprecated", macos(10.15, 10.16), macCatalyst(13.0, 14.0)) SPI_DEPRECATED("Deprecated", ios(13.0, 14.0), tvos(13.0, 14.0)) API_UNAVAILABLE(watchos)
 #endif
 
 /* ---- System configuration information --------------------------------- */
 
-#include <ffitarget.h>
+#include "ffitarget.h"
 
 #ifndef LIBFFI_ASM
 
@@ -186,30 +192,30 @@ typedef struct _ffi_type
 #endif
 
 /* These are defined in types.c.  */
-FFI_EXTERN ffi_type ffi_type_void;
-FFI_EXTERN ffi_type ffi_type_uint8;
-FFI_EXTERN ffi_type ffi_type_sint8;
-FFI_EXTERN ffi_type ffi_type_uint16;
-FFI_EXTERN ffi_type ffi_type_sint16;
-FFI_EXTERN ffi_type ffi_type_uint32;
-FFI_EXTERN ffi_type ffi_type_sint32;
-FFI_EXTERN ffi_type ffi_type_uint64;
-FFI_EXTERN ffi_type ffi_type_sint64;
-FFI_EXTERN ffi_type ffi_type_float;
-FFI_EXTERN ffi_type ffi_type_double;
-FFI_EXTERN ffi_type ffi_type_pointer;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_void;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_uint8;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_sint8;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type  ffi_type_uint16;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_sint16;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_uint32;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_sint32;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_uint64;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_sint64;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_float;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_double;
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_pointer;
 
-#if 0
-FFI_EXTERN ffi_type ffi_type_longdouble;
+#if defined(__i386__) || defined(__x86_64__)
+FFI_AVAILABLE_APPLE FFI_EXTERN ffi_type ffi_type_longdouble;
 #else
 #define ffi_type_longdouble ffi_type_double
 #endif
 
 #ifdef FFI_TARGET_HAS_COMPLEX_TYPE
-FFI_EXTERN ffi_type ffi_type_complex_float;
-FFI_EXTERN ffi_type ffi_type_complex_double;
-#if 0
-FFI_EXTERN ffi_type ffi_type_complex_longdouble;
+FFI_AVAILABLE_APPLE_2019 FFI_EXTERN ffi_type ffi_type_complex_float;
+FFI_AVAILABLE_APPLE_2019 FFI_EXTERN ffi_type ffi_type_complex_double;
+#if defined(__i386__) || defined(__x86_64__)
+FFI_AVAILABLE_APPLE_2019 FFI_EXTERN ffi_type ffi_type_complex_longdouble;
 #else
 #define ffi_type_complex_longdouble ffi_type_complex_double
 #endif
@@ -271,34 +277,34 @@ typedef ffi_raw ffi_java_raw;
 #endif
 
 
-FFI_API 
+FFI_AVAILABLE_APPLE_2019 FFI_API
 void ffi_raw_call (ffi_cif *cif,
 		   void (*fn)(void),
 		   void *rvalue,
 		   ffi_raw *avalue);
 
-FFI_API void ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
-FFI_API void ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
-FFI_API size_t ffi_raw_size (ffi_cif *cif);
+FFI_AVAILABLE_APPLE_2019 FFI_API void ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
+FFI_AVAILABLE_APPLE_2019 FFI_API void ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
+FFI_AVAILABLE_APPLE_2019 FFI_API size_t ffi_raw_size (ffi_cif *cif);
 
 /* This is analogous to the raw API, except it uses Java parameter
    packing, even on 64-bit machines.  I.e. on 64-bit machines longs
    and doubles are followed by an empty 64-bit word.  */
 
 #if !FFI_NATIVE_RAW_API
-FFI_API
+FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 FFI_API
 void ffi_java_raw_call (ffi_cif *cif,
 			void (*fn)(void),
 			void *rvalue,
-			ffi_java_raw *avalue) __attribute__((deprecated));
+			ffi_java_raw *avalue);
 #endif
 
-FFI_API
-void ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_java_raw *raw) __attribute__((deprecated));
-FFI_API
-void ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_java_raw *raw, void **args) __attribute__((deprecated));
-FFI_API
-size_t ffi_java_raw_size (ffi_cif *cif) __attribute__((deprecated));
+FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 FFI_API
+void ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_java_raw *raw);
+FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 FFI_API
+void ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_java_raw *raw, void **args);
+FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 FFI_API
+size_t ffi_java_raw_size (ffi_cif *cif);
 
 /* ---- Definitions for closures ----------------------------------------- */
 
@@ -308,7 +314,7 @@ size_t ffi_java_raw_size (ffi_cif *cif) __attribute__((deprecated));
 __declspec(align(8))
 #endif
 typedef struct {
-#if 1
+#if defined(__arm__) || defined(__arm64__)
   void *trampoline_table;
   void *trampoline_table_entry;
 #else
@@ -329,18 +335,11 @@ typedef struct {
 # endif
 #endif
 
-FFI_API void *ffi_closure_alloc (size_t size, void **code);
-FFI_API void ffi_closure_free (void *);
+FFI_AVAILABLE_APPLE_2019 FFI_API void *ffi_closure_alloc (size_t size, void **code);
+FFI_AVAILABLE_APPLE_2019 FFI_API void ffi_closure_free (void *);
 
-#if defined(PA_LINUX) || defined(PA_HPUX)
-#define FFI_CLOSURE_PTR(X) ((void *)((unsigned int)(X) | 2))
-#define FFI_RESTORE_PTR(X) ((void *)((unsigned int)(X) & ~3))
-#else
-#define FFI_CLOSURE_PTR(X) (X)
-#define FFI_RESTORE_PTR(X) (X)
-#endif
-
-FFI_API ffi_status
+#if FFI_LEGACY_CLOSURE_API
+FFI_AVAILABLE_APPLE_2019 FFI_API ffi_status
 ffi_prep_closure (ffi_closure*,
 		  ffi_cif *,
 		  void (*fun)(ffi_cif*,void*,void**,void*),
@@ -351,19 +350,25 @@ ffi_prep_closure (ffi_closure*,
   __attribute__((deprecated))
 #endif
   ;
+#endif
 
-FFI_API ffi_status
+FFI_AVAILABLE_APPLE_2019 FFI_API ffi_status
 ffi_prep_closure_loc (ffi_closure*,
 		      ffi_cif *,
 		      void (*fun)(ffi_cif*,void*,void**,void*),
 		      void *user_data,
 		      void*codeloc);
 
+#if defined(__x86_64__) || defined(__arm64__)
+FFI_AVAILABLE_APPLE_2019
+ffi_closure * ffi_find_closure_for_code_np(void *code);
+#endif
+
 #ifdef __sgi
 # pragma pack 8
 #endif
 typedef struct {
-#if 1
+#if defined(__arm__) || defined(__arm64__)
   void *trampoline_table;
   void *trampoline_table_entry;
 #else
@@ -388,7 +393,7 @@ typedef struct {
 } ffi_raw_closure;
 
 typedef struct {
-#if 1
+#if defined(__arm__) || defined(__arm64__)
   void *trampoline_table;
   void *trampoline_table_entry;
 #else
@@ -413,13 +418,13 @@ typedef struct {
 
 } ffi_java_raw_closure;
 
-FFI_API ffi_status
+FFI_AVAILABLE_APPLE_2019 FFI_API ffi_status
 ffi_prep_raw_closure (ffi_raw_closure*,
 		      ffi_cif *cif,
 		      void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
 		      void *user_data);
 
-FFI_API ffi_status
+FFI_AVAILABLE_APPLE_2019 FFI_API ffi_status
 ffi_prep_raw_closure_loc (ffi_raw_closure*,
 			  ffi_cif *cif,
 			  void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
@@ -427,23 +432,23 @@ ffi_prep_raw_closure_loc (ffi_raw_closure*,
 			  void *codeloc);
 
 #if !FFI_NATIVE_RAW_API
-FFI_API ffi_status
+FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 FFI_API ffi_status
 ffi_prep_java_raw_closure (ffi_java_raw_closure*,
 		           ffi_cif *cif,
 		           void (*fun)(ffi_cif*,void*,ffi_java_raw*,void*),
-		           void *user_data) __attribute__((deprecated));
+		           void *user_data);
 
-FFI_API ffi_status
+FFI_AVAILABLE_APPLE_2019_DEPRECATED_2020 FFI_API ffi_status
 ffi_prep_java_raw_closure_loc (ffi_java_raw_closure*,
 			       ffi_cif *cif,
 			       void (*fun)(ffi_cif*,void*,ffi_java_raw*,void*),
 			       void *user_data,
-			       void *codeloc) __attribute__((deprecated));
+			       void *codeloc);
 #endif
 
 #endif /* FFI_CLOSURES */
 
-#if FFI_GO_CLOSURES
+#if defined(FFI_GO_CLOSURES) && FFI_GO_CLOSURES
 
 typedef struct {
   void      *tramp;
@@ -451,24 +456,24 @@ typedef struct {
   void     (*fun)(ffi_cif*,void*,void**,void*);
 } ffi_go_closure;
 
-FFI_API ffi_status ffi_prep_go_closure (ffi_go_closure*, ffi_cif *,
+FFI_AVAILABLE_APPLE_2019 FFI_API ffi_status ffi_prep_go_closure (ffi_go_closure*, ffi_cif *,
 				void (*fun)(ffi_cif*,void*,void**,void*));
 
-FFI_API void ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue,
+FFI_AVAILABLE_APPLE_2019 FFI_API void ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue,
 		  void **avalue, void *closure);
 
 #endif /* FFI_GO_CLOSURES */
 
 /* ---- Public interface definition -------------------------------------- */
 
-FFI_API 
+FFI_AVAILABLE_APPLE FFI_API
 ffi_status ffi_prep_cif(ffi_cif *cif,
 			ffi_abi abi,
 			unsigned int nargs,
 			ffi_type *rtype,
 			ffi_type **atypes);
 
-FFI_API
+FFI_AVAILABLE_APPLE_2019 FFI_API
 ffi_status ffi_prep_cif_var(ffi_cif *cif,
 			    ffi_abi abi,
 			    unsigned int nfixedargs,
@@ -476,13 +481,13 @@ ffi_status ffi_prep_cif_var(ffi_cif *cif,
 			    ffi_type *rtype,
 			    ffi_type **atypes);
 
-FFI_API
+FFI_AVAILABLE_APPLE FFI_API
 void ffi_call(ffi_cif *cif,
 	      void (*fn)(void),
 	      void *rvalue,
 	      void **avalue);
 
-FFI_API
+FFI_AVAILABLE_APPLE_2019 FFI_API
 ffi_status ffi_get_struct_offsets (ffi_abi abi, ffi_type *struct_type,
 				   size_t *offsets);
 
@@ -498,7 +503,7 @@ ffi_status ffi_get_struct_offsets (ffi_abi abi, ffi_type *struct_type,
 #define FFI_TYPE_INT        1
 #define FFI_TYPE_FLOAT      2    
 #define FFI_TYPE_DOUBLE     3
-#if 0
+#if defined(__i386__) || defined(__x86_64__)
 #define FFI_TYPE_LONGDOUBLE 4
 #else
 #define FFI_TYPE_LONGDOUBLE FFI_TYPE_DOUBLE
@@ -521,8 +526,5 @@ ffi_status ffi_get_struct_offsets (ffi_abi abi, ffi_type *struct_type,
 #ifdef __cplusplus
 }
 #endif
-
-#endif
-
 
 #endif

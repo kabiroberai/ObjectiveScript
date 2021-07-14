@@ -34,10 +34,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define FFI_SIZEOF_JAVA_RAW  4
 typedef unsigned long long ffi_arg;
 typedef signed long long ffi_sarg;
-#elif defined(_M_ARM64)
-#define FFI_SIZEOF_ARG 8
-typedef unsigned long long ffi_arg;
-typedef signed long long ffi_sarg;
 #else
 typedef unsigned long ffi_arg;
 typedef signed long ffi_sarg;
@@ -55,6 +51,7 @@ typedef enum ffi_abi
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
+#define FFI_LEGACY_CLOSURE_API 0
 #define FFI_NATIVE_RAW_API 0
 
 #if defined (FFI_EXEC_TRAMPOLINE_TABLE) && FFI_EXEC_TRAMPOLINE_TABLE
@@ -71,25 +68,18 @@ typedef enum ffi_abi
 #define FFI_TRAMPOLINE_CLOSURE_OFFSET FFI_TRAMPOLINE_SIZE
 #endif
 
-#ifdef _M_ARM64
-#define FFI_EXTRA_CIF_FIELDS unsigned is_variadic
-#endif
-
 /* ---- Internal ---- */
 
 #if defined (__APPLE__)
 #define FFI_TARGET_SPECIFIC_VARIADIC
 #define FFI_EXTRA_CIF_FIELDS unsigned aarch64_nfixedargs
-#elif !defined(_M_ARM64)
-/* iOS and Windows reserve x18 for the system.  Disable Go closures until
+#else
+/* iOS reserves x18 for the system.  Disable Go closures until
    a new static chain is chosen.  */
 #define FFI_GO_CLOSURES 1
 #endif
 
-#ifndef _M_ARM64
-/* No complex type on Windows */
 #define FFI_TARGET_HAS_COMPLEX_TYPE
-#endif
 
 #endif
 

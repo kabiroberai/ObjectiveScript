@@ -1,4 +1,4 @@
-#ifdef __x86_64__
+#if defined(__i386__) || defined(__x86_64__)
 
 /* -----------------------------------------------------------------*-C-*-
    ffitarget.h - Copyright (c) 2012, 2014, 2018  Anthony Green
@@ -39,13 +39,6 @@
 /* ---- System specific configurations ----------------------------------- */
 
 /* For code common to all platforms on x86 and x86_64. */
-#define X86_ANY
-
-#if defined (X86_64) && defined (__i386__)
-#undef X86_64
-#define X86
-#endif
-
 #ifdef X86_WIN64
 #define FFI_SIZEOF_ARG 8
 #define USE_BUILTIN_FFS 0 /* not yet implemented in mingw-64 */
@@ -91,7 +84,7 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_WIN64
 #endif  
 
-#elif defined(X86_64) || (defined (__x86_64__) && defined (X86_DARWIN))
+#elif defined (__x86_64__)
   FFI_FIRST_ABI = 1,
   FFI_UNIX64,
   FFI_WIN64,
@@ -129,33 +122,20 @@ typedef enum ffi_abi {
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
-#define FFI_GO_CLOSURES 1
+#define FFI_LEGACY_CLOSURE_API 1
+/* #define FFI_GO_CLOSURES 1 */
 
 #define FFI_TYPE_SMALL_STRUCT_1B (FFI_TYPE_LAST + 1)
 #define FFI_TYPE_SMALL_STRUCT_2B (FFI_TYPE_LAST + 2)
 #define FFI_TYPE_SMALL_STRUCT_4B (FFI_TYPE_LAST + 3)
 #define FFI_TYPE_MS_STRUCT       (FFI_TYPE_LAST + 4)
 
-#if defined (X86_64) || defined(X86_WIN64) \
-    || (defined (__x86_64__) && defined (X86_DARWIN))
-/* 4 bytes of ENDBR64 + 7 bytes of LEA + 6 bytes of JMP + 7 bytes of NOP
-   + 8 bytes of pointer.  */
-# define FFI_TRAMPOLINE_SIZE 32
+#if defined (__x86_64__)
+# define FFI_TRAMPOLINE_SIZE 24
 # define FFI_NATIVE_RAW_API 0
 #else
-/* 4 bytes of ENDBR32 + 5 bytes of MOV + 5 bytes of JMP + 2 unused
-   bytes.  */
-# define FFI_TRAMPOLINE_SIZE 16
+# define FFI_TRAMPOLINE_SIZE 12
 # define FFI_NATIVE_RAW_API 1  /* x86 has native raw api support */
-#endif
-
-#if !defined(GENERATE_LIBFFI_MAP) && defined(__ASSEMBLER__) \
-    && defined(__CET__)
-# include <cet.h>
-# define _CET_NOTRACK notrack
-#else
-# define _CET_ENDBR
-# define _CET_NOTRACK
 #endif
 
 #endif

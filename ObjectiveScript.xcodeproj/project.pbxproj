@@ -10,7 +10,6 @@
 		56002CF32019FEB400AFEA2C /* JXBlockInterop.m in Sources */ = {isa = PBXBuildFile; fileRef = 56002CF22019FEB400AFEA2C /* JXBlockInterop.m */; };
 		56002CF5201A012A00AFEA2C /* JXAssociatedObjects.m in Sources */ = {isa = PBXBuildFile; fileRef = 56002CF4201A012A00AFEA2C /* JXAssociatedObjects.m */; };
 		560E02142066DC9000D73F28 /* JXArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 560E02132066DC9000D73F28 /* JXArray.m */; };
-		5616A8202018A5E7004DD204 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5616A81E2018A5C3004DD204 /* libffi.a */; };
 		5628CE1624D2090E00DE0B7E /* JXTypeDescriptionOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5628CE1524D2090E00DE0B7E /* JXTypeDescriptionOptions.m */; };
 		5628CE1724D2094100DE0B7E /* JXTypeDescriptionOptions.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5628CE1424D2090E00DE0B7E /* JXTypeDescriptionOptions.h */; };
 		564A387D2391DE80009487A6 /* JXJSInterface.m in Sources */ = {isa = PBXBuildFile; fileRef = 564A387C2391DE80009487A6 /* JXJSInterface.m */; };
@@ -136,7 +135,6 @@
 		560C069B20541E1000CE992C /* JXTypeBasic.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTypeBasic.m; sourceTree = "<group>"; };
 		560E02122066DC9000D73F28 /* JXArray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXArray.h; sourceTree = "<group>"; };
 		560E02132066DC9000D73F28 /* JXArray.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXArray.m; sourceTree = "<group>"; };
-		5616A81E2018A5C3004DD204 /* libffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libffi.a; sourceTree = "<group>"; };
 		561ACF281FF3A1A100739CC6 /* JXBlockInterop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXBlockInterop.h; sourceTree = "<group>"; };
 		561BCE382053E6B5002165F4 /* JXType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JXType.h; sourceTree = "<group>"; };
 		561BCE392053E6B5002165F4 /* JXType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXType.m; sourceTree = "<group>"; };
@@ -163,14 +161,12 @@
 		56515E83210DD0D60092D8BD /* JXTypeArray+FFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "JXTypeArray+FFI.h"; sourceTree = "<group>"; };
 		56515E84210DD0D60092D8BD /* JXTypeArray+FFI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "JXTypeArray+FFI.m"; sourceTree = "<group>"; };
 		56515E8A210DD2080092D8BD /* libTypeParser.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTypeParser.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		56546DE1269F169E007504AD /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		56546DE5269F1737007504AD /* libffi.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; path = libffi.tbd; sourceTree = "<group>"; };
 		56574EBD2158F36D00174CA9 /* ffitarget_arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_arm64.h; sourceTree = "<group>"; };
 		56574EBE2158F36D00174CA9 /* ffitarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
-		56574EC02158F36D00174CA9 /* ffitarget_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
 		56574EC12158F36D00174CA9 /* ffitarget_armv7.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffitarget_armv7.h; sourceTree = "<group>"; };
-		56574EC22158F36D00174CA9 /* ffi_x86_64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_x86_64.h; sourceTree = "<group>"; };
-		56574EC42158F36D00174CA9 /* ffi_armv7.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_armv7.h; sourceTree = "<group>"; };
 		56574EC52158F36D00174CA9 /* ffi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
-		56574EC62158F36D00174CA9 /* ffi_arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ffi_arm64.h; sourceTree = "<group>"; };
 		565B35D81FE41EF500A9EEA8 /* libObjectiveScript.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libObjectiveScript.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		565B35E41FE4203700A9EEA8 /* JXTrampInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXTrampInfo.m; sourceTree = "<group>"; };
 		565B35E61FE4203700A9EEA8 /* JXRuntimeInterface.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JXRuntimeInterface.m; sourceTree = "<group>"; };
@@ -246,7 +242,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				5662917B210DD3B7007CF1DC /* libTypeParser.a in Frameworks */,
-				5616A8202018A5E7004DD204 /* libffi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,18 +308,10 @@
 		5616A80B2018A5C3004DD204 /* vendored */ = {
 			isa = PBXGroup;
 			children = (
-				5616A80C2018A5C3004DD204 /* libffi */,
+				56546DE2269F170B007504AD /* lib */,
+				56574EBB2158F36D00174CA9 /* include */,
 			);
 			path = vendored;
-			sourceTree = "<group>";
-		};
-		5616A80C2018A5C3004DD204 /* libffi */ = {
-			isa = PBXGroup;
-			children = (
-				56574EBB2158F36D00174CA9 /* include */,
-				5616A81E2018A5C3004DD204 /* libffi.a */,
-			);
-			path = libffi;
 			sourceTree = "<group>";
 		};
 		5616A81F2018A5E7004DD204 /* Frameworks */ = {
@@ -374,6 +361,22 @@
 			path = TypeParser;
 			sourceTree = "<group>";
 		};
+		56546DE2269F170B007504AD /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				56546DE4269F172F007504AD /* iphoneos */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+		56546DE4269F172F007504AD /* iphoneos */ = {
+			isa = PBXGroup;
+			children = (
+				56546DE5269F1737007504AD /* libffi.tbd */,
+			);
+			path = iphoneos;
+			sourceTree = "<group>";
+		};
 		56574EBB2158F36D00174CA9 /* include */ = {
 			isa = PBXGroup;
 			children = (
@@ -385,14 +388,11 @@
 		56574EBC2158F36D00174CA9 /* ffi */ = {
 			isa = PBXGroup;
 			children = (
+				56546DE1269F169E007504AD /* module.modulemap */,
 				56574EBD2158F36D00174CA9 /* ffitarget_arm64.h */,
 				56574EBE2158F36D00174CA9 /* ffitarget.h */,
-				56574EC02158F36D00174CA9 /* ffitarget_x86_64.h */,
 				56574EC12158F36D00174CA9 /* ffitarget_armv7.h */,
-				56574EC22158F36D00174CA9 /* ffi_x86_64.h */,
-				56574EC42158F36D00174CA9 /* ffi_armv7.h */,
 				56574EC52158F36D00174CA9 /* ffi.h */,
-				56574EC62158F36D00174CA9 /* ffi_arm64.h */,
 			);
 			path = ffi;
 			sourceTree = "<group>";
@@ -836,6 +836,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LIBRARY_SEARCH_PATHS = "vendored/lib/$(PLATFORM_NAME)";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				SDKROOT = iphoneos;
 			};
@@ -894,6 +895,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LIBRARY_SEARCH_PATHS = "vendored/lib/$(PLATFORM_NAME)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;

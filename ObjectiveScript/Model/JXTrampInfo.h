@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
-#import <ffi.h>
+#import <ffi/ffi.h>
 #import "JXMethodSignature.h"
 
 NS_ASSUME_NONNULL_BEGIN

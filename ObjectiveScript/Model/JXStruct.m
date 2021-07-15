@@ -6,7 +6,7 @@
 //  Copyright © 2018 Kabir Oberai. All rights reserved.
 //
 
-#import <ffi.h>
+#import <ffi/ffi.h>
 #import "NSString+IsNumeric.h"
 #import "JXJSInterop.h"
 #import "JXStruct.h"

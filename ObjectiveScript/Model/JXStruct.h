@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ffi.h>
+#import <ffi/ffi.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import "JXKVC.h"
 

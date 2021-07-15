@@ -7,7 +7,7 @@
 //
 
 #import "JXType.h"
-#import <ffi.h>
+#import <ffi/ffi.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

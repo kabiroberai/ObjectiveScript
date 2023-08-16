@@ -121,6 +121,6 @@
 
 @end
 
-__attribute__((used)) static void registerCategories() {
+__attribute__((used)) static void registerCategories(void) {
     __attribute__((unused)) void *ignore = NSScannerUtilsDummy;
 }

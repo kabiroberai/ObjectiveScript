@@ -324,7 +324,7 @@ static JSClassRef createClass(const char *name, void (^configure)(JSClassDefinit
     return JSClassCreate(&def);
 }
 
-static void setup() {
+static void setup(void) {
     // https://code.google.com/archive/p/jscocoa/wikis/JavascriptCore.wiki
     JXGlobalClass = createClass("OBJS", ^(JSClassDefinition *def) {
         def->getProperty = globalGetProperty;
